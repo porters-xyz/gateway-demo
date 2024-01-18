@@ -3,7 +3,7 @@ package main
 import (
     "fmt"
     "porters/demo"
-    "porters/gateway"
+    "porters/proxy"
     "os"
 )
 
@@ -13,7 +13,7 @@ func main() {
     arg := os.Args[1]
     if arg == "gateway" {
         fmt.Println("starting gateway")
-        gateway.Start()
+        proxy.Start()
     }
 
     if arg == "test" {

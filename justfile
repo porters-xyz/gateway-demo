@@ -2,9 +2,9 @@ default:
     @just --list
 
 build:
-    go install .
+    cd gateway; go install
 
 test:
-    go test
+    cd gateway; go test
 
 alias b := build

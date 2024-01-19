@@ -8,6 +8,11 @@
 $ pnpm install
 ```
 
+## DB Setup (currently using local sqlite db)
+$ npx prisma generate
+
+$ npx prisma migrate dev
+
 ## Running the app
 
 ```bash

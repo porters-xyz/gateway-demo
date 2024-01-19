@@ -1,0 +1,12 @@
+{
+  "name": "gateway-mono",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "pnpm run --parallel dev",
+    "install": "pnpm i"
+  },
+  "keywords": [],
+  "author": "The Porters"
+}

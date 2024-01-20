@@ -2,6 +2,7 @@ package proxy
 
 import (
     "context"
+    "fmt"
     "github.com/redis/go-redis/v9"
     "sync"
 )
@@ -21,7 +22,24 @@ func getClient() *redis.Client {
 }
 
 func IncRelayCount(ctx context.Context, account string) {
-    getClient().Incr(ctx, account)
+    // TODO figure out account scheme
+    _, err := getClient().Incr(ctx, account).Result()
+    if err != nil {
+        // TODO handle errors properly
+        fmt.Println(err)
+        return
+    }
+    return
+}
+
+// TODO remove, just for testing
+func IncCounter(ctx context.Context, name string) int64 { 
+    result, err := getClient().Incr(ctx, name).Result()
+    if err != nil {
+        // TODO handle errors properly
+        return 0
+    }
+    return result
 }
 
 func IsValidAccount(ctx context.Context, account string) bool {

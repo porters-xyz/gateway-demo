@@ -54,15 +54,16 @@ func setupContext(req *http.Request) context.Context {
     return req.Context()
 }
 
-// TODO allow for scripting headers, or configuration
-// TODO move this to pluggable prehandler
-func setHeaders(req *http.Request) {
-    req.Header.Set("X-Foo", "header-stuff")
-}
 
 func blockingPrehandlers(resp http.ResponseWriter, req *http.Request) {
     setupContext(req)
-    setHeaders(req)
+    plugins := GetRegistry().elements
+    for i:=0; i<len(plugins); i++ {
+        filter, ok := plugins[i].(Filter)
+        if ok {
+            filter.Filter(resp, req)
+        }
+    }
     // TODO check rate limiter
 }
 

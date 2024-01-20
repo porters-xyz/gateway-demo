@@ -7,10 +7,10 @@ import (
 )
 
 var client *redis.Client = nil
-var once sync.Once
+var redisMutex sync.Once
 
 func getClient() *redis.Client {
-    once.Do(func() {
+    redisMutex.Do(func() {
         client = redis.NewClient(&redis.Options{
             Addr: "localhost:6379",
             Password: "",

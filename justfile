@@ -2,9 +2,7 @@ default:
     @just --list
 
 build:
-    cd gateway; go install
+    @just gateway/build
 
 test:
-    cd gateway; go test
-
-alias b := build
+    @just gateway/test

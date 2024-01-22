@@ -1,9 +1,6 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 datasource db {
-  provider = "sqlite"
-  url      = "file:dev.db"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 generator client {
@@ -11,7 +8,59 @@ generator client {
 }
 
 model User {
-  id    String  @id @default(cuid())
-  email String  @unique
-  name  String?
+  id    String @id @unique @default(cuid())
+  org   Org    @relation(fields: [orgId], references: [id])
+  orgId String
+  apps  App[]  @relation("UserApps")
+}
+
+model App {
+  id     String    @id @unique @default(cuid())
+  rules  AppRule[]
+  org    Org       @relation(fields: [orgId], references: [id])
+  orgId  String
+  user   User?     @relation("UserApps", fields: [userId], references: [id])
+  userId String?
+}
+
+model BillingAccount {
+  id    String @id @unique @default(cuid())
+  org   Org    @relation(fields: [orgId], references: [id])
+  orgId String @unique
+}
+
+model Org {
+  id             String          @id @unique @default(cuid())
+  users          User[]
+  billingAccount BillingAccount?
+  apps           App[]
+}
+
+model AppRule {
+  id              String         @id @unique @default(cuid())
+  name            String
+  value           String
+  editable        Boolean
+  validationValue String
+  app             App            @relation(fields: [appId], references: [id])
+  appId           String
+  appRuleType     AppRuleType   @relation(fields: [appRuleTypeId], references: [id])
+  appRuleTypeId   String
+}
+
+model AppRuleType {
+  id            String        @id @unique @default(cuid())
+  validationType ValidationType
+  oneOrMany      OneOrMany
+  appRules       AppRule[]
+}
+
+enum ValidationType {
+  list
+  regex
+}
+
+enum OneOrMany {
+  one
+  many
 }

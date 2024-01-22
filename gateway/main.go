@@ -3,6 +3,7 @@ package main
 import (
     "fmt"
     "porters/demo"
+    "porters/plugins"
     "porters/proxy"
     "os"
 )
@@ -10,8 +11,14 @@ import (
 // command line runner
 // TODO handle options and environment vars
 func main() {
+
     arg := os.Args[1]
     if arg == "gateway" {
+
+        // currently registering plugins via main
+        proxy.Register(plugins.Counter{})
+        proxy.Register(plugins.Headers{})
+
         fmt.Println("starting gateway")
         proxy.Start()
     }
@@ -20,4 +27,5 @@ func main() {
         fmt.Println("starting test server")
         demo.Serve()
     }
+
 }

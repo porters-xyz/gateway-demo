@@ -1,11 +1,17 @@
 package proxy
 
 import (
+    "context"
     "log"
     "net/url"
     "net/http"
     "net/http/httputil"
 )
+
+type Filter interface {
+    Plugin
+    Filter(http.ResponseWriter, *http.Request)
+}
 
 func Start() {
     // TODO grab url for gateway kit
@@ -15,11 +21,23 @@ func Start() {
     }
 
     handler := func(proxy *httputil.ReverseProxy) func(http.ResponseWriter, *http.Request) {
-        return func(writer http.ResponseWriter, req *http.Request) {
+        return func(resp http.ResponseWriter, req *http.Request) {
             log.Println(req.URL)
             req.Host = remote.Host
-            setHeaders(req)
-            proxy.ServeHTTP(writer, req)
+
+            // TODO structure this in a reasonable way
+            blockingPrehandlers(resp, req)
+
+            // TODO meant to track incoming requests without slowing things down, read-only
+            nonBlockingPrehandlers(resp, req)
+
+            proxy.ServeHTTP(resp, req)
+
+            // TODO is this needed? after serving blocking may be dumb
+            blockingPosthandlers(resp, req)
+
+            // TODO any longer tasks that should spawn after handling request
+            nonBlockingPosthandlers(resp, req)
         }
     }
 
@@ -31,7 +49,32 @@ func Start() {
     }
 }
 
-// TODO allow for scripting headers, or configuration
-func setHeaders(req *http.Request) {
-    req.Header.Set("X-Foo", "header-stuff")
+func setupContext(req *http.Request) context.Context {
+    // TODO read ctx from request and make any modifications
+    return req.Context()
+}
+
+
+func blockingPrehandlers(resp http.ResponseWriter, req *http.Request) {
+    setupContext(req)
+    plugins := GetRegistry().elements
+    for i:=0; i<len(plugins); i++ {
+        filter, ok := plugins[i].(Filter)
+        if ok {
+            filter.Filter(resp, req)
+        }
+    }
+    // TODO check rate limiter
+}
+
+func nonBlockingPrehandlers(resp http.ResponseWriter, req *http.Request) {
+    // TODO increment requested for API key + account
+}
+
+func blockingPosthandlers(resp http.ResponseWriter, req *http.Request) {
+
+}
+
+func nonBlockingPosthandlers(resp http.ResponseWriter, req *http.Request) {
+    // TODO increment success or fail numbers
 }

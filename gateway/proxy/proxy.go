@@ -8,11 +8,6 @@ import (
     "net/http/httputil"
 )
 
-type Filter interface {
-    Plugin
-    Filter(http.ResponseWriter, *http.Request)
-}
-
 func Start() {
     // TODO grab url for gateway kit
     remote, err := url.Parse("http://localhost:9999")
@@ -23,21 +18,25 @@ func Start() {
     handler := func(proxy *httputil.ReverseProxy) func(http.ResponseWriter, *http.Request) {
         return func(resp http.ResponseWriter, req *http.Request) {
             log.Println(req.URL)
+            ctx := setupContext(req)
+
+            // TODO move to filter
             req.Host = remote.Host
 
             // TODO structure this in a reasonable way
-            blockingPrehandlers(resp, req)
+            blockingPrehandlers(ctx, resp, req)
 
             // TODO meant to track incoming requests without slowing things down, read-only
-            nonBlockingPrehandlers(resp, req)
+            nonBlockingPrehandlers(ctx, resp, req)
 
+            // TODO any ctx adjustments
             proxy.ServeHTTP(resp, req)
 
             // TODO is this needed? after serving blocking may be dumb
-            blockingPosthandlers(resp, req)
+            blockingPosthandlers(ctx, resp, req)
 
             // TODO any longer tasks that should spawn after handling request
-            nonBlockingPosthandlers(resp, req)
+            nonBlockingPosthandlers(ctx, resp, req)
         }
     }
 
@@ -55,26 +54,25 @@ func setupContext(req *http.Request) context.Context {
 }
 
 
-func blockingPrehandlers(resp http.ResponseWriter, req *http.Request) {
-    setupContext(req)
+func blockingPrehandlers(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
     plugins := GetRegistry().elements
     for i:=0; i<len(plugins); i++ {
         filter, ok := plugins[i].(Filter)
         if ok {
-            filter.Filter(resp, req)
+            filter.Filter(ctx, resp, req)
         }
     }
     // TODO check rate limiter
 }
 
-func nonBlockingPrehandlers(resp http.ResponseWriter, req *http.Request) {
+func nonBlockingPrehandlers(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
     // TODO increment requested for API key + account
 }
 
-func blockingPosthandlers(resp http.ResponseWriter, req *http.Request) {
+func blockingPosthandlers(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
 
 }
 
-func nonBlockingPosthandlers(resp http.ResponseWriter, req *http.Request) {
+func nonBlockingPosthandlers(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
     // TODO increment success or fail numbers
 }

@@ -1,6 +1,7 @@
 package plugins
 
 import (
+    "context"
     "fmt"
     "net/http"
 )
@@ -17,6 +18,6 @@ func (h Headers) Name() string {
 
 // Just count all requests
 // and add header for now
-func (h Headers) Filter(resp http.ResponseWriter, req *http.Request) {
+func (h Headers) Filter(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
     req.Header.Set("X-Foo", "header-stuff")
 }

@@ -7,11 +7,6 @@ import (
     "sync"
 )
 
-type Plugin interface {
-    Name() string
-    Load()
-}
-
 type registry struct {
     name string
     elements []Plugin

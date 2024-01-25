@@ -17,6 +17,7 @@ func main() {
     if arg == "gateway" {
 
         // currently registering plugins via main
+        proxy.Register(proxy.Auth{"X-API"}, proxy.PRE)
         proxy.Register(plugins.Counter{}, proxy.PRE)
         proxy.Register(plugins.Headers{}, proxy.PRE)
         proxy.Register(limiter.Quota{}, proxy.PRE)

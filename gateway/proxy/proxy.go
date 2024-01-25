@@ -26,11 +26,9 @@ func Start() {
 
             pluginRegistry := GetRegistry()
 
-            log.Println(1)
             // TODO structure this in a reasonable way
             prefilters := pluginRegistry.GetFilterChain(PRE)
 
-            log.Println(2)
             runFilterChain(ctx, prefilters, resp, req)
 
             // TODO meant to track incoming requests without slowing things down, read-only
@@ -63,6 +61,7 @@ func setupContext(req *http.Request) context.Context {
 func runFilterChain(ctx context.Context, fc FilterChain, resp http.ResponseWriter, req *http.Request) {
     nextCtx := ctx
     for _, f := range fc.filters {
+        log.Println("filtering", f.Name())
         nextCtx = f.Filter(nextCtx, resp, req)
     }
 }

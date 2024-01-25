@@ -4,6 +4,7 @@ package proxy
 // Implements Filter interface
 
 import (
+    "fmt"
     "context"
     "net/http"
 )
@@ -12,7 +13,7 @@ const AUTH = "AUTH"
 
 type APIKey string
 type Auth struct {
-    apiKeyName string
+    ApiKeyName string
 }
 
 func (a Auth) Name() string {
@@ -21,7 +22,7 @@ func (a Auth) Name() string {
 
 func (a Auth) Load() {
     // load plugin
-    a.apiKeyName = "X-API"
+    fmt.Println("loading", a.Name())
 }
 
 func (a Auth) Key() string {
@@ -30,7 +31,7 @@ func (a Auth) Key() string {
 
 func (a Auth) Filter(ctx context.Context, resp http.ResponseWriter, req *http.Request) context.Context{
     cancelCtx, cancel := context.WithCancel(ctx)
-    apiKey := req.Header.Get(a.apiKeyName)
+    apiKey := req.Header.Get(a.ApiKeyName)
     continueCtx := context.WithValue(ctx, APIKey(AUTH), apiKey)
 
     // TODO this might actually mean out of relays

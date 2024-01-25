@@ -4,6 +4,7 @@ import (
     "fmt"
     "porters/demo"
     "porters/plugins"
+    "porters/plugins/limiter"
     "porters/proxy"
     "os"
 )
@@ -16,8 +17,9 @@ func main() {
     if arg == "gateway" {
 
         // currently registering plugins via main
-        proxy.Register(plugins.Counter{})
-        proxy.Register(plugins.Headers{})
+        proxy.Register(plugins.Counter{}, proxy.PRE)
+        proxy.Register(plugins.Headers{}, proxy.PRE)
+        proxy.Register(limiter.Quota{}, proxy.PRE)
 
         fmt.Println("starting gateway")
         proxy.Start()

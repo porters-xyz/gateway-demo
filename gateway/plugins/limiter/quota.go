@@ -4,11 +4,12 @@ package limiter
 
 import (
     "context"
+    "fmt"
     "net/http"
+    "porters/proxy"
 )
 
 type Quota struct {
-    Limiter
 }
 
 func (q Quota) Name() string {
@@ -26,6 +27,9 @@ func (q Quota) Load() {
 // TODO check request against available relays
 // TODO set headers if needing to block
 // TODO update context to reflect
-func (q Quota) Filter(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
-
+// Requires: AUTH upstream
+func (q Quota) Filter(ctx context.Context, resp http.ResponseWriter, req *http.Request) context.Context {
+    key := fmt.Sprint(q.Key(), ":", ctx.Value(proxy.APIKey(proxy.AUTH)))
+    proxy.DecCounter(ctx, key)
+    return ctx
 }

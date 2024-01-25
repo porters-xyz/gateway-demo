@@ -6,6 +6,7 @@ import (
     "net/url"
     "net/http"
     "net/http/httputil"
+    "sync"
 )
 
 func Start() {
@@ -23,20 +24,26 @@ func Start() {
             // TODO move to filter
             req.Host = remote.Host
 
+            pluginRegistry := GetRegistry()
+
+            log.Println(1)
             // TODO structure this in a reasonable way
-            blockingPrehandlers(ctx, resp, req)
+            prefilters := pluginRegistry.GetFilterChain(PRE)
+
+            log.Println(2)
+            runFilterChain(ctx, prefilters, resp, req)
 
             // TODO meant to track incoming requests without slowing things down, read-only
-            nonBlockingPrehandlers(ctx, resp, req)
+            //nonBlockingPrehandlers(ctx, resp, req)
 
             // TODO any ctx adjustments
             proxy.ServeHTTP(resp, req)
 
             // TODO is this needed? after serving blocking may be dumb
-            blockingPosthandlers(ctx, resp, req)
+            //blockingPosthandlers(ctx, resp, req)
 
             // TODO any longer tasks that should spawn after handling request
-            nonBlockingPosthandlers(ctx, resp, req)
+            //nonBlockingPosthandlers(ctx, resp, req)
         }
     }
 
@@ -53,26 +60,20 @@ func setupContext(req *http.Request) context.Context {
     return req.Context()
 }
 
-
-func blockingPrehandlers(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
-    plugins := GetRegistry().elements
-    for i:=0; i<len(plugins); i++ {
-        filter, ok := plugins[i].(Filter)
-        if ok {
-            filter.Filter(ctx, resp, req)
-        }
+func runFilterChain(ctx context.Context, fc FilterChain, resp http.ResponseWriter, req *http.Request) {
+    nextCtx := ctx
+    for _, f := range fc.filters {
+        nextCtx = f.Filter(nextCtx, resp, req)
     }
-    // TODO check rate limiter
 }
 
-func nonBlockingPrehandlers(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
-    // TODO increment requested for API key + account
-}
-
-func blockingPosthandlers(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
-
-}
-
-func nonBlockingPosthandlers(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
-    // TODO increment success or fail numbers
+func runProcessingSet(ctx context.Context, procs ProcessorSet, resp http.ResponseWriter, req *http.Request) sync.WaitGroup {
+    var wg sync.WaitGroup
+    for _, p := range procs.procs {
+        go func() {
+            p.Process(ctx, resp, req)
+        }()
+        wg.Add(1)
+    }
+    return wg
 }

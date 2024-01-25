@@ -6,7 +6,8 @@ import (
     "net/http"
 )
 
-type Headers struct {}
+type Headers struct {
+}
 
 func (h Headers) Load() {
     fmt.Println("loading " + h.Name())

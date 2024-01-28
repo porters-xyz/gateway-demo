@@ -74,8 +74,8 @@ model Rule {
   isMultiple      Boolean
   validationType  String
   validationValue String
-  appRule         AppRule  @relation(fields: [appRuleId], references: [id])
-  appRuleId       String
+  appRule         AppRule? @relation(fields: [appRuleId], references: [id])
+  appRuleId       String?
   active          Boolean  @default(true)
   deleted         Boolean  @default(false)
   createdAt       DateTime
@@ -97,11 +97,10 @@ model Ledger {
   id               String          @id @unique @default(cuid())
   billingAccount   BillingAccount  @relation(fields: [billingAccountId], references: [id])
   billingAccountId String          @unique
-  referenceId String
+  referenceId      String
   amount           Float
   transactionType  TransactionType
   createdAt        DateTime
-  
 }
 
 enum TransactionType {

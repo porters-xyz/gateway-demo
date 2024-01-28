@@ -15,17 +15,14 @@ model Org {
   deleted          Boolean         @default(false)
   createdAt        DateTime
   updatedAt        DateTime
-  billingAccount   BillingAccount?
-  billingAccountId String?
 }
 
-model BillingAccount {
+model Tenant {
   id        String   @id @unique @default(cuid())
   active    Boolean  @default(true)
-  org       Org      @relation(fields: [orgId], references: [id])
-  orgId     String   @unique
-  ledger    Ledger?
-  ledgerId  String?  @unique
+  paymentLedger    PaymentLedger?
+  relayLedger RelayLedger?
+  keys Key[]
   deleted   Boolean  @default(false)
   createdAt DateTime
   updatedAt DateTime
@@ -49,7 +46,7 @@ model App {
   user      User      @relation("UserApps", fields: [userId], references: [id])
   userId    String
   appRules  AppRule[]
-  appkeys   AppKeys[]
+  key String // api-key
   active    Boolean   @default(true)
   deleted   Boolean   @default(false)
   createdAt DateTime
@@ -57,13 +54,13 @@ model App {
 }
 
 model AppRule {
-  id        String     @id @unique @default(cuid())
-  app       App        @relation(fields: [appId], references: [id])
+  id        String   @id @unique @default(cuid())
+  app       App      @relation(fields: [appId], references: [id])
   appId     String
-  rule      RuleType[]
-  value     String
-  active    Boolean    @default(true)
-  deleted   Boolean    @default(false)
+  rule      RuleType?
+  value String
+  active    Boolean  @default(true)
+  deleted   Boolean  @default(false)
   createdAt DateTime
   updatedAt DateTime
 }
@@ -75,31 +72,32 @@ model RuleType {
   isMultiple      Boolean
   validationType  String
   validationValue String
-  appRule         AppRule? @relation(fields: [appRuleId], references: [id])
-  appRuleId       String?
+  appRule   AppRule  @relation(fields: [appRuleId], references: [id])
+  appRuleId String          @unique
   active          Boolean  @default(true)
   deleted         Boolean  @default(false)
   createdAt       DateTime
   updatedAt       DateTime
 }
 
-model AppKeys {
+model Key {
   id        String   @id @unique @default(cuid())
-  app       App      @relation(fields: [appId], references: [id])
   appId     String
   keyValue  String
+  tenant   Tenant  @relation(fields: [tenantId], references: [id])
+  tenantId String          @unique
   active    Boolean  @default(true)
   deleted   Boolean  @default(false)
   createdAt DateTime
   updatedAt DateTime
 }
 
-model Ledger {
+model PaymentLedger {
   id               String          @id @unique @default(cuid())
-  billingAccount   BillingAccount  @relation(fields: [billingAccountId], references: [id])
-  billingAccountId String          @unique
+  tenant   Tenant  @relation(fields: [tenantId], references: [id])
+  tenantId String          @unique
   referenceId      String
-  amount           Float
+  amount           Int
   transactionType  TransactionType
   createdAt        DateTime
 }
@@ -109,8 +107,29 @@ enum TransactionType {
   DEBIT
 }
 
-//to one- one relation for rule and app rule
 
-// TBD- order of rules
+model RelayLedger {
+  id               String          @id @unique @default(cuid())
+  tenant   Tenant  @relation(fields: [tenantId], references: [id])
+  tenantId String          @unique
+  referenceId      String
+  amount           Int
+  chainId String
+  keyId String // fed from redis(redis-pg sync service // tbd
+  transactionType  TransactionType
+  createdAt        DateTime
+}
 
-// AppKeys should not be editable
+
+// [x] todo one- one relation for ruletype and app rule
+
+// TBD- order of application of rules (in gateway side)
+
+// [x] ApiKeys should not be editable
+
+// [x] APIkey should have a relation to tenant, and pulled away from the app (no longer related to app)
+
+// [x] Api Key in App becomes a string
+
+// [x] RelayLedger should reference apikey(id) (populated from redis)
+

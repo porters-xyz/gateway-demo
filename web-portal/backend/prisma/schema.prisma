@@ -97,9 +97,11 @@ model Ledger {
   id               String          @id @unique @default(cuid())
   billingAccount   BillingAccount  @relation(fields: [billingAccountId], references: [id])
   billingAccountId String          @unique
+  referenceId String
   amount           Float
   transactionType  TransactionType
   createdAt        DateTime
+  
 }
 
 enum TransactionType {

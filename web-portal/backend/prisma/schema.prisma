@@ -7,60 +7,86 @@ generator client {
   provider = "prisma-client-js"
 }
 
-model User {
-  id    String @id @unique @default(cuid())
-  org   Org    @relation(fields: [orgId], references: [id])
-  orgId String
-  apps  App[]  @relation("UserApps")
-}
-
-model App {
-  id     String    @id @unique @default(cuid())
-  rules  AppRule[]
-  org    Org       @relation(fields: [orgId], references: [id])
-  orgId  String
-  user   User?     @relation("UserApps", fields: [userId], references: [id])
-  userId String?
+model Org {
+  id               String          @id @unique @default(cuid())
+  users            User[]
+  apps             App[]
+  active           Boolean         @default(true)
+  deleted          Boolean         @default(false)
+  createdAt        DateTime
+  updatedAt        DateTime
+  billingAccount   BillingAccount?
+  billingAccountId String?
 }
 
 model BillingAccount {
-  id    String @id @unique @default(cuid())
-  org   Org    @relation(fields: [orgId], references: [id])
-  orgId String @unique
+  id        String   @id @unique @default(cuid())
+  active    Boolean  @default(true)
+  orgId     String   @unique
+  org       Org      @relation(fields: [orgId], references: [id])
+  deleted   Boolean  @default(false)
+  createdAt DateTime
+  updatedAt DateTime
 }
 
-model Org {
-  id             String          @id @unique @default(cuid())
-  users          User[]
-  billingAccount BillingAccount?
-  apps           App[]
+model User {
+  id        String   @id @unique @default(cuid())
+  org       Org      @relation(fields: [orgId], references: [id])
+  orgId     String
+  apps      App[]    @relation("UserApps")
+  active    Boolean  @default(true)
+  deleted   Boolean  @default(false)
+  createdAt DateTime
+  updatedAt DateTime
+}
+
+model App {
+  id        String    @id @unique @default(cuid())
+  org       Org       @relation(fields: [orgId], references: [id])
+  orgId     String
+  user      User      @relation("UserApps", fields: [userId], references: [id])
+  userId    String
+  appRules  AppRule[]
+  appkeys   AppKeys[]
+  active    Boolean   @default(true)
+  deleted   Boolean   @default(false)
+  createdAt DateTime
+  updatedAt DateTime
 }
 
 model AppRule {
-  id              String         @id @unique @default(cuid())
+  id        String   @id @unique @default(cuid())
+  app       App      @relation(fields: [appId], references: [id])
+  appId     String
+  rule      Rule[]
+  active    Boolean  @default(true)
+  deleted   Boolean  @default(false)
+  createdAt DateTime
+  updatedAt DateTime
+}
+
+model Rule {
+  id              String   @id @unique @default(cuid())
   name            String
-  value           String
-  editable        Boolean
+  isEditable      Boolean
+  isMultiple      Boolean
+  validationType  String
   validationValue String
-  app             App            @relation(fields: [appId], references: [id])
-  appId           String
-  appRuleType     AppRuleType   @relation(fields: [appRuleTypeId], references: [id])
-  appRuleTypeId   String
+  appRule         AppRule  @relation(fields: [appRuleId], references: [id])
+  appRuleId       String
+  active          Boolean  @default(true)
+  deleted         Boolean  @default(false)
+  createdAt       DateTime
+  updatedAt       DateTime
 }
 
-model AppRuleType {
-  id            String        @id @unique @default(cuid())
-  validationType ValidationType
-  oneOrMany      OneOrMany
-  appRules       AppRule[]
-}
-
-enum ValidationType {
-  list
-  regex
-}
-
-enum OneOrMany {
-  one
-  many
+model AppKeys {
+  id        String   @id @unique @default(cuid())
+  app       App      @relation(fields: [appId], references: [id])
+  appId     String
+  keyValue  String
+  active    Boolean  @default(true)
+  deleted   Boolean  @default(false)
+  createdAt DateTime
+  updatedAt DateTime
 }

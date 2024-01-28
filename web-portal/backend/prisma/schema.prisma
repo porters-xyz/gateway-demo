@@ -22,8 +22,10 @@ model Org {
 model BillingAccount {
   id        String   @id @unique @default(cuid())
   active    Boolean  @default(true)
-  orgId     String   @unique
   org       Org      @relation(fields: [orgId], references: [id])
+  orgId     String   @unique
+  ledger    Ledger?
+  ledgerId  String?  @unique
   deleted   Boolean  @default(false)
   createdAt DateTime
   updatedAt DateTime
@@ -89,4 +91,18 @@ model AppKeys {
   deleted   Boolean  @default(false)
   createdAt DateTime
   updatedAt DateTime
+}
+
+model Ledger {
+  id               String          @id @unique @default(cuid())
+  billingAccount   BillingAccount  @relation(fields: [billingAccountId], references: [id])
+  billingAccountId String          @unique
+  amount           Float
+  transactionType  TransactionType
+  createdAt        DateTime
+}
+
+enum TransactionType {
+  CREDIT
+  DEBIT
 }

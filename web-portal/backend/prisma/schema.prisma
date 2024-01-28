@@ -57,17 +57,18 @@ model App {
 }
 
 model AppRule {
-  id        String   @id @unique @default(cuid())
-  app       App      @relation(fields: [appId], references: [id])
+  id        String     @id @unique @default(cuid())
+  app       App        @relation(fields: [appId], references: [id])
   appId     String
-  rule      Rule[]
-  active    Boolean  @default(true)
-  deleted   Boolean  @default(false)
+  rule      RuleType[]
+  value     String
+  active    Boolean    @default(true)
+  deleted   Boolean    @default(false)
   createdAt DateTime
   updatedAt DateTime
 }
 
-model Rule {
+model RuleType {
   id              String   @id @unique @default(cuid())
   name            String
   isEditable      Boolean
@@ -107,3 +108,9 @@ enum TransactionType {
   CREDIT
   DEBIT
 }
+
+//to one- one relation for rule and app rule
+
+// TBD- order of rules
+
+// AppKeys should not be editable

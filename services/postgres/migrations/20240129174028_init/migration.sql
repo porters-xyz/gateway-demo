@@ -40,7 +40,7 @@ CREATE TABLE "App" (
     "id" TEXT NOT NULL,
     "orgId" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
-    "key" TEXT NOT NULL,
+    "apikey" TEXT NOT NULL,
     "active" BOOLEAN NOT NULL DEFAULT true,
     "deleted" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" TIMESTAMP(3) NOT NULL,
@@ -80,7 +80,7 @@ CREATE TABLE "RuleType" (
 );
 
 -- CreateTable
-CREATE TABLE "Key" (
+CREATE TABLE "TenantAuthKey" (
     "id" TEXT NOT NULL,
     "appId" TEXT NOT NULL,
     "keyValue" TEXT NOT NULL,
@@ -90,7 +90,7 @@ CREATE TABLE "Key" (
     "createdAt" TIMESTAMP(3) NOT NULL,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
-    CONSTRAINT "Key_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "TenantAuthKey_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -141,10 +141,10 @@ CREATE UNIQUE INDEX "RuleType_id_key" ON "RuleType"("id");
 CREATE UNIQUE INDEX "RuleType_appRuleId_key" ON "RuleType"("appRuleId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Key_id_key" ON "Key"("id");
+CREATE UNIQUE INDEX "TenantAuthKey_id_key" ON "TenantAuthKey"("id");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Key_tenantId_key" ON "Key"("tenantId");
+CREATE UNIQUE INDEX "TenantAuthKey_tenantId_key" ON "TenantAuthKey"("tenantId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "PaymentLedger_id_key" ON "PaymentLedger"("id");
@@ -174,7 +174,7 @@ ALTER TABLE "AppRule" ADD CONSTRAINT "AppRule_appId_fkey" FOREIGN KEY ("appId") 
 ALTER TABLE "RuleType" ADD CONSTRAINT "RuleType_appRuleId_fkey" FOREIGN KEY ("appRuleId") REFERENCES "AppRule"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Key" ADD CONSTRAINT "Key_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "Tenant"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "TenantAuthKey" ADD CONSTRAINT "TenantAuthKey_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "Tenant"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "PaymentLedger" ADD CONSTRAINT "PaymentLedger_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "Tenant"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

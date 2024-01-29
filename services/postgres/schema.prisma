@@ -1,7 +1,6 @@
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL") 
-
+  url      = env("DATABASE_URL")
 }
 
 generator client {
@@ -9,24 +8,24 @@ generator client {
 }
 
 model Org {
-  id               String          @id @unique @default(cuid())
-  users            User[]
-  apps             App[]
-  active           Boolean         @default(true)
-  deleted          Boolean         @default(false)
-  createdAt        DateTime
-  updatedAt        DateTime
-}
-
-model Tenant {
   id        String   @id @unique @default(cuid())
+  users     User[]
+  apps      App[]
   active    Boolean  @default(true)
-  paymentLedger    PaymentLedger?
-  relayLedger RelayLedger?
-  keys Key[]
   deleted   Boolean  @default(false)
   createdAt DateTime
   updatedAt DateTime
+}
+
+model Tenant {
+  id            String          @id @unique @default(cuid())
+  active        Boolean         @default(true)
+  paymentLedger PaymentLedger?
+  relayLedger   RelayLedger?
+  keys          TenantAuthKey[]
+  deleted       Boolean         @default(false)
+  createdAt     DateTime
+  updatedAt     DateTime
 }
 
 model User {
@@ -47,7 +46,7 @@ model App {
   user      User      @relation("UserApps", fields: [userId], references: [id])
   userId    String
   appRules  AppRule[]
-  key String // api-key
+  apikey    String //  TenantAuthKey
   active    Boolean   @default(true)
   deleted   Boolean   @default(false)
   createdAt DateTime
@@ -55,13 +54,13 @@ model App {
 }
 
 model AppRule {
-  id        String   @id @unique @default(cuid())
-  app       App      @relation(fields: [appId], references: [id])
+  id        String    @id @unique @default(cuid())
+  app       App       @relation(fields: [appId], references: [id])
   appId     String
   rule      RuleType?
-  value String
-  active    Boolean  @default(true)
-  deleted   Boolean  @default(false)
+  value     String
+  active    Boolean   @default(true)
+  deleted   Boolean   @default(false)
   createdAt DateTime
   updatedAt DateTime
 }
@@ -73,20 +72,20 @@ model RuleType {
   isMultiple      Boolean
   validationType  String
   validationValue String
-  appRule   AppRule  @relation(fields: [appRuleId], references: [id])
-  appRuleId String          @unique
+  appRule         AppRule  @relation(fields: [appRuleId], references: [id])
+  appRuleId       String   @unique
   active          Boolean  @default(true)
   deleted         Boolean  @default(false)
   createdAt       DateTime
   updatedAt       DateTime
 }
 
-model Key {
+model TenantAuthKey {
   id        String   @id @unique @default(cuid())
   appId     String
   keyValue  String
-  tenant   Tenant  @relation(fields: [tenantId], references: [id])
-  tenantId String          @unique
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
+  tenantId  String   @unique
   active    Boolean  @default(true)
   deleted   Boolean  @default(false)
   createdAt DateTime
@@ -94,13 +93,13 @@ model Key {
 }
 
 model PaymentLedger {
-  id               String          @id @unique @default(cuid())
-  tenant   Tenant  @relation(fields: [tenantId], references: [id])
-  tenantId String          @unique
-  referenceId      String
-  amount           Int
-  transactionType  TransactionType
-  createdAt        DateTime
+  id              String          @id @unique @default(cuid())
+  tenant          Tenant          @relation(fields: [tenantId], references: [id])
+  tenantId        String          @unique
+  referenceId     String
+  amount          Int
+  transactionType TransactionType
+  createdAt       DateTime
 }
 
 enum TransactionType {
@@ -108,19 +107,17 @@ enum TransactionType {
   DEBIT
 }
 
-
 model RelayLedger {
-  id               String          @id @unique @default(cuid())
-  tenant   Tenant  @relation(fields: [tenantId], references: [id])
-  tenantId String          @unique
-  referenceId      String
-  amount           Int
-  chainId String
-  keyId String // fed from redis(redis-pg sync service // tbd
-  transactionType  TransactionType
-  createdAt        DateTime
+  id              String          @id @unique @default(cuid())
+  tenant          Tenant          @relation(fields: [tenantId], references: [id])
+  tenantId        String          @unique
+  referenceId     String
+  amount          Int
+  chainId         String
+  keyId           String // fed from redis(redis-pg sync service // tbd
+  transactionType TransactionType
+  createdAt       DateTime
 }
-
 
 // [x] todo one- one relation for ruletype and app rule
 
@@ -133,4 +130,3 @@ model RelayLedger {
 // [x] Api Key in App becomes a string
 
 // [x] RelayLedger should reference apikey(id) (populated from redis)
-

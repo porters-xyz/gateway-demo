@@ -43,7 +43,11 @@ out
 .pnp.*
 
 
-# Other 
+# Other
 .hintrc
 .pnpm
 *-lock.yaml
+
+# DS_STORE
+*.DS_Store
+./web-portal/.DS_Store

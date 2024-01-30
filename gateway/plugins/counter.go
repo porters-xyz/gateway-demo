@@ -4,7 +4,7 @@ import (
     "context"
     "fmt"
     "net/http"
-    "porters/proxy"
+    "porters/db"
     "strconv"
 )
 
@@ -25,7 +25,7 @@ func (c Counter) Key() string {
 // Just count all requests
 // and add header for now
 func (c Counter) Filter(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
-    newCount := proxy.IncCounter(ctx, c.Name())
+    newCount := db.IncrCounter(ctx, c.Name())
     fmt.Println("count " + strconv.FormatInt(newCount, 10))
     resp.Header().Set("X-Counter", strconv.FormatInt(newCount, 10))
 }

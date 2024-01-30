@@ -7,6 +7,7 @@ import (
     "context"
     "fmt"
     "net/http"
+    "porters/db"
     "porters/proxy"
 )
 
@@ -31,8 +32,7 @@ func (q Quota) Load() {
 // Requires: AUTH upstream
 func (q Quota) Filter(ctx context.Context, resp http.ResponseWriter, req *http.Request) context.Context {
     key := fmt.Sprint(q.Key(), ":", ctx.Value(proxy.APIKey(proxy.AUTH)))
-    log.Println("key", key)
-    intval := proxy.DecCounter(ctx, key)
-    log.Println("counter", intval)
+    intval := db.DecrCounter(ctx, key)
+    log.Println("new quota", intval)
     return ctx
 }

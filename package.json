@@ -9,6 +9,8 @@
   "scripts": {
     "dev": "pnpm run --parallel dev",
     "install": "pnpm i",
+    "build": "pnpm run --parallel build",
+    "start": "pnpm run --parallel start",
     "setup:prisma": "npx prisma generate",
     "migrate": "npx prisma migrate dev",
     "build:docs": "pnpm --filter ./docs build",

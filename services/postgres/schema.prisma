@@ -1,0 +1,132 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Org {
+  id        String   @id @unique @default(cuid())
+  users     User[]
+  apps      App[]
+  active    Boolean  @default(true)
+  deleted   Boolean  @default(false)
+  createdAt DateTime
+  updatedAt DateTime
+}
+
+model Tenant {
+  id            String          @id @unique @default(cuid())
+  active        Boolean         @default(true)
+  paymentLedger PaymentLedger?
+  relayLedger   RelayLedger?
+  keys          TenantAuthKey[]
+  deleted       Boolean         @default(false)
+  createdAt     DateTime
+  updatedAt     DateTime
+}
+
+model User {
+  id        String   @id @unique @default(cuid())
+  org       Org      @relation(fields: [orgId], references: [id])
+  orgId     String
+  apps      App[]    @relation("UserApps")
+  active    Boolean  @default(true)
+  deleted   Boolean  @default(false)
+  createdAt DateTime
+  updatedAt DateTime
+}
+
+model App {
+  id        String    @id @unique @default(cuid())
+  org       Org       @relation(fields: [orgId], references: [id])
+  orgId     String
+  user      User      @relation("UserApps", fields: [userId], references: [id])
+  userId    String
+  appRules  AppRule[]
+  apikey    String //  TenantAuthKey
+  active    Boolean   @default(true)
+  deleted   Boolean   @default(false)
+  createdAt DateTime
+  updatedAt DateTime
+}
+
+model AppRule {
+  id        String    @id @unique @default(cuid())
+  app       App       @relation(fields: [appId], references: [id])
+  appId     String
+  rule      RuleType?
+  value     String
+  active    Boolean   @default(true)
+  deleted   Boolean   @default(false)
+  createdAt DateTime
+  updatedAt DateTime
+}
+
+model RuleType {
+  id              String   @id @unique @default(cuid())
+  name            String
+  isEditable      Boolean
+  isMultiple      Boolean
+  validationType  String
+  validationValue String
+  appRule         AppRule  @relation(fields: [appRuleId], references: [id])
+  appRuleId       String   @unique
+  active          Boolean  @default(true)
+  deleted         Boolean  @default(false)
+  createdAt       DateTime
+  updatedAt       DateTime
+}
+
+model TenantAuthKey {
+  id        String   @id @unique @default(cuid())
+  appId     String
+  keyValue  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
+  tenantId  String   @unique
+  active    Boolean  @default(true)
+  deleted   Boolean  @default(false)
+  createdAt DateTime
+  updatedAt DateTime
+}
+
+model PaymentLedger {
+  id              String          @id @unique @default(cuid())
+  tenant          Tenant          @relation(fields: [tenantId], references: [id])
+  tenantId        String          @unique
+  referenceId     String
+  amount          Int
+  transactionType TransactionType
+  createdAt       DateTime
+}
+
+enum TransactionType {
+  CREDIT
+  DEBIT
+}
+
+model RelayLedger {
+  id              String          @id @unique @default(cuid())
+  tenant          Tenant          @relation(fields: [tenantId], references: [id])
+  tenantId        String          @unique
+  referenceId     String
+  amount          Int
+  chainId         String
+  keyId           String // fed from redis(redis-pg sync service // tbd
+  transactionType TransactionType
+  createdAt       DateTime
+}
+
+// [x] todo one- one relation for ruletype and app rule
+
+// TBD- order of application of rules (in gateway side)
+
+// [x] ApiKeys should not be editable
+
+// [x] APIkey should have a relation to tenant, and pulled away from the app (no longer related to app)
+
+// [x] Api Key in App becomes a string
+
+// [x] RelayLedger should reference apikey(id) (populated from redis)

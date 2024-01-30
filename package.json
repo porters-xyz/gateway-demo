@@ -3,9 +3,20 @@
   "version": "0.0.1",
   "description": "",
   "main": "index.js",
+  "prisma": {
+    "schema": "services/postgres/schema.prisma"
+  },
   "scripts": {
     "dev": "pnpm run --parallel dev",
-    "install": "pnpm i"
+    "install": "pnpm i",
+    "setup:prisma": "npx prisma generate",
+    "migrate": "npx prisma migrate dev"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.8.1"
+  },
+  "devDependencies": {
+    "prisma": "^5.8.1"
   },
   "keywords": [],
   "author": "The Porters"

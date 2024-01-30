@@ -10,7 +10,13 @@
     "dev": "pnpm run --parallel dev",
     "install": "pnpm i",
     "setup:prisma": "npx prisma generate",
-    "migrate": "npx prisma migrate dev"
+    "migrate": "npx prisma migrate dev",
+    "build:docs": "pnpm --filter ./docs build",
+    "serve:docs": "pnpm --filter ./docs start",
+    "build:frontend": "pnpm --filter ./web-portal/frontend build",
+    "serve:frontend": "pnpm --filter ./web-portal/frontend start",
+    "build:backend": "pnpm --filter ./web-portal/backend build",
+    "serve:backend": "pnpm --filter ./web-portal/backend start:prod"
   },
   "dependencies": {
     "@prisma/client": "^5.8.1"

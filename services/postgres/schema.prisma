@@ -5,17 +5,17 @@ datasource db {
 
 generator client {
   provider = "prisma-client-js"
-  output = "../../.generated/client"
+  output   = "../../.generated/client"
 }
 
 model Org {
-  id        String   @id @unique @default(cuid())
+  id        String    @id @unique @default(cuid())
   users     User[]
   apps      App[]
-  active    Boolean  @default(true)
-  deleted   Boolean  @default(false)
+  active    Boolean   @default(true)
+  deletedAt DateTime?
   createdAt DateTime
-  updatedAt DateTime
+  updatedAt DateTime  @updatedAt
 }
 
 model Tenant {
@@ -24,20 +24,20 @@ model Tenant {
   paymentLedger PaymentLedger?
   relayLedger   RelayLedger?
   keys          TenantAuthKey[]
-  deleted       Boolean         @default(false)
+  deletedAt     DateTime?
   createdAt     DateTime
   updatedAt     DateTime
 }
 
 model User {
-  id        String   @id @unique @default(cuid())
-  org       Org      @relation(fields: [orgId], references: [id])
+  id        String    @id @unique @default(cuid())
+  org       Org       @relation(fields: [orgId], references: [id])
   orgId     String
-  apps      App[]    @relation("UserApps")
-  active    Boolean  @default(true)
-  deleted   Boolean  @default(false)
+  apps      App[]     @relation("UserApps")
+  active    Boolean   @default(true)
+  deletedAt DateTime?
   createdAt DateTime
-  updatedAt DateTime
+  updatedAt DateTime  @updatedAt
 }
 
 model App {
@@ -49,9 +49,9 @@ model App {
   appRules  AppRule[]
   apikey    String //  TenantAuthKey
   active    Boolean   @default(true)
-  deleted   Boolean   @default(false)
-  createdAt DateTime
-  updatedAt DateTime
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 }
 
 model AppRule {
@@ -61,36 +61,36 @@ model AppRule {
   rule      RuleType?
   value     String
   active    Boolean   @default(true)
-  deleted   Boolean   @default(false)
+  deletedAt DateTime?
   createdAt DateTime
-  updatedAt DateTime
+  updatedAt DateTime  @updatedAt
 }
 
 model RuleType {
-  id              String   @id @unique @default(cuid())
+  id              String    @id @unique @default(cuid())
   name            String
   isEditable      Boolean
   isMultiple      Boolean
   validationType  String
   validationValue String
-  appRule         AppRule  @relation(fields: [appRuleId], references: [id])
-  appRuleId       String   @unique
-  active          Boolean  @default(true)
-  deleted         Boolean  @default(false)
+  appRule         AppRule   @relation(fields: [appRuleId], references: [id])
+  appRuleId       String    @unique
+  active          Boolean   @default(true)
+  deletedAt       DateTime?
   createdAt       DateTime
   updatedAt       DateTime
 }
 
 model TenantAuthKey {
-  id        String   @id @unique @default(cuid())
+  id        String    @id @unique @default(cuid())
   appId     String
   keyValue  String
-  tenant    Tenant   @relation(fields: [tenantId], references: [id])
-  tenantId  String   @unique
-  active    Boolean  @default(true)
-  deleted   Boolean  @default(false)
+  tenant    Tenant    @relation(fields: [tenantId], references: [id])
+  tenantId  String    @unique
+  active    Boolean   @default(true)
+  deletedAt DateTime?
   createdAt DateTime
-  updatedAt DateTime
+  updatedAt DateTime  @updatedAt
 }
 
 model PaymentLedger {

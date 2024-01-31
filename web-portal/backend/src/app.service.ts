@@ -1,11 +1,15 @@
-import { Injectable } from '@nestjs/common';
-// import { PrismaService } from 'nestjs-prisma';
+import { Injectable, Inject } from '@nestjs/common';
+import { CustomPrismaService } from 'nestjs-prisma';
+import { PrismaClient } from '../../../.generated/client';
 
 @Injectable()
 export class AppService {
-  // constructor(private prisma: PrismaService) {}
+  constructor(
+    @Inject('Postgres')
+    private prisma: CustomPrismaService<PrismaClient>, // <-- Inject the PrismaClient
+  ) {}
 
   getHello(): string {
-    return 'Hello World!';
+    return this.prisma.client.tenant.findMany().toString();
   }
 }

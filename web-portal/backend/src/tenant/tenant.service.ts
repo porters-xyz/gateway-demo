@@ -12,27 +12,26 @@ export class TenantService {
   ) {}
 
   async countAll(): Promise<number> {
-    // return 'From Service ' + randomUUID();
     const count = await this.prisma.client.tenant.count();
     return count;
   }
 
   async create(): Promise<any> {
     const secretKey = randomBytes(8).toString('hex');
-    const hashedKey = bcrypt.hash(
-      secretKey,
-      process.env.SALT || bcrypt.genSaltSync(10),
-    );
+    const salt = await bcrypt.genSalt();
+
+    const hashedKey = await bcrypt.hash(secretKey, salt);
+
     const tenant = await this.prisma.client.tenant.create({
       data: {
         active: true,
-        secretKey: await hashedKey,
+        secretKey: `${hashedKey}`,
         createdAt: new Date(),
         updatedAt: new Date(),
       },
     });
     if (!tenant) throw new Error('Unable to create tenant');
-    return { secret: secretKey };
+    return { secret: secretKey, ...tenant };
   }
 
   async addCredits(): Promise<any> {
@@ -40,9 +39,17 @@ export class TenantService {
     return 'Add credits to tenant';
   }
 
-  async validateTenant(): Promise<any> {
-    // TODO- Validate tenant
-    return 'Validate tenant';
+  async validateTenant(rawKey: string): Promise<any> {
+    const allTenants = await this.prisma.client.tenant.findMany();
+
+    for (const tenant of allTenants) {
+      const isKeyValid = await bcrypt.compare(rawKey, tenant.secretKey);
+      if (isKeyValid) {
+        return tenant;
+      }
+    }
+
+    return false;
   }
 
   async getTenantBySecret(): Promise<any> {

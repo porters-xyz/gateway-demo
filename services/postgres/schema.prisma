@@ -87,7 +87,7 @@ model TenantAuthKey {
   appId     String
   keyValue  String
   tenant    Tenant    @relation(fields: [tenantId], references: [id])
-  tenantId  String    @unique
+  tenantId  String
   active    Boolean   @default(true)
   deletedAt DateTime?
   createdAt DateTime  @default(now())

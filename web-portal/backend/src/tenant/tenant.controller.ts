@@ -9,7 +9,7 @@ export class TenantController {
   @Get('count')
   generateTenant() {
     console.log('This action returns a count of total tenants');
-    return this.tenantService.findAll();
+    return this.tenantService.countAll();
   }
   @Get('create')
   createTenant() {

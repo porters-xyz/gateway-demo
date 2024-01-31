@@ -14,7 +14,7 @@ model Org {
   apps      App[]
   active    Boolean   @default(true)
   deletedAt DateTime?
-  createdAt DateTime
+  createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 }
 
@@ -23,9 +23,10 @@ model Tenant {
   active        Boolean         @default(true)
   paymentLedger PaymentLedger?
   relayLedger   RelayLedger?
+  secretKey     String          @unique
   keys          TenantAuthKey[]
   deletedAt     DateTime?
-  createdAt     DateTime
+  createdAt     DateTime        @default(now())
   updatedAt     DateTime
 }
 
@@ -36,7 +37,7 @@ model User {
   apps      App[]     @relation("UserApps")
   active    Boolean   @default(true)
   deletedAt DateTime?
-  createdAt DateTime
+  createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 }
 
@@ -62,7 +63,7 @@ model AppRule {
   value     String
   active    Boolean   @default(true)
   deletedAt DateTime?
-  createdAt DateTime
+  createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 }
 
@@ -77,7 +78,7 @@ model RuleType {
   appRuleId       String    @unique
   active          Boolean   @default(true)
   deletedAt       DateTime?
-  createdAt       DateTime
+  createdAt       DateTime  @default(now())
   updatedAt       DateTime
 }
 
@@ -89,7 +90,7 @@ model TenantAuthKey {
   tenantId  String    @unique
   active    Boolean   @default(true)
   deletedAt DateTime?
-  createdAt DateTime
+  createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 }
 
@@ -100,7 +101,7 @@ model PaymentLedger {
   referenceId     String
   amount          Int
   transactionType TransactionType
-  createdAt       DateTime
+  createdAt       DateTime        @default(now())
 }
 
 enum TransactionType {
@@ -117,7 +118,7 @@ model RelayLedger {
   chainId         String
   keyId           String // fed from redis(redis-pg sync service // tbd
   transactionType TransactionType
-  createdAt       DateTime
+  createdAt       DateTime        @default(now())
 }
 
 // [x] todo one- one relation for ruletype and app rule

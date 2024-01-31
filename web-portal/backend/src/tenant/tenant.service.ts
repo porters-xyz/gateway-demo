@@ -45,11 +45,11 @@ export class TenantService {
     for (const tenant of allTenants) {
       const isKeyValid = await bcrypt.compare(rawKey, tenant.secretKey);
       if (isKeyValid) {
-        return tenant;
+        return { valid: true, id: tenant.id };
       }
     }
 
-    return false;
+    return { valid: false, id: null };
   }
 
   async getTenantBySecret(): Promise<any> {

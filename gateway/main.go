@@ -2,8 +2,10 @@ package main
 
 import (
     "fmt"
+    "porters/db"
     "porters/demo"
     "porters/plugins"
+    "porters/plugins/limiter"
     "porters/proxy"
     "os"
 )
@@ -14,10 +16,12 @@ func main() {
 
     arg := os.Args[1]
     if arg == "gateway" {
-
+        go startupPostgresSync()
         // currently registering plugins via main
-        proxy.Register(plugins.Counter{})
-        proxy.Register(plugins.Headers{})
+        proxy.Register(proxy.Auth{"X-API"}, proxy.PRE)
+        proxy.Register(plugins.Counter{}, proxy.PRE)
+        proxy.Register(plugins.Headers{}, proxy.PRE)
+        proxy.Register(limiter.Quota{}, proxy.PRE)
 
         fmt.Println("starting gateway")
         proxy.Start()
@@ -28,4 +32,11 @@ func main() {
         demo.Serve()
     }
 
+}
+
+func startupPostgresSync() {
+    sync := db.ConnectSync()
+    defer sync.Close()
+
+    sync.Listen()
 }

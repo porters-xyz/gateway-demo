@@ -6,12 +6,8 @@ import (
     "net/url"
     "net/http"
     "net/http/httputil"
+    "sync"
 )
-
-type Filter interface {
-    Plugin
-    Filter(http.ResponseWriter, *http.Request)
-}
 
 func Start() {
     // TODO grab url for gateway kit
@@ -23,21 +19,29 @@ func Start() {
     handler := func(proxy *httputil.ReverseProxy) func(http.ResponseWriter, *http.Request) {
         return func(resp http.ResponseWriter, req *http.Request) {
             log.Println(req.URL)
+            ctx := setupContext(req)
+
+            // TODO move to filter
             req.Host = remote.Host
 
+            pluginRegistry := GetRegistry()
+
             // TODO structure this in a reasonable way
-            blockingPrehandlers(resp, req)
+            prefilters := pluginRegistry.GetFilterChain(PRE)
+
+            runFilterChain(ctx, prefilters, resp, req)
 
             // TODO meant to track incoming requests without slowing things down, read-only
-            nonBlockingPrehandlers(resp, req)
+            //nonBlockingPrehandlers(ctx, resp, req)
 
+            // TODO any ctx adjustments
             proxy.ServeHTTP(resp, req)
 
             // TODO is this needed? after serving blocking may be dumb
-            blockingPosthandlers(resp, req)
+            //blockingPosthandlers(ctx, resp, req)
 
             // TODO any longer tasks that should spawn after handling request
-            nonBlockingPosthandlers(resp, req)
+            //nonBlockingPosthandlers(ctx, resp, req)
         }
     }
 
@@ -54,27 +58,21 @@ func setupContext(req *http.Request) context.Context {
     return req.Context()
 }
 
-
-func blockingPrehandlers(resp http.ResponseWriter, req *http.Request) {
-    setupContext(req)
-    plugins := GetRegistry().elements
-    for i:=0; i<len(plugins); i++ {
-        filter, ok := plugins[i].(Filter)
-        if ok {
-            filter.Filter(resp, req)
-        }
+func runFilterChain(ctx context.Context, fc FilterChain, resp http.ResponseWriter, req *http.Request) {
+    nextCtx := ctx
+    for _, f := range fc.filters {
+        log.Println("filtering", f.Name())
+        nextCtx = f.Filter(nextCtx, resp, req)
     }
-    // TODO check rate limiter
 }
 
-func nonBlockingPrehandlers(resp http.ResponseWriter, req *http.Request) {
-    // TODO increment requested for API key + account
-}
-
-func blockingPosthandlers(resp http.ResponseWriter, req *http.Request) {
-
-}
-
-func nonBlockingPosthandlers(resp http.ResponseWriter, req *http.Request) {
-    // TODO increment success or fail numbers
+func runProcessingSet(ctx context.Context, procs ProcessorSet, resp http.ResponseWriter, req *http.Request) sync.WaitGroup {
+    var wg sync.WaitGroup
+    for _, p := range procs.procs {
+        go func() {
+            p.Process(ctx, resp, req)
+        }()
+        wg.Add(1)
+    }
+    return wg
 }

@@ -1,11 +1,4 @@
-import {
-  Controller,
-  Get,
-  Res,
-  Param,
-  Response,
-  HttpStatus,
-} from '@nestjs/common';
+import { Controller, Get, Param } from '@nestjs/common';
 
 import { TenantService } from './tenant.service';
 

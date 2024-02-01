@@ -8,6 +8,7 @@ import (
     "porters/plugins/limiter"
     "porters/proxy"
     "os"
+    "sync"
 )
 
 // command line runner
@@ -16,7 +17,7 @@ func main() {
 
     arg := os.Args[1]
     if arg == "gateway" {
-        go startupPostgresSync()
+        startupPostgresSync()
         // currently registering plugins via main
         proxy.Register(proxy.Auth{"X-API"}, proxy.PRE)
         proxy.Register(plugins.Counter{}, proxy.PRE)
@@ -35,8 +36,17 @@ func main() {
 }
 
 func startupPostgresSync() {
-    sync := db.ConnectSync()
-    defer sync.Close()
+    s := db.ConnectSync()
 
-    sync.Listen()
+    var wg sync.WaitGroup
+
+    wg.Add(3)
+    go s.Listen("tenant_change", &wg)
+    go s.Listen("apikey_change", &wg)
+    go s.Listen("payment_tx", &wg)
+    go func() {
+        wg.Wait()
+        s.Close()
+        fmt.Println("waitgroup done")
+    }()
 }

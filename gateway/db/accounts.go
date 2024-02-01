@@ -41,7 +41,7 @@ func DecrCounter(ctx context.Context, name string) int64 {
 }
 
 // Uses QUOTA to determine account existing, does not guarantee relays remaining
-// TODO use another key that is more stable?
+// TODO use tenant hash
 func IsValidAccount(ctx context.Context, account string) bool {
     key := "QUOTA:" + account
     intval := GetIntVal(ctx, key)

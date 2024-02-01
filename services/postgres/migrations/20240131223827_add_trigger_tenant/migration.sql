@@ -60,6 +60,5 @@ DROP TRIGGER IF EXISTS payment_change ON "PaymentLedger";
 CREATE TRIGGER payment_change
     AFTER INSERT ON "PaymentLedger"
     FOR EACH ROW
-        WHEN (NEW."transactionType" = 'CREDIT')
         EXECUTE PROCEDURE notify_payment_change();
 

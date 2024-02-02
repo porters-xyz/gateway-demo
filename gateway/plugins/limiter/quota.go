@@ -3,9 +3,7 @@ package limiter
 // This is the top level bucket where available relays are sync'ed with balance
 
 import (
-    "log"
     "context"
-    "fmt"
     "net/http"
     "porters/db"
     "porters/proxy"
@@ -31,8 +29,7 @@ func (q Quota) Load() {
 // TODO update context to reflect
 // Requires: AUTH upstream
 func (q Quota) Filter(ctx context.Context, resp http.ResponseWriter, req *http.Request) context.Context {
-    key := fmt.Sprint(q.Key(), ":", ctx.Value(proxy.APIKey(proxy.AUTH)))
-    intval := db.DecrCounter(ctx, key)
-    log.Println("new quota", intval)
+    key := ctx.Value(proxy.APIKey(proxy.AUTH)).(string)
+    db.UseRelay(ctx, key)
     return ctx
 }

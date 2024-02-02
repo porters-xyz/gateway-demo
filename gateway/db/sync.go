@@ -1,7 +1,11 @@
 package db
 
 import (
+    "context"
     "log"
+    "strings"
+    "strconv"
+    "sync"
     "time"
 
     "github.com/lib/pq"
@@ -28,8 +32,10 @@ func (s *Sync) Close() {
     s.listener.Close()
 }
 
-func (s *Sync) Listen() {
-    err := s.listener.Listen("apikey")
+func (s *Sync) Listen(event string, wg *sync.WaitGroup) {
+    defer wg.Done()
+
+    err := s.listener.Listen(event)
 
     // TODO another error handler to figure out
     if err != nil {
@@ -52,10 +58,47 @@ func (s *Sync) eventListener(event pq.ListenerEventType, err error) {
 
 func (s *Sync) notify() {
     select {
-    case <-s.listener.Notify:
+    case n := <-s.listener.Notify:
         // do the thing
-        log.Println("got postgres notification")
+        log.Println("got event", n)
+        ctx := context.TODO()
+        switch n.Channel {
+        case "tenant_change":
+            log.Println("got tenant notification", n.Extra)
+            populateTenant(n.Extra).writeToCache(ctx)
+        case "apikey_change":
+            log.Println("got apikey notification", n.Extra)
+            populateApiKey(n.Extra).writeToCache(ctx)
+        case "payment_tx":
+            log.Println("got account credit notification", n.Extra)
+            populatePaymentTx(n.Extra).writeToCache(ctx)
+        }
     case <-time.After(60 * time.Second):
         go s.listener.Ping()
     }
+}
+
+func populateTenant(seed string) *tenant {
+    parts := strings.Split(seed, ",")
+    t := &tenant{id: parts[0], enabled: parts[1] == "true"}
+    // TODO optionally add balances from calc on ledger
+    return t
+}
+
+func populateApiKey(seed string) *apiKey {
+    parts := strings.Split(seed, ",")
+    // unused parts[2] appId
+    a := &apiKey{key: parts[0], tenantId: parts[1], enabled: parts[3] == "true"}
+    return a
+}
+
+func populatePaymentTx(seed string) *paymentTx {
+    parts := strings.Split(seed, ",")
+    amount, err := strconv.Atoi(parts[1])
+    if err != nil {
+        // TODO log error, something is going wrong, cache may be inaccurate
+        amount = 0
+    }
+    p := &paymentTx{tenantId: parts[0], amount: amount, txType: parseTxType(parts[2])}
+    return p
 }

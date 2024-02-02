@@ -61,6 +61,10 @@ export class TenantService {
 
     if (!tenant) throw new Error('No tenant exists with such id!');
 
-    return tenant;
+    return {
+      id: tenant.id,
+      active: tenant.active,
+      createdAt: tenant.createdAt,
+    };
   }
 }

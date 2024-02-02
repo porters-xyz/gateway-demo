@@ -13,6 +13,5 @@ export async function createTenant() {
   if (!response.ok) {
     throw new Error("Failed to create tenant");
   }
-
   return response.json();
 }

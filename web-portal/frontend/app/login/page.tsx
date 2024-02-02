@@ -12,6 +12,7 @@ const initialState = {
 export default function Login() {
   const { values, getInputProps } = useForm({
     initialValues: initialState,
+    validateInputOnChange: true,
     validate: {
       key: (value) => (value.length === 16 ? null : "Invalid Key"),
     },
@@ -22,7 +23,7 @@ export default function Login() {
     initialState,
   );
 
-  const [created, createAction] = useFormState(createTenant, "");
+  const [created, createAction] = useFormState(createTenant, null);
 
   return (
     <Container
@@ -42,7 +43,13 @@ export default function Login() {
           width={"full"}
           {...getInputProps("key")}
         />
-        <Button type="submit" variant="filled" fullWidth>
+
+        <Button
+          type="submit"
+          variant="filled"
+          fullWidth
+          style={{ marginTop: 8 }}
+        >
           Login
         </Button>
       </form>

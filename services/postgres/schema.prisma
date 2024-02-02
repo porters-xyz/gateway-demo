@@ -21,8 +21,8 @@ model Org {
 model Tenant {
   id            String          @id @unique @default(cuid())
   active        Boolean         @default(true)
-  paymentLedger PaymentLedger?
-  relayLedger   RelayLedger?
+  paymentLedger PaymentLedger[]
+  relayLedger   RelayLedger[]
   secretKey     String          @unique
   keys          TenantAuthKey[]
   deletedAt     DateTime?
@@ -97,7 +97,7 @@ model TenantAuthKey {
 model PaymentLedger {
   id              String          @id @unique @default(cuid())
   tenant          Tenant          @relation(fields: [tenantId], references: [id])
-  tenantId        String          @unique
+  tenantId        String
   referenceId     String
   amount          Int
   transactionType TransactionType
@@ -112,7 +112,7 @@ enum TransactionType {
 model RelayLedger {
   id              String          @id @unique @default(cuid())
   tenant          Tenant          @relation(fields: [tenantId], references: [id])
-  tenantId        String          @unique
+  tenantId        String
   referenceId     String
   amount          Int
   chainId         String

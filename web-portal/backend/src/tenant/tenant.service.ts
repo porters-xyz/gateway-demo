@@ -31,7 +31,7 @@ export class TenantService {
       },
     });
     if (!tenant) throw new Error('Unable to create tenant');
-    return { secret: secretKey, ...tenant };
+    return { secret: secretKey };
   }
 
   async addCredits(): Promise<any> {
@@ -49,7 +49,7 @@ export class TenantService {
       }
     }
 
-    return { valid: false, id: null };
+    return { valid: false, id: null, message: 'Invalid secret key' };
   }
 
   async getTenantById(id: string): Promise<any> {

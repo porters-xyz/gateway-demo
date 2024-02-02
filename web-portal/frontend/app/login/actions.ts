@@ -1,5 +1,6 @@
 "use server";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 
 export async function validateTenant(key: string) {
   if (!key) {
@@ -9,7 +10,13 @@ export async function validateTenant(key: string) {
   if (!response.ok) {
     throw new Error("Failed to validate tenant");
   }
-  return response.json();
+
+  const data = await response.json();
+
+  if (data?.valid) {
+    redirect("/dashboard/" + data.id);
+  }
+  return data;
 }
 
 export async function createTenant() {

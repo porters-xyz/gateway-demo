@@ -1,27 +1,7 @@
 "use client";
 import { Container, Button, TextInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
-import axios from "axios";
-
-const validateTenant = async (key: string) => {
-  try {
-    const response = await axios.get(
-      "http://localhost:4000/tenant/validate/" + key,
-    );
-    console.log(response.data);
-  } catch (error) {
-    console.error("Error making GET request:", error.message);
-  }
-};
-
-const createTenant = async () => {
-  try {
-    const response = await axios.get("http://localhost:4000/tenant/create");
-    console.log(response.data);
-  } catch (error) {
-    console.error("Error making POST request:", error.message);
-  }
-};
+import { createTenant, validateTenant } from "./actions";
 
 export default function Login() {
   const form = useForm({

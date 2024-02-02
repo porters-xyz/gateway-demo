@@ -23,4 +23,10 @@ export class TenantController {
     const validation = await this.tenantService.validateTenant(key);
     return validation;
   }
+
+  @Get('/:id')
+  async getTenantById(@Param('id') id: string): Promise<any> {
+    console.log('This action returns a tenant by its id');
+    return this.tenantService.getTenantById(id);
+  }
 }

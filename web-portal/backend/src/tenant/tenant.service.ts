@@ -52,8 +52,15 @@ export class TenantService {
     return { valid: false, id: null };
   }
 
-  async getTenantBySecret(): Promise<any> {
-    // TODO- Get tenant
-    return 'Get tenant by Secret';
+  async getTenantById(id: string): Promise<any> {
+    const tenant = await this.prisma.client.tenant.findUnique({
+      where: {
+        id: id,
+      },
+    });
+
+    if (!tenant) throw new Error('No tenant exists with such id!');
+
+    return tenant;
   }
 }

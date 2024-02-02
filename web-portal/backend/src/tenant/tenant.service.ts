@@ -1,6 +1,6 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { CustomPrismaService } from 'nestjs-prisma';
-import { PrismaClient } from '.generated/client';
+import { PrismaClient, TransactionType } from '../../../../.generated/client';
 import { randomBytes } from 'crypto';
 import * as bcrypt from 'bcrypt';
 
@@ -34,11 +34,6 @@ export class TenantService {
     return { secret: secretKey };
   }
 
-  async addCredits(): Promise<any> {
-    // TODO- Add credits to tenant
-    return 'Add credits to tenant';
-  }
-
   async validateTenant(rawKey: string): Promise<any> {
     const allTenants = await this.prisma.client.tenant.findMany();
 
@@ -66,5 +61,23 @@ export class TenantService {
       active: tenant.active,
       createdAt: tenant.createdAt,
     };
+  }
+
+  async addCredits(id: string): Promise<any> {
+    const tenantExists = await this.getTenantById(id);
+    if (!tenantExists) throw new Error('No tenant exists with such id!');
+
+    const appliedCredits = await this.prisma.client.paymentLedger.create({
+      data: {
+        tenantId: id,
+        referenceId: randomBytes(8).toString('hex'),
+        amount: 1000,
+        transactionType: TransactionType.CREDIT,
+      },
+    });
+
+    if (!appliedCredits) throw new Error('Unable to apply credits to tenant');
+
+    return appliedCredits;
   }
 }

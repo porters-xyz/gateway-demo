@@ -29,4 +29,10 @@ export class TenantController {
     console.log('This action returns a tenant by its id');
     return this.tenantService.getTenantById(id);
   }
+
+  @Get('applyCredits/:id')
+  async applyCredits(@Param('id') id: string): Promise<any> {
+    console.log('This action applies free credits to a tenant');
+    return this.tenantService.addCredits(id);
+  }
 }

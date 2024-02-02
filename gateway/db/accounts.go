@@ -6,6 +6,7 @@ import (
     "strconv"
 )
 
+// TODO cleanup, this moved to model.go
 type Account struct {
     id string
 }
@@ -31,6 +32,7 @@ func IncrCounter(ctx context.Context, name string) int64 {
     return result
 }
 
+// TODO just for testing
 func DecrCounter(ctx context.Context, name string) int64 {
     result, err := getClient().Decr(ctx, name).Result()
     if err != nil {
@@ -43,9 +45,14 @@ func DecrCounter(ctx context.Context, name string) int64 {
 // Uses QUOTA to determine account existing, does not guarantee relays remaining
 // TODO use tenant hash
 func IsValidAccount(ctx context.Context, account string) bool {
-    key := "QUOTA:" + account
-    intval := GetIntVal(ctx, key)
-    return intval > 0
+    key := GenAccountKey(account)
+    result, err := getClient().HGet(ctx, key, "enabled").Result()
+    resbool, err2 := strconv.ParseBool(result)
+    if err != nil || err2 != nil{
+        // TODO clean this up
+        resbool = false
+    }
+    return resbool
 }
 
 func GetIntVal(ctx context.Context, name string) int {
@@ -72,4 +79,18 @@ func LookupAccount(ctx context.Context, apiKey string) (Account, bool) {
     }
     // TODO need to grab all keys to build account
     return Account{""}, true
+}
+
+func UseRelay(ctx context.Context, apiKey string) {
+    key := GenApiKey(apiKey)
+    account, err := getClient().HGet(ctx, key, "account").Result()
+    if err != nil {
+        // TODO log error to alert, will need manual cleanup
+    } else {
+        acctKey := GenAccountKey(account)
+        err2 := getClient().HIncrBy(ctx, acctKey, "counter", -1).Err()
+        if err2 != nil {
+            // TODO also clean this up, not decr'd
+        }
+    }
 }

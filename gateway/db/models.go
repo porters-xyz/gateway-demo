@@ -2,6 +2,7 @@ package db
 
 import (
     "context"
+    "strings"
 )
 
 type tenant struct {
@@ -14,51 +15,75 @@ type tenant struct {
 type apiKey struct {
     key string
     enabled bool
+    tenantId string
+    chainId string
 }
 
 type paymentTx struct {
     tenantId string
     amount int
-    txType TxType 
+    txType TxType
 }
 
+// Unknown is basically error, shouldn't rely on it
 type TxType int
 const (
     Credit TxType = iota
     Debit
+    Unknown
 )
 
+func parseTxType(str string) TxType {
+    if strings.EqualFold(str, "CREDIT") {
+        return Credit
+    } else if strings.EqualFold(str, "DEBIT") {
+        return Debit
+    }else {
+        return Unknown
+    }
+}
 
 func (t *tenant) writeToCache(ctx context.Context) {
     // TODO call redis create with key format
-    err := getClient().HSet(ctx, genAccountKey(t.id), "enabled", t.enabled, "balance", t.balanceSettled).Err()
+    err := getClient().HSet(ctx, GenAccountKey(t.id), "enabled", t.enabled).Err()
     if err != nil {
         // TODO handle errors should they happen
     }
-    // Only set the counter if it isn't active (hasn't been set)
-    err = getClient().HSetNX(ctx, genAccountKey(t.id), "counter", t.balanceSettled).Err()
-    if err != nil {
-        // TODO handle errors should they happen
-    }
-
 }
 
 func (a *apiKey) writeToCache(ctx context.Context) {
     // TODO call redis create with key format
+    err := getClient().HSet(ctx, GenApiKey(a.key), "account", a.tenantId, "enabled", a.enabled).Err()
+    if err != nil {
+        // TODO handle errors correctly
+    }
 }
 
 func (p *paymentTx) writeToCache(ctx context.Context) {
     var err error
     if p.txType == Credit {
-        err = getClient().HIncrBy(ctx, genAccountKey(p.tenantId), "balance", int64(p.amount)).Err()
+        err = getClient().HIncrBy(ctx, GenAccountKey(p.tenantId), "balance", int64(p.amount)).Err()
+        if err != nil {
+            // TODO handle errors should they happen
+        }
+        err = getClient().HIncrBy(ctx, GenAccountKey(p.tenantId), "counter", int64(p.amount)).Err()
     } else {
-        err = getClient().HIncrBy(ctx, genAccountKey(p.tenantId), "balance", -int64(p.amount)).Err()
+        err = getClient().HIncrBy(ctx, GenAccountKey(p.tenantId), "balance", -int64(p.amount)).Err()
     }
     if err != nil {
         // TODO handle errors should they happen
     }
 }
 
-func genAccountKey(tenantId string) string {
+func GenAccountKey(tenantId string) string {
      return "ACCOUNT:" + tenantId
+}
+
+func GenApiKey(apiKey string) string {
+    return "APIKEY:" + apiKey + ":meta"
+}
+
+// TODO placeholder for when relays are tracked per "chain"
+func GenChainKey(apiKey string, chainId string) string {
+    return "APIKEY:" + apiKey + ":" + chainId
 }

@@ -1,7 +1,10 @@
 import { Suspense } from "react";
 
+const apiUrl = process.env.API_ENDPOINT || "http://localhost:4000/";
+// TODO- setup a central const and their validation file
+
 async function getTenant(id: string) {
-  const response = await fetch("http://localhost:4000/tenant/" + id);
+  const response = await fetch(`${apiUrl}tenant/${id}`);
 
   if (!response.ok) {
     throw new Error("Failed to fetch tenant");

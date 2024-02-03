@@ -63,7 +63,7 @@ export class TenantService {
     };
   }
 
-  async addCredits(id: string): Promise<any> {
+  async addCredits(id: string, amount: number): Promise<any> {
     const tenantExists = await this.getTenantById(id);
     if (!tenantExists) throw new Error('No tenant exists with such id!');
 
@@ -71,7 +71,7 @@ export class TenantService {
       data: {
         tenantId: id,
         referenceId: randomBytes(8).toString('hex'),
-        amount: 1000,
+        amount,
         transactionType: TransactionType.CREDIT,
       },
     });

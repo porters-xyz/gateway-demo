@@ -5,6 +5,7 @@ import { CustomPrismaModule } from 'nestjs-prisma';
 import { PrismaClient } from '../../../.generated/client';
 import { TenantModule } from './tenant/tenant.module';
 import { AppController } from './app.controller';
+import { AuthkeysModule } from './authkeys/authkeys.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { AppController } from './app.controller';
       isGlobal: true,
     }),
     TenantModule,
+    AuthkeysModule,
   ],
   providers: [AppService],
   controllers: [AppController],

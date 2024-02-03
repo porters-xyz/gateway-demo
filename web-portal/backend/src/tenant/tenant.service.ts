@@ -20,15 +20,12 @@ export class TenantService {
 
   async create(): Promise<any> {
     const secretKey = randomBytes(8).toString('hex');
-
     const hashedKey = await bcrypt.hash(secretKey, this.salt);
 
     const tenant = await this.prisma.client.tenant.create({
       data: {
         active: true,
         secretKey: hashedKey,
-        createdAt: new Date(),
-        updatedAt: new Date(),
       },
     });
     if (!tenant) throw new Error('Unable to create tenant');
@@ -51,10 +48,9 @@ export class TenantService {
 
   async getTenantById(id: string): Promise<any> {
     // todo- add jwt/guard to this
-
     const tenant = await this.prisma.client.tenant.findUnique({
       where: {
-        id: id,
+        id,
       },
     });
 
@@ -75,8 +71,8 @@ export class TenantService {
       data: {
         tenantId: id,
         referenceId: randomBytes(8).toString('hex'),
-        amount,
         transactionType: TransactionType.CREDIT,
+        amount,
       },
     });
 

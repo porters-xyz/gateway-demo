@@ -11,6 +11,8 @@ export class TenantService {
     private prisma: CustomPrismaService<PrismaClient>, // <-- Inject the PrismaClient
   ) {}
 
+  salt = process.env.SALT ?? `$2b$10$6Cib00sYjzfn8jnXGFR32e`; // todo- remove this temp salt and throw error when no salt in env on startup
+
   async countAll(): Promise<number> {
     const count = await this.prisma.client.tenant.count();
     return count;
@@ -18,14 +20,13 @@ export class TenantService {
 
   async create(): Promise<any> {
     const secretKey = randomBytes(8).toString('hex');
-    const salt = await bcrypt.genSalt();
 
-    const hashedKey = await bcrypt.hash(secretKey, salt);
+    const hashedKey = await bcrypt.hash(secretKey, this.salt);
 
     const tenant = await this.prisma.client.tenant.create({
       data: {
         active: true,
-        secretKey: `${hashedKey}`,
+        secretKey: hashedKey,
         createdAt: new Date(),
         updatedAt: new Date(),
       },
@@ -35,16 +36,17 @@ export class TenantService {
   }
 
   async validateTenant(rawKey: string): Promise<any> {
-    const allTenants = await this.prisma.client.tenant.findMany();
+    const hashedKey = await bcrypt.hash(rawKey, this.salt);
+    const tenant = await this.prisma.client.tenant.findUnique({
+      where: {
+        secretKey: hashedKey,
+      },
+    });
 
-    for (const tenant of allTenants) {
-      const isKeyValid = await bcrypt.compare(rawKey, tenant.secretKey);
-      if (isKeyValid) {
-        return { valid: true, id: tenant.id };
-      }
-    }
+    if (!tenant)
+      return { valid: false, id: null, message: 'Invalid secret key' };
 
-    return { valid: false, id: null, message: 'Invalid secret key' };
+    return { valid: true, id: tenant.id };
   }
 
   async getTenantById(id: string): Promise<any> {

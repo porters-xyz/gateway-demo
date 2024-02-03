@@ -50,6 +50,8 @@ export class TenantService {
   }
 
   async getTenantById(id: string): Promise<any> {
+    // todo- add jwt/guard to this
+
     const tenant = await this.prisma.client.tenant.findUnique({
       where: {
         id: id,

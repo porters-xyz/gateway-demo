@@ -1,16 +1,13 @@
-import { Controller, Put, Query, Param } from '@nestjs/common';
+import { Controller, Post, Param } from '@nestjs/common';
 import { AuthkeysService } from './authkeys.service';
 
-@Controller('authkeys')
+@Controller('tenant')
 export class AuthkeysController {
   constructor(private readonly authKeyService: AuthkeysService) {}
 
-  @Put(':tenantId/create')
-  async applyCredits(
-    @Param('tenantId') tenantId: string,
-    @Query('name') name: string,
-  ): Promise<any> {
+  @Post(':tenantId/authkey')
+  async applyCredits(@Param('tenantId') tenantId: string): Promise<any> {
     console.log('This action creates api/auth key for the provided tenant Id');
-    return this.authKeyService.createAuthKey(tenantId, name);
+    return this.authKeyService.createAuthKey(tenantId);
   }
 }

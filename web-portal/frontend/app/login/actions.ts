@@ -8,7 +8,7 @@ export async function validateTenant(key: string) {
   if (!key) {
     return { valid: false, id: null };
   }
-  const response = await fetch(`${apiUrl}tenant/${key}/validate`);
+  const response = await fetch(`${apiUrl}tenant?key=${key}`);
   if (!response.ok) {
     throw new Error("Failed to validate tenant");
   }
@@ -22,7 +22,7 @@ export async function validateTenant(key: string) {
 }
 
 export async function createTenant() {
-  const response = await fetch(`${apiUrl}tenant/create`, {
+  const response = await fetch(`${apiUrl}tenant/`, {
     method: "POST",
   });
   if (!response.ok) {

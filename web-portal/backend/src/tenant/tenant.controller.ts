@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Param, Query } from '@nestjs/common';
+import { Controller, Get, Post, Param, Query } from '@nestjs/common';
 
 import { TenantService } from './tenant.service';
 
@@ -6,20 +6,14 @@ import { TenantService } from './tenant.service';
 export class TenantController {
   constructor(private readonly tenantService: TenantService) {}
 
-  @Get('count')
-  async generateTenant(): Promise<any> {
-    console.log('This action returns a count of total tenants');
-    return this.tenantService.countAll();
-  }
-
-  @Post('create')
+  @Post()
   async createTenant(): Promise<any> {
     console.log('This action creates a new tenant');
     return this.tenantService.create();
   }
 
-  @Get(':key/validate')
-  async validateTenant(@Param('key') key: string): Promise<any> {
+  @Get()
+  async validateTenant(@Query('key') key: string): Promise<any> {
     console.log('This action checks validity of provided key');
     const validation = await this.tenantService.validateTenant(key);
     return validation;
@@ -31,7 +25,7 @@ export class TenantController {
     return this.tenantService.getTenantById(id);
   }
 
-  @Put(':id/applyCredits')
+  @Post(':id/credits')
   async applyCredits(
     @Param('id') id: string,
     @Query('amount') amount: number,

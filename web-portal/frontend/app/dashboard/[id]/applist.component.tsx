@@ -11,7 +11,7 @@ export const AppList: React.FC<{ list: Array<IApp> }> = ({ list }) => (
 );
 
 const AppCard: React.FC<{ app: IApp }> = ({ app }) => (
-  <Card shadow="xs" padding="lg" radius="md" withBorder>
+  <Card padding="lg" radius="md" withBorder>
     <Group justify="flex-start" mb="xs" gap={8}>
       <Text fw={500}>{app.name}</Text>
       <Badge color="green">{app.status}</Badge>

@@ -3,7 +3,6 @@ import NewAppModal from "./modal.component";
 import { Suspense } from "react";
 import { Container, Flex, Button, Title } from "@mantine/core";
 import Link from "next/link";
-import { revalidatePath } from "next/cache";
 
 const apiUrl = process.env.API_ENDPOINT || "http://localhost:4000/";
 // TODO: setup a central const and their validation file
@@ -14,13 +13,14 @@ async function getTenant(id: string) {
   if (!response.ok) {
     throw new Error("Failed to fetch tenant");
   }
-  revalidatePath("/dashboard/" + id);
+
   return response.json();
 }
 
 export default async function User({ params }: { params: { id: string } }) {
   const { id } = params;
   const tenant = await getTenant(id);
+
   return (
     <>
       <Suspense fallback={<div>Loading...</div>}>

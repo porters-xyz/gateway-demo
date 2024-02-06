@@ -18,7 +18,7 @@ export class AuthkeysService {
 
     const hashedKey = await bcrypt.hash(secretKey, this.salt);
 
-    const key = this.prisma.client.tenantAuthKey.create({
+    const key = await this.prisma.client.tenantAuthKey.create({
       data: {
         appId: randomBytes(16).toString('hex'), // TODO: this will be id for the app later
         active: true,

@@ -30,7 +30,7 @@ export class TenantController {
     @Param('id') id: string,
     @Query('amount') amount: number,
   ): Promise<any> {
-    // TODO- Remove this endpoint as its temporary
+    // TODO: Remove this endpoint as its temporary
     console.log('This action applies free credits to a tenant');
     return this.tenantService.addCredits(id, amount);
   }

@@ -11,7 +11,7 @@ export class TenantService {
     private prisma: CustomPrismaService<PrismaClient>, // <-- Inject the PrismaClient
   ) {}
 
-  salt = process.env.SALT ?? `$2b$10$6Cib00sYjzfn8jnXGFR32e`; // todo- remove this temp salt and throw error when no salt in env on startup
+  salt = process.env.SALT ?? `$2b$10$6Cib00sYjzfn8jnXGFR32e`; // TODO: remove this temp salt and throw error when no salt in env on startup
 
   async countAll(): Promise<number> {
     const count = await this.prisma.client.tenant.count();
@@ -47,20 +47,31 @@ export class TenantService {
   }
 
   async getTenantById(id: string): Promise<any> {
-    // todo- add jwt/guard to this
+    // todo: add jwt/guard to this
     const tenant = await this.prisma.client.tenant.findUnique({
       where: {
         id,
+      },
+      select: {
+        id: true,
+        active: true,
+        createdAt: true,
+        updatedAt: true,
+        keys: {
+          select: {
+            id: true,
+            appId: true,
+            active: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        },
       },
     });
 
     if (!tenant) throw new Error('No tenant exists with such id!');
 
-    return {
-      id: tenant.id,
-      active: tenant.active,
-      createdAt: tenant.createdAt,
-    };
+    return tenant;
   }
 
   async addCredits(id: string, amount: number): Promise<any> {

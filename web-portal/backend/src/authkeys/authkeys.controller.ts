@@ -8,6 +8,7 @@ export class AuthkeysController {
   @Post(':tenantId/authkey')
   async applyCredits(@Param('tenantId') tenantId: string): Promise<any> {
     console.log('This action creates api/auth key for the provided tenant Id');
+
     return this.authKeyService.createAuthKey(tenantId);
   }
 }

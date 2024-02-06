@@ -2,28 +2,11 @@ import AppList from "./applist.component";
 import NewAppModal from "./modal.component";
 import { Suspense } from "react";
 import { Container, Flex, Button, Title } from "@mantine/core";
-import { IApp } from "@frontend/utils/types";
 import Link from "next/link";
+import { revalidatePath } from "next/cache";
 
 const apiUrl = process.env.API_ENDPOINT || "http://localhost:4000/";
-// TODO- setup a central const and their validation file
-
-// TODO- Get actual API keys from db
-
-const List: Array<IApp> = [
-  {
-    id: "ashukjs",
-    name: "App Name 1",
-    status: "Active",
-    createdAt: new Date().toLocaleDateString(),
-  },
-  {
-    id: "sasjd",
-    name: "App Name 2",
-    status: "Inactive",
-    createdAt: new Date().toLocaleDateString(),
-  },
-];
+// TODO: setup a central const and their validation file
 
 async function getTenant(id: string) {
   const response = await fetch(`${apiUrl}tenant/${id}`);
@@ -31,14 +14,13 @@ async function getTenant(id: string) {
   if (!response.ok) {
     throw new Error("Failed to fetch tenant");
   }
+  revalidatePath("/dashboard/" + id);
   return response.json();
 }
 
 export default async function User({ params }: { params: { id: string } }) {
   const { id } = params;
   const tenant = await getTenant(id);
-  // const keys = await getKeys(id);
-
   return (
     <>
       <Suspense fallback={<div>Loading...</div>}>
@@ -54,7 +36,7 @@ export default async function User({ params }: { params: { id: string } }) {
             paddingTop: 200,
           }}
         >
-          <NewAppModal />
+          <NewAppModal id={id} />
           <Flex
             justify={"space-between"}
             align={"center"}
@@ -65,7 +47,7 @@ export default async function User({ params }: { params: { id: string } }) {
               <Button> New App</Button>
             </Link>
           </Flex>
-          <AppList list={List} />
+          <AppList list={tenant.keys} />
         </Container>
       </Suspense>
     </>

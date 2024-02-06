@@ -5,15 +5,12 @@ import { useRouter } from "next/navigation";
 import { useFormState } from "react-dom";
 import { createApp } from "./actions";
 
-export default function NewAppModal() {
+export default function NewAppModal(tenant: any) {
   const searchParams = useSearchParams();
   const shouldOpen = searchParams.get("new") == "app";
   const router = useRouter();
 
-  const [state, formAction] = useFormState(
-    () => createApp("cls9162dd0000fwri5cu99k1s"),
-    null,
-  );
+  const [state, formAction] = useFormState(() => createApp(tenant.id), null);
 
   return (
     <Modal
@@ -22,19 +19,22 @@ export default function NewAppModal() {
       title="Create New App"
       centered
     >
-      <form action={formAction}>
-        <TextInput
+      {!state && (
+        <form action={formAction}>
+          {/* <TextInput
           label="App Name"
           placeholder="Name for your app"
           description="Name your app"
           inputWrapperOrder={["label", "error", "input", "description"]}
           withAsterisk
-        />
+        /> */}
 
-        <Button type="submit" style={{ marginTop: 32 }}>
-          Create New App
-        </Button>
-      </form>
+          <Button type="submit" style={{ marginTop: 32 }}>
+            Create New App
+          </Button>
+        </form>
+      )}
+      {JSON.stringify(state?.secretKey) ?? ""}
     </Modal>
   );
 }

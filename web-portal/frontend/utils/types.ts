@@ -1,6 +1,7 @@
 export interface IApp {
   id: string;
-  name: string;
-  status: string;
+  appId: string;
+  active: boolean;
   createdAt: string;
+  updatedAt: string;
 }

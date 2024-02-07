@@ -7,4 +7,10 @@ build:
 test:
     go test
 
+docker-build:
+    docker build -t porters .
+
+docker-run: docker-build
+    docker run -d -p 9999:9999 porters
+
 alias b := build

@@ -1,0 +1,45 @@
+version: '3'
+
+services:
+  frontend:
+    build:
+      context: ./web-portal/frontend
+    depends_on:
+      - backend
+    expose:
+      - "8000"
+    networks:
+      - portal
+  backend:
+    build:
+      context: ./web-portal/backend
+    depends_on:
+      - postgres
+    networks:
+      - portal
+  gateway:
+    build:
+      context: ./gateway
+    depends_on:
+      - redis
+      - postgres
+    expose:
+      - "9999"
+    networks:
+      - gateway
+  redis:
+    image: redis:alpine
+    networks:
+      - gateway
+  postgres:
+    image: postgres
+    networks:
+      - portal
+      - gateway
+
+volumes:
+  postgres-db:
+
+networks:
+  portal:
+  gateway:

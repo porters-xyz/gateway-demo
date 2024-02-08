@@ -3,6 +3,7 @@ package db
 import (
     "context"
     "log"
+    "os"
     "strings"
     "strconv"
     "sync"
@@ -21,8 +22,9 @@ func ConnectSync() *Sync {
         failed: make(chan error, 2),
     }
 
-    // TODO get connection string from env
-    listener := pq.NewListener("postgresql://postgres@localhost:5432?sslmode=disable", 10*time.Second, 2*time.Minute, sync.eventListener)
+    connStr := os.Getenv("DATABASE_URL")
+    log.Println("db:", connStr)
+    listener := pq.NewListener(connStr, 10*time.Second, 2*time.Minute, sync.eventListener)
     sync.listener = listener
 
     return sync

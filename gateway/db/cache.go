@@ -1,8 +1,10 @@
 package db 
 
 import (
-    "github.com/redis/go-redis/v9"
+    "os"
     "sync"
+
+    "github.com/redis/go-redis/v9"
 )
 
 const (
@@ -16,8 +18,8 @@ func getClient() *redis.Client {
     redisMutex.Do(func() {
         // TODO figure out which redis instance to connect to
         client = redis.NewClient(&redis.Options{
-            Addr: "localhost:6379",
-            Password: "",
+            Addr: os.Getenv("REDIS_ADDR"),
+            Password: os.Getenv("REDIS_PASS"),
             DB: 0,
         })
     })

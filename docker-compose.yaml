@@ -25,20 +25,31 @@ services:
       - postgres
     expose:
       - "9999"
+    ports:
+      - "9999:9999"
     networks:
       - gateway
+    env_file:
+      - .env
   redis:
     image: redis:alpine
     networks:
       - gateway
+    volumes:
+      - porters-redis:/data
   postgres:
     image: postgres
+    env_file:
+      - .env
     networks:
       - portal
       - gateway
+    volumes:
+      - porters-postgres:/var/lib/postgesql/data
 
 volumes:
-  postgres-db:
+  porters-postgres:
+  porters-redis:
 
 networks:
   portal:

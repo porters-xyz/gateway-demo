@@ -1,11 +1,23 @@
 import { Module } from '@nestjs/common';
-import { PrismaModule } from 'nestjs-prisma';
-import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
+import { CustomPrismaModule } from 'nestjs-prisma';
+import { PrismaClient } from '../../../.generated/client';
+import { TenantModule } from './tenant/tenant.module';
+import { AppController } from './app.controller';
+import { AuthkeysModule } from './authkeys/authkeys.module';
+
 @Module({
-  imports: [PrismaModule.forRoot()],
-  controllers: [AppController],
+  imports: [
+    CustomPrismaModule.forRoot({
+      name: 'Postgres',
+      client: new PrismaClient(),
+      isGlobal: true,
+    }),
+    TenantModule,
+    AuthkeysModule,
+  ],
   providers: [AppService],
+  controllers: [AppController],
 })
 export class AppModule {}

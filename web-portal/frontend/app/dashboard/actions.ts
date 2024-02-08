@@ -2,11 +2,10 @@
 import { revalidatePath, unstable_noStore as noStore } from "next/cache";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
-const apiUrl = process.env.API_ENDPOINT || "http://localhost:4000/";
+import { apiUrl } from "@frontend/utils/consts";
 
 export async function createApp() {
   const tenantId = cookies().get("tenant")?.value;
-  noStore();
 
   if (!tenantId) {
     return redirect("/login");
@@ -14,6 +13,7 @@ export async function createApp() {
 
   const response = await fetch(`${apiUrl}tenant/${tenantId}/authkey`, {
     method: "POST",
+    cache: "no-store",
   });
 
   if (!response.ok) {
@@ -21,5 +21,22 @@ export async function createApp() {
   }
 
   revalidatePath("/dashboard/");
+
+  return response.json();
+}
+
+export async function getTenant() {
+  const id = cookies().get("tenant")?.value;
+
+  if (!id) {
+    redirect("/login");
+  }
+
+  const response = await fetch(`${apiUrl}tenant/${id}`);
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch tenant");
+  }
+
   return response.json();
 }

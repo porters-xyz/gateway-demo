@@ -1,9 +1,10 @@
 "use client";
-import { redirect, useSearchParams } from "next/navigation";
-import { Modal, Button } from "@mantine/core";
+import { useSearchParams } from "next/navigation";
+import { Modal, Button, CopyButton, Stack, Title, Flex } from "@mantine/core";
 import { useRouter } from "next/navigation";
 import { useFormState } from "react-dom";
 import { createApp } from "./actions";
+import { IconCopy, IconClipboardCheck } from "@tabler/icons-react";
 
 export default function NewAppModal() {
   const searchParams = useSearchParams();
@@ -19,8 +20,9 @@ export default function NewAppModal() {
       title="Create New App"
       centered
     >
-      <form action={formAction}>
-        {/* <TextInput
+      {!state && (
+        <form action={formAction}>
+          {/* <TextInput
           label="App Name"
           placeholder="Name for your app"
           description="Name your app"
@@ -28,12 +30,35 @@ export default function NewAppModal() {
           withAsterisk
         /> */}
 
-        <Button type="submit" style={{ marginTop: 32 }}>
-          Create New App
-        </Button>
-      </form>
+          <Button type="submit" style={{ marginTop: 32 }}>
+            Create New App
+          </Button>
+        </form>
+      )}
 
-      {JSON.stringify(state?.secretKey) ?? ""}
+      {state?.secretKey && (
+        <Stack>
+          <Title order={4}>
+            Your api key was generated successfully, please protect it by
+            keeping it secret!
+          </Title>
+          <CopyButton value={state?.secretKey}>
+            {({ copied, copy }) => (
+              <Button color={copied ? "teal" : "blue"} onClick={copy}>
+                {copied ? (
+                  <Flex gap={4}>
+                    <IconClipboardCheck size={16} /> Copied Api Key
+                  </Flex>
+                ) : (
+                  <Flex gap={4}>
+                    <IconCopy size={16} /> Copy Api Key
+                  </Flex>
+                )}
+              </Button>
+            )}
+          </CopyButton>
+        </Stack>
+      )}
     </Modal>
   );
 }

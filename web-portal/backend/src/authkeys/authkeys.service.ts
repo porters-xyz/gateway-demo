@@ -14,7 +14,7 @@ export class AuthkeysService {
   salt = process.env.KEYS_SALT ?? `$2b$10$6Cib00sYjzfn8jnXGFR32e`; // TODO: remove this temp salt and throw error when no salt in env on startup
 
   async createAuthKey(tenantId: string): Promise<any> {
-    const secretKey = 'sk_' + randomBytes(58).toString('hex'); // <-- TODO: figure out final key format
+    const secretKey = 'sk_' + randomBytes(39).toString('hex'); // <-- TODO: figure out final key format
 
     const hashedKey = await bcrypt.hash(secretKey, this.salt);
 

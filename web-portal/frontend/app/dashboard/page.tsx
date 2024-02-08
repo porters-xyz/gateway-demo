@@ -3,11 +3,19 @@ import NewAppModal from "./modal.component";
 import { Suspense } from "react";
 import { Container, Flex, Button, Title } from "@mantine/core";
 import Link from "next/link";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 
 const apiUrl = process.env.API_ENDPOINT || "http://localhost:4000/";
 // TODO: setup a central const and their validation file
 
-async function getTenant(id: string) {
+async function getTenant() {
+  const id = cookies().get("tenant")?.value;
+
+  if (!id) {
+    redirect("/login");
+  }
+
   const response = await fetch(`${apiUrl}tenant/${id}`);
 
   if (!response.ok) {
@@ -17,9 +25,8 @@ async function getTenant(id: string) {
   return response.json();
 }
 
-export default async function User({ params }: { params: { id: string } }) {
-  const { id } = params;
-  const tenant = await getTenant(id);
+export default async function User() {
+  const tenant = await getTenant();
 
   return (
     <>
@@ -36,18 +43,18 @@ export default async function User({ params }: { params: { id: string } }) {
             paddingTop: 200,
           }}
         >
-          <NewAppModal id={id} />
+          <NewAppModal id={tenant?.id} />
           <Flex
             justify={"space-between"}
             align={"center"}
             style={{ marginBottom: 20 }}
           >
-            <Title order={5}>Tenant id: {tenant.id}</Title>
+            <Title order={5}>Tenant id: {tenant?.id}</Title>
             <Link href="?new=app">
               <Button> New App</Button>
             </Link>
           </Flex>
-          <AppList list={tenant.keys} />
+          <AppList list={tenant?.keys} />
         </Container>
       </Suspense>
     </>

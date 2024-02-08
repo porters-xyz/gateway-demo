@@ -1,7 +1,7 @@
 "use server";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-
+import { cookies } from "next/headers";
 const apiUrl = process.env.API_ENDPOINT || "http://localhost:4000/";
 
 export async function validateTenant(key: string) {
@@ -14,9 +14,10 @@ export async function validateTenant(key: string) {
   }
 
   const data = await response.json();
-
+  const expires = new Date(Date.now() + 10 * 1000);
   if (data?.valid) {
-    redirect("/dashboard/" + data.id);
+    cookies().set("tenant", data?.id, { expires });
+    redirect("/dashboard/");
   }
   return data;
 }

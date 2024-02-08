@@ -1,21 +1,21 @@
 "use client";
-import { useSearchParams } from "next/navigation";
+import { redirect, useSearchParams } from "next/navigation";
 import { Modal, Button } from "@mantine/core";
 import { useRouter } from "next/navigation";
 import { useFormState } from "react-dom";
 import { createApp } from "./actions";
 
-export default function NewAppModal(tenant: any) {
+export default function NewAppModal() {
   const searchParams = useSearchParams();
   const shouldOpen = searchParams.get("new") == "app";
   const router = useRouter();
 
-  const [state, formAction] = useFormState(() => createApp(tenant.id), null);
+  const [state, formAction] = useFormState(createApp, null);
 
   return (
     <Modal
       opened={shouldOpen}
-      onClose={() => router.replace("/dashboard/" + tenant.id)}
+      onClose={router.back}
       title="Create New App"
       centered
     >

@@ -1,10 +1,13 @@
 "use server";
 import { revalidatePath, unstable_noStore as noStore } from "next/cache";
 import { redirect } from "next/navigation";
-
+import { cookies } from "next/headers";
 const apiUrl = process.env.API_ENDPOINT || "http://localhost:4000/";
 
-export async function createApp(tenantId: string) {
+export async function createApp() {
+  const tenantId = cookies().get("tenant")?.value;
+  noStore();
+
   if (!tenantId) {
     return redirect("/login");
   }
@@ -17,6 +20,6 @@ export async function createApp(tenantId: string) {
     throw new Error("Failed to create an app for the tenant");
   }
 
-  revalidatePath("/dashboard/" + tenantId);
+  revalidatePath("/dashboard/");
   return response.json();
 }

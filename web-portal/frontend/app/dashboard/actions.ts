@@ -22,7 +22,7 @@ export async function createApp() {
 
   revalidatePath("/dashboard/");
 
-  return response.json();
+  redirect("/dashboard?new=app&key=" + (await response.json()).secretKey);
 }
 
 export async function getTenant() {
@@ -37,6 +37,5 @@ export async function getTenant() {
   if (!response.ok) {
     throw new Error("Failed to fetch tenant");
   }
-
   return response.json();
 }

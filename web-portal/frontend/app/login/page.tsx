@@ -4,6 +4,7 @@ import { useForm } from "@mantine/form";
 import { useFormState } from "react-dom";
 
 import { createTenant, validateTenant } from "./actions";
+import NewTenantModal from "./modal.component";
 
 const initialState = {
   key: "",
@@ -18,7 +19,7 @@ export default function Login() {
     },
   });
 
-  const [state, formAction] = useFormState(
+  const [validated, validateAction] = useFormState(
     () => validateTenant(values.key),
     initialState,
   );
@@ -36,7 +37,7 @@ export default function Login() {
         gap: 8,
       }}
     >
-      <form action={formAction}>
+      <form action={validateAction}>
         <TextInput
           label="Secret Key"
           placeholder="Secret"
@@ -54,14 +55,13 @@ export default function Login() {
         </Button>
       </form>
 
-      <Text>{JSON.stringify(state)}</Text>
-
       <form action={createAction}>
         <Button type="submit" variant="light" fullWidth>
           Create Key
         </Button>
-        {created ? JSON.stringify(created) : null}
       </form>
+
+      {created && <NewTenantModal secret={created.secret} />}
     </Container>
   );
 }

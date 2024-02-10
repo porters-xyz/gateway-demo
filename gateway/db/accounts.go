@@ -94,3 +94,25 @@ func UseRelay(ctx context.Context, apiKey string) {
         }
     }
 }
+
+func HasRelays(ctx context.Context, apiKey string) bool {
+    key := GenApiKey(apiKey)
+    account, err := getClient().HGet(ctx, key, "account").Result()
+    if err != nil {
+        // TODO account issues need to be handled
+    } else {
+        acctKey := GenAccountKey(account)
+        remainder, err2 := getClient().HGet(ctx, acctKey, "counter").Result()
+        if err2 != nil {
+            // TODO another error to handle
+        }
+        intval, err3 := strconv.Atoi(remainder)
+        if err3 != nil {
+            // TODO something wrong on the redis side
+        } else {
+            return intval > 0
+        }
+    }
+    // TODO probably a false negative
+    return false
+}

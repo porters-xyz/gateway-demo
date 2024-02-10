@@ -2,6 +2,8 @@ package proxy
 
 
 // Used for tracking in context for completion of lifecycle
+const LIFECYCLE = "lifecycle"
+
 type Lifecycle struct {
     Authentication bool
     Authorization bool

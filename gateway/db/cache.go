@@ -19,7 +19,7 @@ func getClient() *redis.Client {
         // TODO figure out which redis instance to connect to
         client = redis.NewClient(&redis.Options{
             Addr: os.Getenv("REDIS_ADDR"),
-            Password: os.Getenv("REDIS_PASS"),
+            Password: os.Getenv("REDIS_PASSWORD"),
             DB: 0,
         })
     })

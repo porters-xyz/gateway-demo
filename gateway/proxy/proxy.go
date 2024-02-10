@@ -6,12 +6,14 @@ import (
     "net/url"
     "net/http"
     "net/http/httputil"
+    "os"
     "sync"
 )
 
 func Start() {
     // TODO grab url for gateway kit
-    remote, err := url.Parse("http://localhost:9999")
+    proxyUrl := os.Getenv("PROXY_TO")
+    remote, err := url.Parse(proxyUrl)
     if err != nil {
         log.Println(err)
     }
@@ -19,7 +21,7 @@ func Start() {
     handler := func(proxy *httputil.ReverseProxy) func(http.ResponseWriter, *http.Request) {
         return func(resp http.ResponseWriter, req *http.Request) {
             log.Println(req.URL)
-            ctx := setupContext(req)
+            ctx, cancel := setupContext(req)
 
             // TODO move to filter
             req.Host = remote.Host
@@ -33,9 +35,12 @@ func Start() {
 
             // TODO meant to track incoming requests without slowing things down, read-only
             //nonBlockingPrehandlers(ctx, resp, req)
-
-            // TODO any ctx adjustments
-            proxy.ServeHTTP(resp, req)
+            lifecycle := ctx.Value(LIFECYCLE)
+            if lifecycle == nil || !lifecycle.(Lifecycle).checkComplete() {
+                cancel()
+            } else {
+                proxy.ServeHTTP(resp, req)
+            }
 
             // TODO is this needed? after serving blocking may be dumb
             //blockingPosthandlers(ctx, resp, req)
@@ -53,16 +58,31 @@ func Start() {
     }
 }
 
-func setupContext(req *http.Request) context.Context {
+func setupContext(req *http.Request) (context.Context, context.CancelFunc) {
     // TODO read ctx from request and make any modifications
-    return req.Context()
+    parent := req.Context()
+    ctx := context.WithValue(parent, LIFECYCLE, Lifecycle{})
+    ctx, cancel := context.WithCancel(parent)
+    return ctx, cancel
 }
 
 func runFilterChain(ctx context.Context, fc FilterChain, resp http.ResponseWriter, req *http.Request) {
     nextCtx := ctx
     for _, f := range fc.filters {
-        log.Println("filtering", f.Name())
-        nextCtx = f.Filter(nextCtx, resp, req)
+        retCtx, err := func() (context.Context, error) {
+            select {
+            case <-ctx.Done():
+                return nextCtx, nextCtx.Err()
+            default:
+                log.Println("filtering", f.Name())
+                return f.Filter(nextCtx, resp, req), nil
+            }
+        }()
+        if err != nil {
+            // TODO cleanup
+            return
+        }
+        nextCtx = retCtx
     }
 }
 

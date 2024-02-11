@@ -10,6 +10,6 @@ RUN go mod download
 COPY . .
 RUN go build -o /go/bin/porters
 
-EXPOSE 9999
+EXPOSE 9000
 
 CMD ["porters", "gateway"]

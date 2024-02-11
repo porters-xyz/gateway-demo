@@ -71,15 +71,16 @@ func runFilterChain(ctx context.Context, fc FilterChain, resp http.ResponseWrite
     for _, f := range fc.filters {
         retCtx, err := func() (context.Context, error) {
             select {
-            case <-ctx.Done():
+            case <-nextCtx.Done():
                 return nextCtx, nextCtx.Err()
             default:
                 log.Println("filtering", f.Name())
-                return f.Filter(nextCtx, resp, req), nil
+                return f.Filter(nextCtx, resp, req)
             }
         }()
         if err != nil {
             // TODO cleanup
+            log.Println(err)
             return
         }
         nextCtx = retCtx

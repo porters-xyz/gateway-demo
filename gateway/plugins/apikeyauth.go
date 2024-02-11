@@ -1,4 +1,4 @@
-package proxy
+package plugins
 
 // Checks API key and rejects if not valid
 // Implements Filter interface
@@ -8,6 +8,7 @@ import (
     "context"
     "net/http"
     "porters/db"
+    "porters/proxy"
 )
 
 const AUTH = "AUTH"
@@ -30,7 +31,7 @@ func (a Auth) Key() string {
     return AUTH
 }
 
-func (a Auth) Filter(ctx context.Context, resp http.ResponseWriter, req *http.Request) context.Context{
+func (a Auth) Filter(ctx context.Context, resp http.ResponseWriter, req *http.Request) (context.Context, error) {
     cancelCtx, cancel := context.WithCancel(ctx)
     // TODO this is plaintext in db now, but will need to be checked and hashed
     apiKey := req.Header.Get(a.ApiKeyName)
@@ -39,8 +40,9 @@ func (a Auth) Filter(ctx context.Context, resp http.ResponseWriter, req *http.Re
     if !checksumApiKey(apiKey) || !db.IsValidAccount(cancelCtx, apiKey) {
         resp.WriteHeader(http.StatusUnauthorized)
         cancel()
+        return nil, proxy.FilterBlockError{}
     }
-    return continueCtx
+    return continueCtx, nil
 }
 
 // TODO check api key is in valid format to quickly determine errant requests

@@ -7,6 +7,7 @@ import (
     "log"
     "net/http"
     "porters/db"
+    "porters/plugins"
     "porters/proxy"
 )
 
@@ -32,11 +33,11 @@ func (q Quota) Load() {
 func (q Quota) Filter(ctx context.Context, resp http.ResponseWriter, req *http.Request) context.Context {
     // TODO check relays left
     newCtx := ctx
-    valueLc := ctx.Value(proxy.LIFECYCLE)
-    valueKey := ctx.Value(proxy.APIKey(proxy.AUTH))
-    if valueKey != nil && valueLc != nil{
-        lifecycle := valueLc.(proxy.Lifecycle)
+    // TODO move AUTH state to lifecycle
+    valueKey := ctx.Value(plugins.APIKey(plugins.AUTH))
+    if valueKey != nil {
         key := valueKey.(string)
+        lifecycle := proxy.SetRateLimitComplete(ctx)
         log.Println("lifecycle", lifecycle, "key", key)
         quota := db.HasRelays(ctx, key)
         if quota {

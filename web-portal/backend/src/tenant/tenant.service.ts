@@ -1,8 +1,7 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { CustomPrismaService } from 'nestjs-prisma';
-import { PrismaClient, TransactionType } from '../../../../.generated/client';
-import { randomBytes } from 'crypto';
-import * as bcrypt from 'bcrypt';
+import { PrismaClient, TransactionType } from '@/.generated/client';
+import { createHash, randomBytes } from 'crypto';
 
 @Injectable()
 export class TenantService {
@@ -11,8 +10,6 @@ export class TenantService {
     private prisma: CustomPrismaService<PrismaClient>, // <-- Inject the PrismaClient
   ) {}
 
-  salt = process.env.SALT ?? `$2b$10$6Cib00sYjzfn8jnXGFR32e`; // TODO: remove this temp salt and throw error when no salt in env on startup
-
   async countAll(): Promise<number> {
     const count = await this.prisma.client.tenant.count();
     return count;
@@ -20,7 +17,9 @@ export class TenantService {
 
   async create(): Promise<any> {
     const secretKey = randomBytes(8).toString('hex');
-    const hashedKey = await bcrypt.hash(secretKey, this.salt);
+    const hashedKey = createHash('sha256').update(secretKey).digest('hex');
+
+    console.log(hashedKey);
 
     const tenant = await this.prisma.client.tenant.create({
       data: {
@@ -33,7 +32,7 @@ export class TenantService {
   }
 
   async validateTenant(rawKey: string): Promise<any> {
-    const hashedKey = await bcrypt.hash(rawKey, this.salt);
+    const hashedKey = createHash('sha256').update(rawKey).digest('hex');
     const tenant = await this.prisma.client.tenant.findUnique({
       where: {
         secretKey: hashedKey,

@@ -1,11 +1,13 @@
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  // TODO: production fix required
+  // url      = env("DATABASE_URL")
+  url = "postgresql://postgres:pass@localhost:5432/postgres" // localhost
 }
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../../.generated/client"
+  output   = "../../web-portal/backend/.generated/client"
 }
 
 model Org {

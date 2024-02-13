@@ -8,6 +8,7 @@ datasource db {
 generator client {
   provider = "prisma-client-js"
   output   = "../../web-portal/backend/.generated/client"
+  binaryTargets = ["native"]
 }
 
 model Org {

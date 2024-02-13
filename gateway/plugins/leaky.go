@@ -1,4 +1,4 @@
-package limiter
+package plugins
 
 // Set up leaky buckets for different periods of rate limiting
 

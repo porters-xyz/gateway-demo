@@ -17,6 +17,10 @@ func (b Blocker) Name() string {
     return "blocker"
 }
 
+func (b Blocker) Key() string {
+    return "BLOCKER"
+}
+
 func (b Blocker) Filter(ctx context.Context, resp http.ResponseWriter, req *http.Request) (context.Context, error) {
-    return ctx, proxy.FilterBlockError{}
+    return ctx, &proxy.FilterBlockError{}
 }

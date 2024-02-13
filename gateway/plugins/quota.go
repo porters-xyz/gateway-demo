@@ -1,4 +1,4 @@
-package limiter
+package plugins
 
 // This is the top level bucket where available relays are sync'ed with balance
 
@@ -7,7 +7,6 @@ import (
     "log"
     "net/http"
     "porters/db"
-    "porters/plugins"
     "porters/proxy"
 )
 
@@ -30,21 +29,26 @@ func (q Quota) Load() {
 // TODO set headers if needing to block
 // TODO update context to reflect
 // Requires: AUTH upstream
-func (q Quota) Filter(ctx context.Context, resp http.ResponseWriter, req *http.Request) context.Context {
+func (q Quota) Filter(ctx context.Context, resp http.ResponseWriter, req *http.Request) (context.Context, error) {
     // TODO check relays left
     newCtx := ctx
+    var err error
+
     // TODO move AUTH state to lifecycle
-    valueKey := ctx.Value(plugins.APIKey(plugins.AUTH))
+    valueKey := ctx.Value(proxy.AUTH_VAL)
+    log.Println("no value here", valueKey)
     if valueKey != nil {
         key := valueKey.(string)
-        lifecycle := proxy.SetRateLimitComplete(ctx)
-        log.Println("lifecycle", lifecycle, "key", key)
         quota := db.HasRelays(ctx, key)
         if quota {
-            lifecycle.RateLimit = true
-            newCtx = context.WithValue(ctx, proxy.LIFECYCLE, lifecycle)
+            log.Println("quota remaining")
+            lifecycle := proxy.SetStageComplete(ctx, proxy.BalanceCheck)
+            newCtx, err = lifecycle.UpdateContext(ctx)
+        } else {
+            log.Println("none remaining", key, quota)
+            err = proxy.NewBalanceExceededError()
         }
     }
 
-    return newCtx
+    return newCtx, err
 }

@@ -3,6 +3,7 @@ package db
 import (
     "context"
     "fmt"
+    "log"
     "strconv"
 )
 
@@ -44,10 +45,13 @@ func DecrCounter(ctx context.Context, name string) int64 {
 
 // Uses QUOTA to determine account existing, does not guarantee relays remaining
 // TODO use tenant hash
-func IsValidAccount(ctx context.Context, account string) bool {
-    key := GenAccountKey(account)
+// TODO remove logging
+func IsValidAccount(ctx context.Context, account Account) bool {
+    key := GenAccountKey(account.id)
+    log.Println("acctkey", key)
     result, err := getClient().HGet(ctx, key, "enabled").Result()
     resbool, err2 := strconv.ParseBool(result)
+    log.Println("enabled", resbool)
     if err != nil || err2 != nil{
         // TODO clean this up
         resbool = false
@@ -72,13 +76,13 @@ func GetIntVal(ctx context.Context, name string) int {
 // TODO check redis, if missing check postgres (and cache), if neither return false
 func LookupAccount(ctx context.Context, apiKey string) (Account, bool) {
     // TODO do this in tx that checks and gets account information?
-    result, err := getClient().SIsMember(ctx, ACCOUNT_SET, apiKey).Result()
-    if err != nil || !result {
+    key := GenApiKey(apiKey)
+    result, err := getClient().HGet(ctx, key, "account").Result()
+    if err != nil {
         // TODO handle errors better
         return Account{}, false
     }
-    // TODO need to grab all keys to build account
-    return Account{""}, true
+    return Account{result}, true
 }
 
 func UseRelay(ctx context.Context, apiKey string) {
@@ -88,7 +92,7 @@ func UseRelay(ctx context.Context, apiKey string) {
         // TODO log error to alert, will need manual cleanup
     } else {
         acctKey := GenAccountKey(account)
-        err2 := getClient().HIncrBy(ctx, acctKey, "counter", -1).Err()
+        err2 := getClient().HIncrBy(ctx, acctKey, "relays_remaining", -1).Err()
         if err2 != nil {
             // TODO also clean this up, not decr'd
         }
@@ -102,7 +106,7 @@ func HasRelays(ctx context.Context, apiKey string) bool {
         // TODO account issues need to be handled
     } else {
         acctKey := GenAccountKey(account)
-        remainder, err2 := getClient().HGet(ctx, acctKey, "counter").Result()
+        remainder, err2 := getClient().HGet(ctx, acctKey, "relays_remaining").Result()
         if err2 != nil {
             // TODO another error to handle
         }

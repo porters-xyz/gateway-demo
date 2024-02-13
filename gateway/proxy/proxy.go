@@ -2,6 +2,7 @@ package proxy
 
 import (
     "context"
+    "errors"
     "log"
     "net/url"
     "net/http"
@@ -31,14 +32,31 @@ func Start() {
             // TODO structure this in a reasonable way
             prefilters := pluginRegistry.GetFilterChain(PRE)
 
-            runFilterChain(ctx, prefilters, resp, req)
+            ctx, err := runFilterChain(ctx, prefilters, resp, req)
+            if err != nil {
+                var httpErr *HTTPError
+                var code int
+                if errors.As(err, &httpErr) {
+                    code = httpErr.code
+                } else {
+                    code = http.StatusInternalServerError
+                }
+
+                http.Error(resp, err.Error(), code)
+                return
+            }
 
             // TODO meant to track incoming requests without slowing things down, read-only
             //nonBlockingPrehandlers(ctx, resp, req)
-            lifecycle := ctx.Value(LIFECYCLE)
-            if lifecycle == nil || !lifecycle.(Lifecycle).checkComplete() {
+
+            lifecycle := lifecycleFromContext(ctx)
+            log.Println("lifecycle", lifecycle)
+            if !lifecycle.checkComplete() {
                 cancel()
+                status := http.StatusInternalServerError
+                http.Error(resp, http.StatusText(status), status)
             } else {
+                log.Println("actually serving")
                 proxy.ServeHTTP(resp, req)
             }
 
@@ -61,30 +79,30 @@ func Start() {
 func setupContext(req *http.Request) (context.Context, context.CancelFunc) {
     // TODO read ctx from request and make any modifications
     parent := req.Context()
-    ctx := context.WithValue(parent, LIFECYCLE, Lifecycle{})
     ctx, cancel := context.WithCancel(parent)
+    ctx, _ = Lifecycle{}.UpdateContext(ctx)
     return ctx, cancel
 }
 
-func runFilterChain(ctx context.Context, fc FilterChain, resp http.ResponseWriter, req *http.Request) {
+func runFilterChain(ctx context.Context, fc FilterChain, resp http.ResponseWriter, req *http.Request) (context.Context, error) {
     nextCtx := ctx
     for _, f := range fc.filters {
         retCtx, err := func() (context.Context, error) {
+            log.Println("filtering", f.Name())
             select {
             case <-nextCtx.Done():
                 return nextCtx, nextCtx.Err()
             default:
-                log.Println("filtering", f.Name())
                 return f.Filter(nextCtx, resp, req)
             }
         }()
         if err != nil {
-            // TODO cleanup
             log.Println(err)
-            return
+            return nil, err
         }
         nextCtx = retCtx
     }
+    return nextCtx, nil
 }
 
 func runProcessingSet(ctx context.Context, procs ProcessorSet, resp http.ResponseWriter, req *http.Request) sync.WaitGroup {

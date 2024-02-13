@@ -6,43 +6,46 @@ package plugins
 import (
     "fmt"
     "context"
+    "log"
     "net/http"
     "porters/db"
     "porters/proxy"
 )
 
-const AUTH = "AUTH"
-
-type APIKey string
-type Auth struct {
+type ApiKeyAuth struct {
     ApiKeyName string
 }
 
-func (a Auth) Name() string {
+func (a ApiKeyAuth) Name() string {
     return "API Key Auth"
 }
 
-func (a Auth) Load() {
+func (a ApiKeyAuth) Load() {
     // load plugin
     fmt.Println("loading", a.Name())
 }
 
-func (a Auth) Key() string {
-    return AUTH
+func (a ApiKeyAuth) Key() string {
+    return "API_KEY_AUTH"
 }
 
-func (a Auth) Filter(ctx context.Context, resp http.ResponseWriter, req *http.Request) (context.Context, error) {
-    cancelCtx, cancel := context.WithCancel(ctx)
+func (a ApiKeyAuth) Filter(ctx context.Context, resp http.ResponseWriter, req *http.Request) (context.Context, error) {
     // TODO this is plaintext in db now, but will need to be checked and hashed
     apiKey := req.Header.Get(a.ApiKeyName)
-    continueCtx := context.WithValue(ctx, APIKey(AUTH), apiKey)
+    // TODO remove logging
+    log.Println("apikey", apiKey)
+    newCtx := context.WithValue(ctx, proxy.AUTH_VAL, apiKey)
 
-    if !checksumApiKey(apiKey) || !db.IsValidAccount(cancelCtx, apiKey) {
-        resp.WriteHeader(http.StatusUnauthorized)
-        cancel()
-        return nil, proxy.FilterBlockError{}
+    if checksumApiKey(apiKey) {
+        acct, ok := db.LookupAccount(newCtx, apiKey)
+        if !ok || !db.IsValidAccount(newCtx, acct) {
+            return nil, proxy.NewHTTPError(http.StatusUnauthorized)
+        }
+    } else {
+        return nil, proxy.NewHTTPError(http.StatusUnauthorized)
     }
-    return continueCtx, nil
+    lifecycle := proxy.SetStageComplete(newCtx, proxy.Auth)
+    return lifecycle.UpdateContext(newCtx)
 }
 
 // TODO check api key is in valid format to quickly determine errant requests

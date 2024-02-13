@@ -62,13 +62,13 @@ func (a *apiKey) writeToCache(ctx context.Context) {
 func (p *paymentTx) writeToCache(ctx context.Context) {
     var err error
     if p.txType == Credit {
-        err = getClient().HIncrBy(ctx, GenAccountKey(p.tenantId), "balance", int64(p.amount)).Err()
+        err = getClient().HIncrBy(ctx, GenAccountKey(p.tenantId), "cached_remaining", int64(p.amount)).Err()
         if err != nil {
             // TODO handle errors should they happen
         }
-        err = getClient().HIncrBy(ctx, GenAccountKey(p.tenantId), "counter", int64(p.amount)).Err()
+        err = getClient().HIncrBy(ctx, GenAccountKey(p.tenantId), "relays_remaining", int64(p.amount)).Err()
     } else {
-        err = getClient().HIncrBy(ctx, GenAccountKey(p.tenantId), "balance", -int64(p.amount)).Err()
+        err = getClient().HIncrBy(ctx, GenAccountKey(p.tenantId), "cached_remaining", -int64(p.amount)).Err()
     }
     if err != nil {
         // TODO handle errors should they happen
@@ -76,7 +76,7 @@ func (p *paymentTx) writeToCache(ctx context.Context) {
 }
 
 func GenAccountKey(tenantId string) string {
-     return "ACCOUNT:" + tenantId
+    return "ACCOUNT:" + tenantId
 }
 
 func GenApiKey(apiKey string) string {

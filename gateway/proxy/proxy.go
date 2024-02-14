@@ -2,16 +2,19 @@ package proxy
 
 import (
     "context"
+    "errors"
     "log"
     "net/url"
     "net/http"
     "net/http/httputil"
+    "os"
     "sync"
 )
 
 func Start() {
     // TODO grab url for gateway kit
-    remote, err := url.Parse("http://localhost:9999")
+    proxyUrl := os.Getenv("PROXY_TO")
+    remote, err := url.Parse(proxyUrl)
     if err != nil {
         log.Println(err)
     }
@@ -19,7 +22,7 @@ func Start() {
     handler := func(proxy *httputil.ReverseProxy) func(http.ResponseWriter, *http.Request) {
         return func(resp http.ResponseWriter, req *http.Request) {
             log.Println(req.URL)
-            ctx := setupContext(req)
+            ctx, cancel := setupContext(req)
 
             // TODO move to filter
             req.Host = remote.Host
@@ -29,13 +32,33 @@ func Start() {
             // TODO structure this in a reasonable way
             prefilters := pluginRegistry.GetFilterChain(PRE)
 
-            runFilterChain(ctx, prefilters, resp, req)
+            ctx, err := runFilterChain(ctx, prefilters, resp, req)
+            if err != nil {
+                var httpErr *HTTPError
+                var code int
+                if errors.As(err, &httpErr) {
+                    code = httpErr.code
+                } else {
+                    code = http.StatusInternalServerError
+                }
+
+                http.Error(resp, err.Error(), code)
+                return
+            }
 
             // TODO meant to track incoming requests without slowing things down, read-only
             //nonBlockingPrehandlers(ctx, resp, req)
 
-            // TODO any ctx adjustments
-            proxy.ServeHTTP(resp, req)
+            lifecycle := lifecycleFromContext(ctx)
+            log.Println("lifecycle", lifecycle)
+            if !lifecycle.checkComplete() {
+                cancel()
+                status := http.StatusInternalServerError
+                http.Error(resp, http.StatusText(status), status)
+            } else {
+                log.Println("actually serving")
+                proxy.ServeHTTP(resp, req)
+            }
 
             // TODO is this needed? after serving blocking may be dumb
             //blockingPosthandlers(ctx, resp, req)
@@ -53,17 +76,33 @@ func Start() {
     }
 }
 
-func setupContext(req *http.Request) context.Context {
+func setupContext(req *http.Request) (context.Context, context.CancelFunc) {
     // TODO read ctx from request and make any modifications
-    return req.Context()
+    parent := req.Context()
+    ctx, cancel := context.WithCancel(parent)
+    ctx, _ = Lifecycle{}.UpdateContext(ctx)
+    return ctx, cancel
 }
 
-func runFilterChain(ctx context.Context, fc FilterChain, resp http.ResponseWriter, req *http.Request) {
+func runFilterChain(ctx context.Context, fc FilterChain, resp http.ResponseWriter, req *http.Request) (context.Context, error) {
     nextCtx := ctx
     for _, f := range fc.filters {
-        log.Println("filtering", f.Name())
-        nextCtx = f.Filter(nextCtx, resp, req)
+        retCtx, err := func() (context.Context, error) {
+            log.Println("filtering", f.Name())
+            select {
+            case <-nextCtx.Done():
+                return nextCtx, nextCtx.Err()
+            default:
+                return f.Filter(nextCtx, resp, req)
+            }
+        }()
+        if err != nil {
+            log.Println(err)
+            return nil, err
+        }
+        nextCtx = retCtx
     }
+    return nextCtx, nil
 }
 
 func runProcessingSet(ctx context.Context, procs ProcessorSet, resp http.ResponseWriter, req *http.Request) sync.WaitGroup {

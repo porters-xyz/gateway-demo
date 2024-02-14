@@ -1,0 +1,10 @@
+node_modules
+coverage
+out
+build
+
+Dockerfile
+.gitignore
+.next
+next-env.d.ts
+README.md

@@ -2,6 +2,7 @@ package db
 
 import (
     "context"
+    "porters/utils"
     "strings"
 )
 
@@ -62,13 +63,13 @@ func (a *apiKey) writeToCache(ctx context.Context) {
 func (p *paymentTx) writeToCache(ctx context.Context) {
     var err error
     if p.txType == Credit {
-        err = getClient().HIncrBy(ctx, GenAccountKey(p.tenantId), "balance", int64(p.amount)).Err()
+        err = getClient().HIncrBy(ctx, GenAccountKey(p.tenantId), "cached_remaining", int64(p.amount)).Err()
         if err != nil {
             // TODO handle errors should they happen
         }
-        err = getClient().HIncrBy(ctx, GenAccountKey(p.tenantId), "counter", int64(p.amount)).Err()
+        err = getClient().HIncrBy(ctx, GenAccountKey(p.tenantId), "relays_remaining", int64(p.amount)).Err()
     } else {
-        err = getClient().HIncrBy(ctx, GenAccountKey(p.tenantId), "balance", -int64(p.amount)).Err()
+        err = getClient().HIncrBy(ctx, GenAccountKey(p.tenantId), "cached_remaining", -int64(p.amount)).Err()
     }
     if err != nil {
         // TODO handle errors should they happen
@@ -76,14 +77,16 @@ func (p *paymentTx) writeToCache(ctx context.Context) {
 }
 
 func GenAccountKey(tenantId string) string {
-     return "ACCOUNT:" + tenantId
+    return "ACCOUNT:" + tenantId
 }
 
 func GenApiKey(apiKey string) string {
-    return "APIKEY:" + apiKey + ":meta"
+    hashedKey := utils.Hash(apiKey)
+    return "APIKEY:" + hashedKey + ":meta"
 }
 
 // TODO placeholder for when relays are tracked per "chain"
 func GenChainKey(apiKey string, chainId string) string {
-    return "APIKEY:" + apiKey + ":" + chainId
+    hashedKey := utils.Hash(apiKey)
+    return "APIKEY:" + hashedKey + ":" + chainId
 }

@@ -19,7 +19,7 @@ type Plugin interface {
 type Filter interface {
     Plugin
     Key() string // unique across all plugins loaded
-    Filter(context.Context, http.ResponseWriter, *http.Request) context.Context
+    Filter(context.Context, http.ResponseWriter, *http.Request) (context.Context, error)
 }
 
 // Processors run in parallel and don't impact the request in any way
@@ -27,7 +27,7 @@ type Filter interface {
 type Processor interface {
     Plugin
     Key() string
-    Process(context.Context, http.ResponseWriter, *http.Request)
+    Process(context.Context, http.ResponseWriter, *http.Request) error
 }
 
 // Limiter is a type of Filter that tracks relays and may block

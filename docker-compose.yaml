@@ -63,4 +63,5 @@ volumes:
 
 networks:
   portal:
+    driver: bridge
   gateway:

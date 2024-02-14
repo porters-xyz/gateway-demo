@@ -1,4 +1,4 @@
-version: '3'
+version: "3"
 
 services:
   frontend:
@@ -7,14 +7,20 @@ services:
     depends_on:
       - backend
     expose:
-      - "8000"
+      - 3000
+    ports:
+      - "3000:3000"
     networks:
       - portal
   backend:
     build:
-      context: ./web-portal/backend
+      context: .
     depends_on:
       - postgres
+    expose:
+      - 4000
+    ports:
+      - "4000:4000"
     networks:
       - portal
   gateway:
@@ -49,7 +55,7 @@ services:
       - portal
       - gateway
     volumes:
-      - porters-postgres:/var/lib/postgesql/data
+      - porters-postgres:/var/lib/postgresql/data
 
 volumes:
   porters-postgres:
@@ -57,4 +63,5 @@ volumes:
 
 networks:
   portal:
+    driver: bridge
   gateway:

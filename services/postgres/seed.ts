@@ -2,7 +2,7 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-// TODO- Initial seed data
+// TODO: Initial seed data
 
 // async function main() {
 //   await prisma.user.create({

@@ -1,5 +1,0 @@
-packages:
-  # all apps in direct subdirs of web-portal/
-  - "web-portal/*"
-  # documentation
-  - "docs"

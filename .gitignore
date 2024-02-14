@@ -46,6 +46,7 @@ out
 # Other
 .hintrc
 .pnpm
+.generated
 # *-lock.yaml
 
 # DS_STORE

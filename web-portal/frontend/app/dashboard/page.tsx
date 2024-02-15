@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { Container, Flex, Button, Title } from "@mantine/core";
 import Link from "next/link";
 import { getTenant } from "./actions";
+import LogoutButton from "./logout";
 
 export default async function User() {
   const tenant = await getTenant();
@@ -30,9 +31,12 @@ export default async function User() {
             style={{ marginBottom: 20 }}
           >
             <Title order={5}>logged in as: {tenant?.id}</Title>
-            <Link href="?new=app">
-              <Button> New App</Button>
-            </Link>
+            <Flex gap="md">
+              <Link href="?new=app">
+                <Button> New App</Button>
+              </Link>
+              <LogoutButton />
+            </Flex>
           </Flex>
           <AppList list={tenant?.keys} />
         </Container>

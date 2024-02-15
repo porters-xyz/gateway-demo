@@ -1,5 +1,4 @@
 "use server";
-import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 const apiUrl = process.env.API_ENDPOINT || "http://localhost:4000/";
@@ -14,7 +13,7 @@ export async function validateTenant(key: string) {
   }
 
   const data = await response.json();
-  const expires = new Date(Date.now() + 10 * 1000);
+  const expires = new Date(Date.now() + 10 * 60 * 1000);
   if (data?.valid) {
     cookies().set("tenant", data?.id, { expires });
     redirect("/dashboard/");
@@ -29,6 +28,10 @@ export async function createTenant() {
   if (!response.ok) {
     throw new Error("Failed to create tenant");
   }
-  revalidatePath("/login");
-  return response.json();
+
+  const data = await response.json();
+
+  redirect("/login?secret=" + data?.secret);
+
+  return data;
 }

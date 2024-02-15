@@ -39,3 +39,8 @@ export async function getTenant() {
   }
   return response.json();
 }
+
+export async function logout() {
+  cookies().delete("tenant");
+  redirect("/login");
+}

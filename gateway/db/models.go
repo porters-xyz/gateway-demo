@@ -80,10 +80,10 @@ func GenAccountKey(tenantId string) string {
 }
 
 func GenApiKey(apiKey string) string {
-    return "APIKEY:" + hashedKey + ":meta"
+    return "APIKEY:" + apiKey + ":meta"
 }
 
 // TODO placeholder for when relays are tracked per "chain"
 func GenChainKey(apiKey string, chainId string) string {
-    return "APIKEY:" + hashedKey + ":" + chainId
+    return "APIKEY:" + apiKey + ":" + chainId
 }

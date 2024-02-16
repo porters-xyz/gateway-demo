@@ -1,4 +1,4 @@
-package db 
+package db
 
 import (
     "context"
@@ -103,7 +103,7 @@ func UseRelay(ctx context.Context, apiKey string) {
 }
 
 func HasRelays(ctx context.Context, apiKey string) bool {
-    hashedKey := utils.Hash(apiKey
+    hashedKey := utils.Hash(apiKey)
     key := GenApiKey(hashedKey)
     account, err := getClient().HGet(ctx, key, "account").Result()
     if err != nil {

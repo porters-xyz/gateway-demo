@@ -2,7 +2,6 @@ package db
 
 import (
     "context"
-    "porters/utils"
     "strings"
 )
 

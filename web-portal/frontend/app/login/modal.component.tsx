@@ -1,14 +1,17 @@
 "use client";
 import { Modal, Button, CopyButton, Stack, Title, Flex } from "@mantine/core";
 import { IconCopy, IconClipboardCheck } from "@tabler/icons-react";
-import { useRouter } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 
-export default function NewTenantModal({ secret }: { secret: string }) {
+export default function NewTenantModal() {
+  const searchParams = useSearchParams();
   const router = useRouter();
+  const secret = searchParams.get("secret");
+
   return (
     <Modal
       opened={Boolean(secret)}
-      onClose={router.back}
+      onClose={() => router.replace("/login")}
       title="Tenant Auth Key Created"
       centered
     >
@@ -17,7 +20,7 @@ export default function NewTenantModal({ secret }: { secret: string }) {
           Your secret tenant key was generated successfully, please protect it
           by keeping it a secret!
         </Title>
-        <CopyButton value={secret}>
+        <CopyButton value={String(secret)}>
           {({ copied, copy }) => (
             <Button color={copied ? "teal" : "blue"} onClick={copy}>
               {copied ? (

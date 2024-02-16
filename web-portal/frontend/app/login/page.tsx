@@ -2,7 +2,6 @@
 import { Container, Button, TextInput, Text } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { useFormState } from "react-dom";
-
 import { createTenant, validateTenant } from "./actions";
 import NewTenantModal from "./modal.component";
 
@@ -61,7 +60,7 @@ export default function Login() {
         </Button>
       </form>
 
-      {created && <NewTenantModal secret={created.secret} />}
+      <NewTenantModal />
     </Container>
   );
 }

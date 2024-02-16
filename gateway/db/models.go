@@ -2,7 +2,6 @@ package db
 
 import (
     "context"
-    "porters/utils"
     "strings"
 )
 
@@ -81,12 +80,10 @@ func GenAccountKey(tenantId string) string {
 }
 
 func GenApiKey(apiKey string) string {
-    hashedKey := utils.Hash(apiKey)
-    return "APIKEY:" + hashedKey + ":meta"
+    return "APIKEY:" + apiKey + ":meta"
 }
 
 // TODO placeholder for when relays are tracked per "chain"
 func GenChainKey(apiKey string, chainId string) string {
-    hashedKey := utils.Hash(apiKey)
-    return "APIKEY:" + hashedKey + ":" + chainId
+    return "APIKEY:" + apiKey + ":" + chainId
 }

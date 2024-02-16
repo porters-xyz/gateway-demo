@@ -6,10 +6,13 @@ WORKDIR /usr/src/app
 COPY --chown=node:node ./services ./services
 COPY --chown=node:node ./web-portal/backend/  ./web-portal/backend/
 
-RUN npm i -g pnpm prisma
-RUN cd ./web-portal/backend && pnpm install && npx prisma generate
-RUN cd ./web-portal/backend && pnpm build
+# RUN npm i prisma @prisma/client
+# RUN cd ./web-portal/backend && RUN corepack enable pnpm pnpm install
+# RUN cd ./web-portal/backend && npx prisma generate
+# RUN cd ./web-portal/backend && npx pnpm build
 
+# RUN npm i prisma @prisma/client
+RUN corepack enable pnpm && cd ./web-portal/backend && pnpm i && pnpm build
 FROM node:21-alpine As production
 
 # Copy the bundled code from the build stage to the production image

@@ -1,6 +1,20 @@
 version: "3"
 
 services:
+  postgres:
+    image: postgres
+    env_file:
+      - .env
+    expose:
+      - 5432
+    ports:
+      - "5432:5432"
+    networks:
+      - portal
+      - gateway
+    volumes:
+      - porters-postgres:/var/lib/postgresql/data
+
   frontend:
     build:
       context: ./web-portal/frontend
@@ -12,6 +26,7 @@ services:
       - "3000:3000"
     networks:
       - portal
+
   backend:
     build:
       context: .
@@ -23,18 +38,22 @@ services:
       - "4000:4000"
     networks:
       - portal
+
   gateway:
     build:
       context: ./gateway
     depends_on:
       - redis
       - postgres
+    expose:
+      - 9000
     ports:
       - "9000:9000"
     networks:
       - gateway
     env_file:
       - .env
+
   redis:
     image: redis:alpine
     env_file:
@@ -45,17 +64,6 @@ services:
       - gateway
     volumes:
       - porters-redis:/data
-  postgres:
-    image: postgres
-    env_file:
-      - .env
-    ports:
-      - "5432:5432"
-    networks:
-      - portal
-      - gateway
-    volumes:
-      - porters-postgres:/var/lib/postgresql/data
 
 volumes:
   porters-postgres:

@@ -5,6 +5,7 @@ import (
     "fmt"
     "log"
     "strconv"
+    "porters/utils"
 )
 
 // TODO cleanup, this moved to model.go
@@ -76,7 +77,8 @@ func GetIntVal(ctx context.Context, name string) int {
 // TODO check redis, if missing check postgres (and cache), if neither return false
 func LookupAccount(ctx context.Context, apiKey string) (Account, bool) {
     // TODO do this in tx that checks and gets account information?
-    key := GenApiKey(apiKey)
+    hashedKey := utils.Hash(apiKey)
+    key := GenApiKey(hashedKey)
     result, err := getClient().HGet(ctx, key, "account").Result()
     if err != nil {
         // TODO handle errors better
@@ -86,7 +88,8 @@ func LookupAccount(ctx context.Context, apiKey string) (Account, bool) {
 }
 
 func UseRelay(ctx context.Context, apiKey string) {
-    key := GenApiKey(apiKey)
+    hashedKey := utils.Hash(apiKey)
+    key := GenApiKey(hashedKey)
     account, err := getClient().HGet(ctx, key, "account").Result()
     if err != nil {
         // TODO log error to alert, will need manual cleanup
@@ -100,7 +103,8 @@ func UseRelay(ctx context.Context, apiKey string) {
 }
 
 func HasRelays(ctx context.Context, apiKey string) bool {
-    key := GenApiKey(apiKey)
+    hashedKey := utils.Hash(apiKey
+    key := GenApiKey(hashedKey)
     account, err := getClient().HGet(ctx, key, "account").Result()
     if err != nil {
         // TODO account issues need to be handled

@@ -7,9 +7,10 @@ export class SiweController {
   constructor(private readonly siweService: SiweService) {}
 
   @Get()
-  async getSession(): Promise<any> {
+  async getSession(@Req() request: Request): Promise<any> {
     console.log('Get Session using siwe');
-    return this.siweService.getSession();
+    const sessionCookie = request.cookies.get('web3session') ?? null;
+    return this.siweService.getSession(sessionCookie);
   }
 
   @Post()

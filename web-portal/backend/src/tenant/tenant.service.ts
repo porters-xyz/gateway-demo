@@ -19,8 +19,6 @@ export class TenantService {
     const secretKey = randomBytes(8).toString('hex');
     const hashedKey = createHash('sha256').update(secretKey).digest('hex');
 
-    console.log(hashedKey);
-
     const tenant = await this.prisma.client.tenant.create({
       data: {
         active: true,

@@ -4,81 +4,46 @@ package proxy
 // Uses singleton so different parts of the lifecycle have access to plugins
 
 import (
+    "log"
     "sync"
 )
 
 type registry struct {
-    preFilters []Filter
-    postFilters []Filter
-    preProcessors []Processor
-    postProcessors []Processor
+    preFilters []PreFilter
+    postFilters []PostFilter
+    preProcessors []PreProcessor
+    postProcessors []PostProcessor
 }
 
-type PreOrPost int
-const (
-    PRE PreOrPost = iota
-    POST
-)
-
-var r *registry = nil
+var pluginRegistry *registry = nil
 var registryMutex sync.Once
 
-func Register(p Plugin, stage PreOrPost) {
+func Register(plugin Plugin) {
     _ = GetRegistry() // init singleton
-    p.Load()
+    plugin.Load()
 
-    filter, ok := p.(Filter)
-    if ok {
-        switch stage {
-        case PRE:
-            r.preFilters = append(r.preFilters, filter)
-        case POST:
-            r.postFilters = append(r.postFilters, filter)
-        }
-    }
-
-    processor, ok := p.(Processor)
-    if ok {
-        switch stage {
-        case PRE:
-            r.preProcessors = append(r.preProcessors, processor)
-        case POST:
-            r.postProcessors = append(r.postProcessors, processor)
-        }
+    switch p := plugin.(type) {
+    case PreFilter:
+	pluginRegistry.preFilters = append(pluginRegistry.preFilters, p)
+    case PostFilter:
+	pluginRegistry.postFilters = append(pluginRegistry.postFilters, p)
+    case PreProcessor:
+	pluginRegistry.preProcessors = append(pluginRegistry.preProcessors, p)
+    case PostProcessor:
+	pluginRegistry.postProcessors = append(pluginRegistry.postProcessors, p)
+    default:
+	log.Println("could not determine plugin type")
     }
 }
 
 func GetRegistry() *registry {
     registryMutex.Do(func() {
-        r = &registry{
-            preFilters: make([]Filter, 0),
-            postFilters: make([]Filter, 0),
-            preProcessors: make([]Processor, 0),
-            postProcessors: make([]Processor, 0),
+        pluginRegistry = &registry{
+            preFilters: make([]PreFilter, 0),
+            postFilters: make([]PostFilter, 0),
+            preProcessors: make([]PreProcessor, 0),
+            postProcessors: make([]PostProcessor, 0),
         }
     })
-    return r
-}
-
-func (r registry) GetFilterChain(stage PreOrPost) FilterChain {
-    var chain FilterChain
-    switch stage {
-    case PRE:
-        chain = FilterChain{}.Init(r.preFilters)
-    case POST:
-        chain = FilterChain{}.Init(r.postFilters)
-    }
-    return chain
-}
-
-func (r registry) GetProcessorSet(stage PreOrPost) ProcessorSet {
-    var set ProcessorSet
-    switch stage {
-    case PRE:
-        set = ProcessorSet{}.Init(r.preProcessors)
-    case POST:
-        set = ProcessorSet{}.Init(r.postProcessors)
-    }
-    return set
-
+    return pluginRegistry
 }

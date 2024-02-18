@@ -17,9 +17,9 @@ func main() {
     if arg == "gateway" {
         startupPostgresSync()
         // currently registering plugins via main
-        proxy.Register(plugins.ApiKeyAuth{"X-API"}, proxy.PRE)
-        proxy.Register(plugins.Quota{}, proxy.PRE)
-        proxy.Register(plugins.NoopFilter{proxy.RateLimit}, proxy.PRE)
+        proxy.Register(plugins.ApiKeyAuth{"X-API"})
+        proxy.Register(plugins.Quota{})
+        proxy.Register(plugins.NoopFilter{proxy.RateLimit})
 
         fmt.Println("starting gateway")
         proxy.Start()

@@ -16,41 +16,28 @@ type Plugin interface {
 }
 
 // Filters run consecutively and modify the input, output, or context
-type Filter interface {
+type PreFilter interface {
     Plugin
-    Key() string // unique across all plugins loaded
-    Filter(context.Context, http.ResponseWriter, *http.Request) (context.Context, error)
+    Key() string
+    PreFilter(context.Context, http.ResponseWriter, *http.Request) (context.Context, error)
+}
+
+type PostFilter interface {
+    Plugin
+    Key() string
+    PostFilter(context.Context, http.ResponseWriter, *http.Request) (context.Context, error)
 }
 
 // Processors run in parallel and don't impact the request in any way
 // e.g. Gather metrics on requests that don't impact response
-type Processor interface {
+type PreProcessor interface {
     Plugin
     Key() string
-    Process(context.Context, http.ResponseWriter, *http.Request) error
+    PreProcess(context.Context, http.ResponseWriter, *http.Request) error
 }
 
-// Limiter is a type of Filter that tracks relays and may block
-type Limiter interface {
-    Filter
-    // TODO Parent/child stuff
-}
-
-type FilterChain struct {
-    filters []Filter
-    // TODO add other attributes as needed
-}
-
-func (fc FilterChain) Init(filters []Filter) FilterChain {
-    fc.filters = filters
-    return fc
-}
-
-type ProcessorSet struct {
-    procs []Processor
-}
-
-func (ps ProcessorSet) Init(procs []Processor) ProcessorSet {
-    ps.procs = procs
-    return ps
+type PostProcessor interface {
+    Plugin
+    Key() string
+    PostProcess(context.Context, http.ResponseWriter, *http.Request) error
 }

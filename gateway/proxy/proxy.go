@@ -31,12 +31,9 @@ func Start() {
             // TODO move to filter
             req.Host = remote.Host
 
-            pluginRegistry := GetRegistry()
+            reg := GetRegistry()
 
-            // TODO structure this in a reasonable way
-            prefilters := pluginRegistry.GetFilterChain(PRE)
-
-            ctx, err := runFilterChain(ctx, prefilters, resp, req)
+            ctx, err := runPrefilters(ctx, (*reg).preFilters, resp, req)
             if err != nil {
                 var httpErr *HTTPError
                 var code int
@@ -103,16 +100,16 @@ func setupContext(req *http.Request) (context.Context, context.CancelFunc) {
     return ctx, cancel
 }
 
-func runFilterChain(ctx context.Context, fc FilterChain, resp http.ResponseWriter, req *http.Request) (context.Context, error) {
+func runPrefilters(ctx context.Context, prefilters []PreFilter, resp http.ResponseWriter, req *http.Request) (context.Context, error) {
     nextCtx := ctx
-    for _, f := range fc.filters {
+    for _, f := range prefilters {
         retCtx, err := func() (context.Context, error) {
             log.Println("filtering", f.Name())
             select {
             case <-nextCtx.Done():
                 return nextCtx, nextCtx.Err()
             default:
-                return f.Filter(nextCtx, resp, req)
+                return f.PreFilter(nextCtx, resp, req)
             }
         }()
         if err != nil {
@@ -124,11 +121,43 @@ func runFilterChain(ctx context.Context, fc FilterChain, resp http.ResponseWrite
     return nextCtx, nil
 }
 
-func runProcessingSet(ctx context.Context, procs ProcessorSet, resp http.ResponseWriter, req *http.Request) sync.WaitGroup {
+func runPostfilters(ctx context.Context, postfilters []PostFilter, resp http.ResponseWriter, req *http.Request) (context.Context, error) {
+    nextCtx := ctx
+    for _, f := range postfilters {
+        retCtx, err := func() (context.Context, error) {
+            log.Println("filtering", f.Name())
+            select {
+            case <-nextCtx.Done():
+                return nextCtx, nextCtx.Err()
+            default:
+                return f.PostFilter(nextCtx, resp, req)
+            }
+        }()
+        if err != nil {
+            log.Println(err)
+            return nil, err
+        }
+        nextCtx = retCtx
+    }
+    return nextCtx, nil
+}
+
+func runPreprocessors(ctx context.Context, procs []PreProcessor, resp http.ResponseWriter, req *http.Request) sync.WaitGroup {
     var wg sync.WaitGroup
-    for _, p := range procs.procs {
+    for _, p := range procs {
         go func() {
-            p.Process(ctx, resp, req)
+            p.PreProcess(ctx, resp, req)
+        }()
+        wg.Add(1)
+    }
+    return wg
+}
+
+func runPostprocessors(ctx context.Context, procs []PostProcessor, resp http.ResponseWriter, req *http.Request) sync.WaitGroup {
+    var wg sync.WaitGroup
+    for _, p := range procs {
+        go func() {
+            p.PostProcess(ctx, resp, req)
         }()
         wg.Add(1)
     }

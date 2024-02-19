@@ -15,7 +15,7 @@ const SESSION_OPTIONS = {
 
 @Injectable()
 export class SiweService {
-  async getSessionFromCookie(sessionCookie: string) {
+  async getSession(sessionCookie: string) {
     return await unsealData<ISession>(sessionCookie, SESSION_OPTIONS);
   }
 

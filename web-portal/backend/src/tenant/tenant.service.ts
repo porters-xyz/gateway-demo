@@ -10,11 +10,6 @@ export class TenantService {
     private prisma: CustomPrismaService<PrismaClient>, // <-- Inject the PrismaClient
   ) {}
 
-  async countAll(): Promise<number> {
-    const count = await this.prisma.client.tenant.count();
-    return count;
-  }
-
   async create(): Promise<any> {
     const secretKey = randomBytes(8).toString('hex');
     const hashedKey = createHash('sha256').update(secretKey).digest('hex');

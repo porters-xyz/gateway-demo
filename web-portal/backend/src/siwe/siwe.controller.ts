@@ -21,7 +21,7 @@ export class SiweController {
   async getSession(@Req() request: Request): Promise<any> {
     console.log('Get Session from cookie using siwe');
     const sessionCookie = request.cookies.get('session') ?? null;
-    return this.siweService.getSessionFromCookie(sessionCookie);
+    return this.siweService.getSession(sessionCookie);
   }
 
   @Post()

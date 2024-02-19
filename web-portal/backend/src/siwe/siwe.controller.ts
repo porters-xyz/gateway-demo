@@ -11,7 +11,6 @@ import {
 } from '@nestjs/common';
 import { SiweService } from './siwe.service';
 import { Request, Response } from 'express';
-import { generateNonce } from 'siwe';
 
 @Controller('siwe')
 export class SiweController {
@@ -20,7 +19,7 @@ export class SiweController {
   @Get()
   async getSession(@Req() request: Request): Promise<any> {
     console.log('Get Session from cookie using siwe');
-    const sessionCookie = request.cookies.get('session') ?? null;
+    const sessionCookie = request.cookies.get('session')?.value ?? null;
     return this.siweService.getSession(sessionCookie);
   }
 
@@ -31,17 +30,20 @@ export class SiweController {
   ) {
     console.log('Verify ownership using siwe');
     try {
-      await this.siweService.verifyMessage({ message, signature });
-      response.status(HttpStatus.OK).send(true);
+      const cookie = await this.siweService.verifyMessage({
+        message,
+        signature,
+      });
+      response.status(HttpStatus.OK).send(cookie);
     } catch (error) {
       response.status(HttpStatus.BAD_REQUEST).send(false);
     }
   }
 
-  @Put('/nonce')
-  async getNonce(@Req() request: Request, @Res() res: Response) {
-    const sessionCookie = request.cookies.get('session') ?? null;
-    return this.siweService.getNonce(sessionCookie);
+  @Put() // TODO: see if it requires further attention (http method)
+  async getNonce(@Res() response: Response) {
+    const nonce = this.siweService.getNonce();
+    return response.status(HttpStatus.OK).send(nonce);
   }
 
   @Delete()

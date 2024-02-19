@@ -1,4 +1,4 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, HttpException, HttpStatus } from '@nestjs/common';
 import { CustomPrismaService } from 'nestjs-prisma';
 import { PrismaClient } from '@/.generated/client';
 import { randomBytes, createHash } from 'crypto';
@@ -24,7 +24,11 @@ export class AuthkeysService {
       },
     });
 
-    if (!key) throw new Error(`Couldn't create new key!`);
+    if (!key)
+      throw new HttpException(
+        `Couldn't create a new key!`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
 
     return { secretKey };
   }

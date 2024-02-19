@@ -1,6 +1,6 @@
-import { Injectable, HttpStatus } from '@nestjs/common';
+import { Injectable, HttpStatus, HttpException } from '@nestjs/common';
 import { sealData, unsealData } from 'iron-session';
-import { SiweErrorType, SiweMessage } from 'siwe';
+import { SiweErrorType, SiweMessage, generateNonce } from 'siwe';
 
 interface ISession {
   nonce?: string;
@@ -27,14 +27,37 @@ export class SiweService {
     signature: string;
   }) {
     const siweMessage = new SiweMessage(message);
-    return await siweMessage.verify({ signature });
+
+    const session: ISession = {
+      // create session with nonce, address, chainId
+    }
+
+    try {
+      const { data } = await siweMessage.verify({ signature, session.nonce });
+      if (data.nonce != session.nonce) {
+        throw new HttpException('Invalid Nonce', HttpStatus.UNPROCESSABLE_ENTITY)
+      }
+    }
+    catch (error) {
+      switch (error) {
+        case SiweErrorType.INVALID_NONCE:
+        case SiweErrorType.INVALID_SIGNATURE:
+          throw new HttpException(String(error), HttpStatus.UNPROCESSABLE_ENTITY)
+        default:
+          throw new HttpException(String(error), HttpStatus.BAD_REQUEST)
+      }
+    }
+
+    const sessionCookie = await sealData(session, SESSION_OPTIONS)
+
+    return sessionCookie;
   }
 
-  async nonce() {
-    // TODO
+  getNonce() {
+    return generateNonce();
   }
 
   async signOut() {
-    // TODO
+    // TODO delete cookie @Note: maybe just handle in nextjs action
   }
 }

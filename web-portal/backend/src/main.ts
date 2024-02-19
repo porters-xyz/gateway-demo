@@ -7,10 +7,13 @@ async function bootstrap() {
   const { httpAdapter } = app.get(HttpAdapterHost);
   app.useGlobalFilters(new PrismaClientExceptionFilter(httpAdapter));
 
-  // Remove CORS in prod
+  // TODO: Remove CORS in prod
 
   app.enableCors({
-    origin: (process.env.NODE_ENV === 'DEVELOPMENT' ? 'http://localhost:3000' : 'http://frontend:3000'),
+    origin:
+      process.env.NODE_ENV === 'DEVELOPMENT'
+        ? 'http://localhost:3000'
+        : 'http://frontend:3000',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });

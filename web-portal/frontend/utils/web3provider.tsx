@@ -19,6 +19,7 @@ const config = createConfig(
 
 const queryClient = new QueryClient();
 
+// TODO: check if some of these can be handled via nextjs server action
 const siweConfig = {
   getNonce: async () => {
     const res = await fetch(`/siwe`, { method: "PUT" });
@@ -37,7 +38,7 @@ const siweConfig = {
       statement: "Sign In With Ethereum to prove you control this wallet.",
     }).prepareMessage();
   },
-  verifyMessage: ({ message, signature }) => {
+  verifyMessage: async ({ message, signature }) => {
     return fetch(`/siwe`, {
       method: "POST",
       body: JSON.stringify({ message, signature }),

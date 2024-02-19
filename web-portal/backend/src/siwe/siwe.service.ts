@@ -1,9 +1,22 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, HttpStatus } from '@nestjs/common';
+import { sealData, unsealData } from 'iron-session';
+import { SiweErrorType, SiweMessage } from 'siwe';
+
+interface ISession {
+  nonce?: string;
+  chainId?: number;
+  address?: string;
+}
+
+const SESSION_OPTIONS = {
+  ttl: 60 * 60, // 1 hour
+  password: process.env.SESSION_SECRET!,
+};
 
 @Injectable()
 export class SiweService {
-  async getSession(sessionCookie: string) {
-    // TODO
+  async getSessionFromCookie(sessionCookie: string) {
+    return await unsealData<ISession>(sessionCookie, SESSION_OPTIONS);
   }
 
   async verifyMessage({
@@ -13,10 +26,11 @@ export class SiweService {
     message: string;
     signature: string;
   }) {
-    // TODO
+    const siweMessage = new SiweMessage(message);
+    return await siweMessage.verify({ signature });
   }
 
-  async getNonce(sessionCookie: string) {
+  async nonce() {
     // TODO
   }
 

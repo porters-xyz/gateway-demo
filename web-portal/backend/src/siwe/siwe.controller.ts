@@ -1,6 +1,17 @@
-import { Body, Controller, Delete, Get, Post, Put, Req } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Post,
+  Put,
+  Req,
+  Res,
+  HttpStatus,
+} from '@nestjs/common';
 import { SiweService } from './siwe.service';
-import { Request } from 'express';
+import { Request, Response } from 'express';
+import { generateNonce } from 'siwe';
 
 @Controller('siwe')
 export class SiweController {
@@ -8,23 +19,28 @@ export class SiweController {
 
   @Get()
   async getSession(@Req() request: Request): Promise<any> {
-    console.log('Get Session using siwe');
-    const sessionCookie = request.cookies.get('web3session') ?? null;
-    return this.siweService.getSession(sessionCookie);
+    console.log('Get Session from cookie using siwe');
+    const sessionCookie = request.cookies.get('session') ?? null;
+    return this.siweService.getSessionFromCookie(sessionCookie);
   }
 
   @Post()
   async verifyMessage(
     @Body() { message, signature }: { message: string; signature: string },
-  ): Promise<any> {
+    @Res() response: Response,
+  ) {
     console.log('Verify ownership using siwe');
-    return this.siweService.verifyMessage({ message, signature });
+    try {
+      await this.siweService.verifyMessage({ message, signature });
+      response.status(HttpStatus.OK).send(true);
+    } catch (error) {
+      response.status(HttpStatus.BAD_REQUEST).send(false);
+    }
   }
 
-  @Put()
-  async getNonce(@Req() request: Request): Promise<any> {
-    console.log('Get Nonce');
-    const sessionCookie = request.cookies.get('web3session') ?? null;
+  @Put('/nonce')
+  async getNonce(@Req() request: Request, @Res() res: Response) {
+    const sessionCookie = request.cookies.get('session') ?? null;
     return this.siweService.getNonce(sessionCookie);
   }
 

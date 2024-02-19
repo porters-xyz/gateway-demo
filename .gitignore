@@ -52,3 +52,4 @@ out
 # DS_STORE
 *.DS_Store
 ./web-portal/.DS_Store
+docs/pnpm-lock.yaml

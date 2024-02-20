@@ -23,6 +23,8 @@ func Start() {
         log.Println(err)
     }
 
+    reg := GetRegistry()
+    
     handler := func(proxy *httputil.ReverseProxy) func(http.ResponseWriter, *http.Request) {
         return func(resp http.ResponseWriter, req *http.Request) {
             log.Println(req.URL)
@@ -30,8 +32,6 @@ func Start() {
 
             // TODO move to filter
             req.Host = remote.Host
-
-            reg := GetRegistry()
 
             ctx, err := runPrefilters(ctx, (*reg).preFilters, resp, req)
             if err != nil {
@@ -48,7 +48,7 @@ func Start() {
             }
 
             // TODO meant to track incoming requests without slowing things down, read-only
-            //nonBlockingPrehandlers(ctx, resp, req)
+            wg := runPreProcessors(ctx, resp, req)
 
             lifecycle := lifecycleFromContext(ctx)
             log.Println("lifecycle", lifecycle)
@@ -60,12 +60,6 @@ func Start() {
                 log.Println("actually serving")
                 proxy.ServeHTTP(resp, req)
             }
-
-            // TODO is this needed? after serving blocking may be dumb
-            //blockingPosthandlers(ctx, resp, req)
-
-            // TODO any longer tasks that should spawn after handling request
-            //nonBlockingPosthandlers(ctx, resp, req)
         }
     }
 

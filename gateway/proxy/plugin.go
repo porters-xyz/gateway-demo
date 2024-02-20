@@ -12,19 +12,18 @@ import (
 
 type Plugin interface {
     Name() string // used for human readability
+    Key() string
     Load()
 }
 
 // Filters run consecutively and modify the input, output, or context
 type PreFilter interface {
     Plugin
-    Key() string
     PreFilter(context.Context, http.ResponseWriter, *http.Request) (context.Context, error)
 }
 
 type PostFilter interface {
     Plugin
-    Key() string
     PostFilter(context.Context, http.ResponseWriter, *http.Request) (context.Context, error)
 }
 
@@ -32,12 +31,10 @@ type PostFilter interface {
 // e.g. Gather metrics on requests that don't impact response
 type PreProcessor interface {
     Plugin
-    Key() string
     PreProcess(context.Context, http.ResponseWriter, *http.Request) error
 }
 
 type PostProcessor interface {
     Plugin
-    Key() string
     PostProcess(context.Context, http.ResponseWriter, *http.Request) error
 }

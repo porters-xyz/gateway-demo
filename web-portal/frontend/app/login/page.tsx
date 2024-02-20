@@ -4,7 +4,7 @@ import { useForm } from "@mantine/form";
 import { useFormState } from "react-dom";
 import { createTenant, validateTenant } from "./actions";
 import NewTenantModal from "./modal.component";
-
+import { ConnectKitButton } from "connectkit";
 const initialState = {
   key: "",
 };
@@ -59,7 +59,7 @@ export default function Login() {
           Create Key
         </Button>
       </form>
-
+      <ConnectKitButton />
       <NewTenantModal />
     </Container>
   );

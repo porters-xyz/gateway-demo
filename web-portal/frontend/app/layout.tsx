@@ -1,7 +1,7 @@
 // Import styles of packages that you've installed.
 // All packages except `@mantine/hooks` require styles imports
 import "@mantine/core/styles.css";
-
+import { Web3Provider } from "@frontend/utils/web3provider";
 import { ColorSchemeScript, MantineProvider } from "@mantine/core";
 
 export const metadata = {
@@ -20,7 +20,9 @@ export default function RootLayout({
         <ColorSchemeScript />
       </head>
       <body>
-        <MantineProvider>{children}</MantineProvider>
+        <Web3Provider>
+          <MantineProvider>{children}</MantineProvider>
+        </Web3Provider>
       </body>
     </html>
   );

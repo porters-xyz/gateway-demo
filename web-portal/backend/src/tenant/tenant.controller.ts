@@ -15,8 +15,7 @@ export class TenantController {
   @Get()
   async validateTenant(@Query('key') key: string) {
     console.log('This action checks validity of provided key');
-    const validation = await this.tenantService.validateTenant(key);
-    return validation;
+    return this.tenantService.validateTenant(key);
   }
 
   @Get(':id')

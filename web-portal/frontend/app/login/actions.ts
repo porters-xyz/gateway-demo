@@ -1,7 +1,7 @@
 "use server";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
-const apiUrl = process.env.API_ENDPOINT || "http://localhost:4000/";
+import { apiUrl } from "@frontend/utils/consts";
 
 export async function validateTenant(key: string) {
   if (!key) {

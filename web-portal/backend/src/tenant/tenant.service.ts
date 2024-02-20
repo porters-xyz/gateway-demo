@@ -8,7 +8,7 @@ export class TenantService {
   constructor(
     @Inject('Postgres')
     private prisma: CustomPrismaService<PrismaClient>, // <-- Inject the PrismaClient
-  ) {}
+  ) { }
 
   async create() {
     const secretKey = randomBytes(8).toString('hex');
@@ -90,7 +90,7 @@ export class TenantService {
         tenantId: id,
         referenceId: randomBytes(8).toString('hex'),
         transactionType: TransactionType.CREDIT,
-        amount,
+        amount: amount,
       },
     });
 

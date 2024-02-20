@@ -1,1 +1,1 @@
-export const apiUrl = process.env.API_ENDPOINT || "http://0.0.0.0:4000/";
+export const apiUrl = process.env.API_ENDPOINT || "http://backend:4000/";

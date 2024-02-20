@@ -21,7 +21,7 @@ RUN adduser --system --uid 1001 nextjs
 
 
 # Copy the bundled code from the build stage to the production image
-COPY --from=build --chown=nextjs:nodejs /app/.next/standalone ./
+# COPY --from=build --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=build --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 USER nextjs

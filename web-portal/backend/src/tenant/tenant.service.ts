@@ -1,4 +1,4 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, HttpException, HttpStatus } from '@nestjs/common';
 import { CustomPrismaService } from 'nestjs-prisma';
 import { PrismaClient, TransactionType } from '@/.generated/client';
 import { createHash, randomBytes } from 'crypto';
@@ -8,18 +8,11 @@ export class TenantService {
   constructor(
     @Inject('Postgres')
     private prisma: CustomPrismaService<PrismaClient>, // <-- Inject the PrismaClient
-  ) {}
+  ) { }
 
-  async countAll(): Promise<number> {
-    const count = await this.prisma.client.tenant.count();
-    return count;
-  }
-
-  async create(): Promise<any> {
+  async create() {
     const secretKey = randomBytes(8).toString('hex');
     const hashedKey = createHash('sha256').update(secretKey).digest('hex');
-
-    console.log(hashedKey);
 
     const tenant = await this.prisma.client.tenant.create({
       data: {
@@ -27,11 +20,15 @@ export class TenantService {
         secretKey: hashedKey,
       },
     });
-    if (!tenant) throw new Error('Unable to create tenant');
+    if (!tenant)
+      throw new HttpException(
+        'Unable to create tenant',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     return { secret: secretKey };
   }
 
-  async validateTenant(rawKey: string): Promise<any> {
+  async validateTenant(rawKey: string) {
     const hashedKey = createHash('sha256').update(rawKey).digest('hex');
     const tenant = await this.prisma.client.tenant.findUnique({
       where: {
@@ -40,12 +37,15 @@ export class TenantService {
     });
 
     if (!tenant)
-      return { valid: false, id: null, message: 'Invalid secret key' };
+      throw new HttpException(
+        'No tenant found with provided key',
+        HttpStatus.NOT_FOUND,
+      );
 
     return { valid: true, id: tenant.id };
   }
 
-  async getTenantById(id: string): Promise<any> {
+  async getTenantById(id: string) {
     // todo: add jwt/guard to this
     const tenant = await this.prisma.client.tenant.findUnique({
       where: {
@@ -68,26 +68,38 @@ export class TenantService {
       },
     });
 
-    if (!tenant) throw new Error('No tenant exists with such id!');
+    if (!tenant)
+      throw new HttpException(
+        'No tenant exists with such id!',
+        HttpStatus.NOT_FOUND,
+      );
 
     return tenant;
   }
 
-  async addCredits(id: string, amount: number): Promise<any> {
+  async addCredits(id: string, amount: number) {
     const tenantExists = await this.getTenantById(id);
-    if (!tenantExists) throw new Error('No tenant exists with such id!');
+    if (!tenantExists)
+      throw new HttpException(
+        'No tenant exists with such id!',
+        HttpStatus.NOT_FOUND,
+      );
 
     const appliedCredits = await this.prisma.client.paymentLedger.create({
       data: {
         tenantId: id,
         referenceId: randomBytes(8).toString('hex'),
         transactionType: TransactionType.CREDIT,
-        amount,
+        amount: amount,
       },
     });
 
-    if (!appliedCredits) throw new Error('Unable to apply credits to tenant');
+    if (!appliedCredits)
+      throw new HttpException(
+        'Unable to apply credits to tenant',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
 
-    return appliedCredits;
+    return true;
   }
 }

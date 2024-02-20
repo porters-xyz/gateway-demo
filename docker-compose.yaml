@@ -15,15 +15,9 @@ services:
     volumes:
       - porters-postgres:/var/lib/postgresql/data
 
-  docs:
-    build:
-      context: ./docs
-    expose:
-      - 3005
-    ports:
-      - "3005:3005"
-
   frontend:
+    env_file:
+      - .env
     build:
       context: ./web-portal/frontend
     depends_on:

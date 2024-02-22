@@ -6,7 +6,6 @@ package proxy
 //   - Limiter: checks a precondition and allows or rejects proxy forwarding
 
 import (
-    "context"
     "net/http"
 )
 
@@ -16,25 +15,19 @@ type Plugin interface {
     Load()
 }
 
-// Filters run consecutively and modify the input, output, or context
-type PreFilter interface {
+// Prehandlers run in order and can modify the request, or run process based on
+// it
+// Implementation should put any state needed between handlers into context of
+// request
+type PreHandler interface {
     Plugin
-    PreFilter(context.Context, http.ResponseWriter, *http.Request) (context.Context, error)
+    HandleRequest(*http.Request)
 }
 
-type PostFilter interface {
+// Posthandlers run in order and can modify the response, or run process based
+// on the response
+// Implementation should handle context through Response.Request
+type PostHandler interface {
     Plugin
-    PostFilter(context.Context, http.ResponseWriter, *http.Request) (context.Context, error)
-}
-
-// Processors run in parallel and don't impact the request in any way
-// e.g. Gather metrics on requests that don't impact response
-type PreProcessor interface {
-    Plugin
-    PreProcess(context.Context, http.ResponseWriter, *http.Request) error
-}
-
-type PostProcessor interface {
-    Plugin
-    PostProcess(context.Context, http.ResponseWriter, *http.Request) error
+    HandleResponse(*http.Response) error
 }

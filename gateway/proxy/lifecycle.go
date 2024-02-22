@@ -15,6 +15,7 @@ const (
 type LifecycleMask uint16
 const (
     Auth LifecycleMask = 1 << iota
+    AccountLookup
     BalanceCheck
     RateLimit
 )
@@ -25,7 +26,7 @@ type Lifecycle struct {
 // TODO add additional required fields
 func (l Lifecycle) checkComplete() bool {
     // Unused or optional are masked out
-    unused := ^LifecycleMask(7) // lowest bits on
+    unused := ^LifecycleMask(Auth | AccountLookup | BalanceCheck | RateLimit) // lowest bits on
     complete := (l.mask | unused) == ^LifecycleMask(0)
     return complete
 }

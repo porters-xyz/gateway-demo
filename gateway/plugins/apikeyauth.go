@@ -29,23 +29,26 @@ func (a ApiKeyAuth) Key() string {
     return "API_KEY_AUTH"
 }
 
-func (a ApiKeyAuth) Filter(ctx context.Context, resp http.ResponseWriter, req *http.Request) (context.Context, error) {
+func (a ApiKeyAuth) PreHandler(req *http.Request) {
     // TODO this is plaintext in db now, but will need to be checked and hashed
     apiKey := req.Header.Get(a.ApiKeyName)
     // TODO remove logging
     log.Println("apikey", apiKey)
-    newCtx := context.WithValue(ctx, proxy.AUTH_VAL, apiKey)
+    newCtx := context.WithValue(req.Context(), proxy.AUTH_VAL, apiKey)
 
-    if checksumApiKey(apiKey) {
+    if validApiKey(apiKey) {
+        // TODO account may be changed to appId which will be in path
         acct, ok := db.LookupAccount(newCtx, apiKey)
         if !ok || !db.IsValidAccount(newCtx, acct) {
-            return nil, proxy.NewHTTPError(http.StatusUnauthorized)
+            // returning without updating 
+            return
         }
     } else {
-        return nil, proxy.NewHTTPError(http.StatusUnauthorized)
+        return
     }
     lifecycle := proxy.SetStageComplete(newCtx, proxy.Auth)
-    return lifecycle.UpdateContext(newCtx)
+    newCtx, _ = lifecycle.UpdateContext(newCtx)
+    *req = *req.WithContext(newCtx)
 }
 
 // TODO check api key is in valid format to quickly determine errant requests

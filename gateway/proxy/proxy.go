@@ -19,6 +19,7 @@ func Start() {
     // TODO grab url for gateway kit
     proxyUrl := os.Getenv("PROXY_TO")
     remote, err := url.Parse(proxyUrl)
+    log.Println("remote", remote)
     if err != nil {
         log.Println(err)
     }
@@ -54,15 +55,23 @@ func Start() {
     }
 }
 
+func RequestCanceler(req *http.Request) context.CancelCauseFunc {
+    ctx, cancel := context.WithCancelCause(req.Context())
+    *req = *req.WithContext(ctx)
+    return cancel
+}
+
 func setupProxy(remote *url.URL) *httputil.ReverseProxy {
     revProxy := httputil.NewSingleHostReverseProxy(remote)
     reg := GetRegistry()
 
-    // 
     revProxy.Director = func(req *http.Request) {
         // TODO move to filter
-        req.Host = remote.Host
-        cancel := requestCanceler(req)
+        //req.Host = remote.Host
+        req.URL = remote
+
+        log.Println(req)
+        cancel := RequestCanceler(req)
 
         for _, h := range (*reg).preHandlers {
             select {
@@ -94,6 +103,7 @@ func setupProxy(remote *url.URL) *httputil.ReverseProxy {
 
     revProxy.ErrorHandler = func(resp http.ResponseWriter, req *http.Request, err error) {
         // TODO handle errors elegantly
+        log.Println(err)
         var httpErr *HTTPError
         if errors.As(err, &httpErr) {
             status := httpErr.code
@@ -114,8 +124,3 @@ func setupContext(req *http.Request) {
     *req = *req.WithContext(lifecyclectx)
 }
 
-func requestCanceler(req *http.Request) context.CancelCauseFunc {
-    ctx, cancel := context.WithCancelCause(req.Context())
-    *req = *req.WithContext(ctx)
-    return cancel
-}

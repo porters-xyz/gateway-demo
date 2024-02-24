@@ -65,20 +65,26 @@ func setupProxy(remote *url.URL) *httputil.ReverseProxy {
     revProxy := httputil.NewSingleHostReverseProxy(remote)
     reg := GetRegistry()
 
+    defaultDirector := revProxy.Director
     revProxy.Director = func(req *http.Request) {
+        defaultDirector(req)
+
         // TODO move to filter
-        //req.Host = remote.Host
-        req.URL = remote
+        req.Host = remote.Host
 
         log.Println(req)
         cancel := RequestCanceler(req)
 
-        for _, h := range (*reg).preHandlers {
-            select {
-            case <-req.Context().Done():
-                return
-            default:
-                h.HandleRequest(req)
+        for _, p := range (*reg).plugins {
+            h, ok := p.(PreHandler)
+            if ok {
+                log.Println("encountered", p.Name())
+                select {
+                case <-req.Context().Done():
+                    return
+                default:
+                    h.HandleRequest(req)
+                }
             }
         }
 
@@ -86,16 +92,20 @@ func setupProxy(remote *url.URL) *httputil.ReverseProxy {
         lifecycle := lifecycleFromContext(req.Context())
         if !lifecycle.checkComplete() {
             err := NewLifecycleIncompleteError()
+            log.Println("lifecycle incomplete", lifecycle)
             cancel(err)
         }
     }
 
     revProxy.ModifyResponse = func(resp *http.Response) error {
         var err error
-        for _, h := range (*reg).postHandlers {
-            newerr := h.HandleResponse(resp)
-            if newerr != nil {
-                err = errors.Join(err, newerr)
+        for _, p := range (*reg).plugins {
+            h, ok := p.(PostHandler)
+            if ok {
+                newerr := h.HandleResponse(resp)
+                if newerr != nil {
+                    err = errors.Join(err, newerr)
+                }
             }
         }
         return err
@@ -120,7 +130,7 @@ func setupProxy(remote *url.URL) *httputil.ReverseProxy {
 func setupContext(req *http.Request) {
     // TODO read ctx from request and make any modifications
     ctx := req.Context()
-    lifecyclectx, _ := Lifecycle{}.UpdateContext(ctx)
+    lifecyclectx := Lifecycle{}.UpdateContext(ctx)
     *req = *req.WithContext(lifecyclectx)
 }
 

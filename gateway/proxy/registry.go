@@ -10,8 +10,7 @@ import (
 )
 
 type registry struct {
-    preHandlers []PreHandler
-    postHandlers []PostHandler
+    plugins []Plugin
     keySet map[string]Plugin
 }
 
@@ -21,8 +20,7 @@ var registryMutex sync.Once
 func GetRegistry() *registry {
     registryMutex.Do(func() {
         pluginRegistry = &registry{
-            preHandlers: make([]PreHandler, 0),
-            postHandlers: make([]PostHandler, 0),
+            plugins: make([]Plugin, 0),
             keySet: make(map[string]Plugin),
         }
     })
@@ -38,14 +36,7 @@ func Register(plugin Plugin) {
     }
     plugin.Load()
 
-    switch p := plugin.(type) {
-    case PreHandler:
-		pluginRegistry.preHandlers = append(pluginRegistry.preHandlers, p)
-    case PostHandler:
-		pluginRegistry.postHandlers = append(pluginRegistry.postHandlers, p)
-    default:
-		log.Println("could not determine plugin type")
-    }
+    pluginRegistry.plugins = append(pluginRegistry.plugins, plugin)
 }
 
 func avoidCollision(plugin Plugin) error {

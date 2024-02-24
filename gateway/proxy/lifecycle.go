@@ -31,8 +31,8 @@ func (l Lifecycle) checkComplete() bool {
     return complete
 }
 
-func (l Lifecycle) UpdateContext(ctx context.Context) (context.Context, error) {
-    return context.WithValue(ctx, LIFECYCLE_MASK, l), nil
+func (l Lifecycle) UpdateContext(ctx context.Context) context.Context {
+    return context.WithValue(ctx, LIFECYCLE_MASK, l)
 }
 
 func lifecycleFromContext(ctx context.Context) Lifecycle {

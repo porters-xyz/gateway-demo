@@ -43,7 +43,7 @@ func (q Quota) PreFilter(ctx context.Context, resp http.ResponseWriter, req *htt
         if quota {
             log.Println("quota remaining")
             lifecycle := proxy.SetStageComplete(ctx, proxy.BalanceCheck)
-            newCtx, err = lifecycle.UpdateContext(ctx)
+            newCtx = lifecycle.UpdateContext(ctx)
         } else {
             log.Println("none remaining", key, quota)
             err = proxy.NewBalanceExceededError()

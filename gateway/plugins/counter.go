@@ -1,8 +1,7 @@
 package plugins
 
 import (
-    "context"
-    "fmt"
+    "log"
     "net/http"
     "porters/db"
     "strconv"
@@ -11,7 +10,7 @@ import (
 type Counter struct {}
 
 func (c Counter) Load() {
-    fmt.Println("loading " + c.Name())
+    log.Println("loading " + c.Name())
 }
 
 func (c Counter) Name() string {
@@ -24,8 +23,9 @@ func (c Counter) Key() string {
 
 // Just count all requests
 // and add header for now
-func (c Counter) Filter(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
-    newCount := db.IncrCounter(ctx, c.Name())
-    fmt.Println("count " + strconv.FormatInt(newCount, 10))
-    resp.Header().Set("X-Counter", strconv.FormatInt(newCount, 10))
+func (c Counter) PostHandler(resp *http.Response) error {
+    newCount := db.IncrCounter(resp.Request.Context(), c.Key())
+    log.Println("count", strconv.FormatInt(newCount, 10))
+    resp.Header.Set("X-Counter", strconv.FormatInt(newCount, 10))
+    return nil
 }

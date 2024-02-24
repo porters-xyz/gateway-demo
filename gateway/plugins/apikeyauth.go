@@ -29,7 +29,7 @@ func (a ApiKeyAuth) Key() string {
     return "API_KEY_AUTH"
 }
 
-func (a ApiKeyAuth) PreHandler(req *http.Request) {
+func (a ApiKeyAuth) HandleRequest(req *http.Request) {
     // TODO this is plaintext in db now, but will need to be checked and hashed
     apiKey := req.Header.Get(a.ApiKeyName)
     // TODO remove logging
@@ -47,7 +47,7 @@ func (a ApiKeyAuth) PreHandler(req *http.Request) {
         return
     }
     lifecycle := proxy.SetStageComplete(newCtx, proxy.Auth)
-    newCtx, _ = lifecycle.UpdateContext(newCtx)
+    newCtx = lifecycle.UpdateContext(newCtx)
     *req = *req.WithContext(newCtx)
 }
 

@@ -22,13 +22,13 @@ func (b Blocker) Key() string {
     return "BLOCKER"
 }
 
-func (b Blocker) PreHandler(req *http.Request) {
+func (b Blocker) HandleRequest(req *http.Request) {
     cancel := proxy.RequestCanceler(req)
-    cancel(errors.New(fmt.Sprint("blocked by prehandler", b.Name())))
     log.Println("logging block")
+    cancel(errors.New(fmt.Sprint("blocked by prehandler", b.Name())))
 }
 
-func (b Blocker) PostHandler(resp *http.Response) error {
+func (b Blocker) HandleResponse(resp *http.Response) error {
     log.Println("logging block (post)")
     return errors.New(fmt.Sprint("blocked by posthandler", b.Name()))
 }

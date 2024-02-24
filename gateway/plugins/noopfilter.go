@@ -1,8 +1,7 @@
 package plugins
 
 import (
-    "context"
-    "fmt"
+    "log"
     "net/http"
     "porters/proxy"
 )
@@ -12,7 +11,7 @@ type NoopFilter struct {
 }
 
 func (n NoopFilter) Load() {
-    fmt.Println("loading " + n.Name())
+    log.Println("loading " + n.Name())
 }
 
 func (n NoopFilter) Name() string {
@@ -23,7 +22,9 @@ func (n NoopFilter) Key() string {
     return "NOOP_FILTER"
 }
 
-func (n NoopFilter) Filter(ctx context.Context, resp http.ResponseWriter, req *http.Request) (context.Context, error) {
-    lifecycle := proxy.SetStageComplete(ctx, n.LifecycleStage)
-    return lifecycle.UpdateContext(ctx)
+func (n NoopFilter) HandleRequest(req *http.Request) {
+    log.Println(req)
+    lifecycle := proxy.SetStageComplete(req.Context(), n.LifecycleStage)
+    *req = *req.WithContext(lifecycle.UpdateContext(req.Context()))
+    log.Println(req)
 }

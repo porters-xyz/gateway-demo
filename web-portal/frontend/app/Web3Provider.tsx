@@ -20,7 +20,11 @@ const config = createConfig(
     // appUrl: "https://family.co", // your app's url
     // appIcon: "https://family.co/logo.png", // your app's icon, no bigger than 1024x1024px (max. 1MB)
     transports: {
-      [mainnet.id]: fallback([http(`https://eth-pokt.nodies.app`)]),
+      [mainnet.id]: fallback([
+        http(
+          process.env.NEXT_PUBLIC_RPC_ENDPOINT ?? `https://eth-pokt.nodies.app`,
+        ),
+      ]),
     },
     walletConnectProjectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID!,
   }),

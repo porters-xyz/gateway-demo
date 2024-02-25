@@ -1,6 +1,6 @@
-import { Injectable, HttpStatus, HttpException } from '@nestjs/common';
-import { unsealData } from 'iron-session';
-import { SiweErrorType, SiweMessage, generateNonce } from 'siwe';
+import { Injectable } from '@nestjs/common';
+import { sealData, unsealData } from 'iron-session';
+import { SiweMessage, generateNonce } from 'siwe';
 
 interface ISession {
   nonce?: string;
@@ -10,14 +10,14 @@ interface ISession {
 
 const SESSION_OPTIONS = {
   ttl: 60 * 60, // 1 hour
-  password: process.env.SESSION_SECRET!,
+  password:
+    process.env.SESSION_SECRET! ?? `NNb774sZ7bNnGkWTwkXE3T9QWCAC5DkY0HTLz`, // TODO: get via env vars only
 };
 
 @Injectable()
 export class SiweService {
   async getSession(sessionCookie: string) {
     return await unsealData<ISession>(sessionCookie, SESSION_OPTIONS);
-    //TODO:  create new session otherwise?
   }
 
   async verifyMessage({
@@ -33,9 +33,14 @@ export class SiweService {
 
     const { data } = await siweMessage.verify({ signature, nonce });
 
-    // console.log(data.nonce, nonce);
+    const session: ISession = {
+      nonce: data?.nonce,
+      chainId: data?.chainId,
+      address: data?.address,
+    };
 
-    return data?.nonce === nonce ? true : false;
+    const cookie = await sealData(session, SESSION_OPTIONS);
+    return data?.nonce === nonce ? cookie : false;
   }
 
   getNonce() {

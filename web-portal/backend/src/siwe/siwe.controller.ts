@@ -22,9 +22,13 @@ export class SiweController {
   ): Promise<any> {
     console.log('Get Session from cookie using siwe');
     const sessionCookie = request?.cookies?.get('session')?.value ?? null;
+
+    console.log(sessionCookie);
+
     if (!sessionCookie) {
       return response.status(HttpStatus.BAD_REQUEST).send(false);
     }
+
     return this.siweService.getSession(sessionCookie);
   }
 
@@ -42,11 +46,13 @@ export class SiweController {
       nonce,
     });
 
-    //TODO:  implement session via cookie
-
     return response
       .status(authenticated ? HttpStatus.OK : HttpStatus.NOT_FOUND)
-      .send(authenticated);
+      .cookie('session', authenticated, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+      })
+      .send(Boolean(authenticated));
   }
 
   @Put() // TODO: see if it requires further attention (http method)

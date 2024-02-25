@@ -6,6 +6,7 @@ import { PrismaClient } from '@/.generated/client';
 import { TenantModule } from './tenant/tenant.module';
 import { AppController } from './app.controller';
 import { AuthkeysModule } from './authkeys/authkeys.module';
+import { SiweModule } from './siwe/siwe.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { AuthkeysModule } from './authkeys/authkeys.module';
     }),
     TenantModule,
     AuthkeysModule,
+    SiweModule,
   ],
   providers: [AppService],
   controllers: [AppController],

@@ -19,12 +19,16 @@ var redisMutex sync.Once
 func getClient() *redis.Client {
     redisMutex.Do(func() {
         // TODO figure out which redis instance to connect to
-        client = redis.NewClient(&redis.Options{
-            Addr: os.Getenv("REDIS_ADDR"),
-            Username: os.Getenv("REDIS_USER"),
-            Password: os.Getenv("REDIS_PASSWORD"),
-            DB: 0,
-        })
+        opts, err := redis.ParseURL(os.Getenv("REDIS_URL"))
+        if err != nil {
+            opts = &redis.Options{
+                Addr: os.Getenv("REDIS_ADDR"),
+                Username: os.Getenv("REDIS_USER"),
+                Password: os.Getenv("REDIS_PASSWORD"),
+                DB: 0,
+            }
+        }
+        client = redis.NewClient(opts)
         log.Println("redis client:", client)
     })
     return client

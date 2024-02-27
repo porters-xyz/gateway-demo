@@ -27,6 +27,9 @@ func ConnectSync() *Sync {
     listener := pq.NewListener(connStr, 10*time.Second, 2*time.Minute, sync.eventListener)
     sync.listener = listener
 
+    // Check redis
+    healthcheck()
+
     return sync
 }
 

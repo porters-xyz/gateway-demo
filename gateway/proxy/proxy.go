@@ -2,13 +2,17 @@ package proxy
 
 import (
     "context"
+    "fmt"
     "errors"
+    "io"
     "log"
     "net/url"
     "net/http"
     "net/http/httputil"
     "os"
     "sync"
+
+    "porters/db"
 )
 
 func Start() {
@@ -68,8 +72,23 @@ func Start() {
         }
     }
 
+    healthHandler := func() func(http.ResponseWriter, *http.Request) {
+        return func(resp http.ResponseWriter, req *http.Request) {
+            pong, err := db.Healthcheck()
+            resp.Header().Set("Content-Type", "application/json")
+            var json string
+            if err != nil {
+                json = fmt.Sprintf(`{"redis": "%s"}`, err.Error())
+            } else {
+                json = fmt.Sprintf(`{"redis": "%s"}`, pong)
+            }
+            io.WriteString(resp, json)
+        }
+    }
+
     revProxy := httputil.NewSingleHostReverseProxy(remote)
     http.HandleFunc("/", handler(revProxy))
+    http.HandleFunc("/health", healthHandler())
     err2 := http.ListenAndServe(":9000", nil)
     if err2 != nil {
         panic(err2)

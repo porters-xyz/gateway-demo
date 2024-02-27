@@ -34,7 +34,8 @@ func getClient() *redis.Client {
     return client
 }
 
-func healthcheck() {
+// TODO make this a method on cache object
+func Healthcheck() (string, error) {
     client := getClient()
     ctx := context.Background()
     status, err := client.Ping(ctx).Result()
@@ -43,4 +44,6 @@ func healthcheck() {
     } else {
         log.Println("redis:", status)
     }
+
+    return status, err
 }

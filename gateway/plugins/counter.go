@@ -23,7 +23,8 @@ func (c Counter) Key() string {
 
 // Just count all requests
 // and add header for now
-func (c Counter) PostHandler(resp *http.Response) error {
+// TODO make this asynchronous and remove header set
+func (c Counter) HandleResponse(resp *http.Response) error {
     newCount := db.IncrCounter(resp.Request.Context(), c.Key())
     log.Println("count", strconv.FormatInt(newCount, 10))
     resp.Header.Set("X-Counter", strconv.FormatInt(newCount, 10))

@@ -6,6 +6,7 @@ import (
     "porters/proxy"
 )
 
+// This can be used to trigger lifecycle stages without performing any task
 type NoopFilter struct {
     LifecycleStage proxy.LifecycleMask
 }
@@ -23,8 +24,6 @@ func (n NoopFilter) Key() string {
 }
 
 func (n NoopFilter) HandleRequest(req *http.Request) {
-    log.Println(req)
     lifecycle := proxy.SetStageComplete(req.Context(), n.LifecycleStage)
     *req = *req.WithContext(lifecycle.UpdateContext(req.Context()))
-    log.Println(req)
 }

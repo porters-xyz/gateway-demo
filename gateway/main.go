@@ -1,7 +1,7 @@
 package main
 
 import (
-    "fmt"
+    "log"
     "porters/db"
     "porters/plugins"
     "porters/proxy"
@@ -17,11 +17,13 @@ func main() {
     if arg == "gateway" {
         startupPostgresSync()
         // currently registering plugins via main
-        proxy.Register(plugins.ApiKeyAuth{"X-API"})
-        proxy.Register(plugins.Quota{})
-        proxy.Register(plugins.NoopFilter{proxy.RateLimit})
+        proxy.Register(plugins.Counter{})
+        //proxy.Register(plugins.ApiKeyAuth{"X-API"})
+        //proxy.Register(plugins.Quota{})
+        mask := proxy.LifecycleMask(proxy.Auth|proxy.AccountLookup|proxy.BalanceCheck|proxy.RateLimit)
+        proxy.Register(plugins.NoopFilter{mask})
 
-        fmt.Println("starting gateway")
+        log.Println("starting gateway")
         proxy.Start()
     }
 }
@@ -38,6 +40,6 @@ func startupPostgresSync() {
     go func() {
         wg.Wait()
         s.Close()
-        fmt.Println("waitgroup done")
+        log.Println("waitgroup done")
     }()
 }

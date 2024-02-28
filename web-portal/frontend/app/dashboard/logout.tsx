@@ -6,7 +6,6 @@ export default function LogoutButton() {
     <>
       <form action={logout}>
         <Button type="submit" variant="outline">
-          {" "}
           Logout
         </Button>
       </form>

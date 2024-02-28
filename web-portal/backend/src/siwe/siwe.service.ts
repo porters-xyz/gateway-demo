@@ -1,6 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotAcceptableException,
+} from '@nestjs/common';
 import { sealData, unsealData } from 'iron-session';
-import { SiweMessage, generateNonce } from 'siwe';
+import { SiweMessage, generateNonce, SiweErrorType } from 'siwe';
 
 interface ISession {
   nonce?: string;
@@ -17,7 +21,11 @@ const SESSION_OPTIONS = {
 @Injectable()
 export class SiweService {
   async getSession(sessionCookie: string) {
-    return await unsealData<ISession>(sessionCookie, SESSION_OPTIONS);
+    const { address, chainId } = await unsealData<ISession>(
+      sessionCookie,
+      SESSION_OPTIONS,
+    );
+    return { address, chainId };
   }
 
   async verifyMessage({
@@ -29,25 +37,38 @@ export class SiweService {
     signature: string;
     nonce: string;
   }) {
-    const siweMessage = new SiweMessage(message);
+    try {
+      const siweMessage = new SiweMessage(message);
+      const { data: fields } = await siweMessage.verify({
+        signature,
+        nonce: nonce,
+      });
 
-    const { data } = await siweMessage.verify({ signature, nonce });
+      if (fields.nonce !== nonce) {
+        return new ConflictException('Invalid Nonce');
+      }
 
-    const session: ISession = {
-      nonce: data?.nonce,
-      chainId: data?.chainId,
-      address: data?.address,
-    };
+      const session: ISession = {
+        nonce: fields?.nonce,
+        chainId: fields?.chainId,
+        address: fields?.address,
+      };
 
-    const cookie = await sealData(session, SESSION_OPTIONS);
-    return data?.nonce === nonce ? cookie : false;
+      const cookie = await sealData(session, SESSION_OPTIONS);
+      return cookie;
+    } catch (error) {
+      switch (error) {
+        case SiweErrorType.INVALID_NONCE:
+        case SiweErrorType.INVALID_SIGNATURE:
+          return new NotAcceptableException(`Couldn't verify signature`);
+
+        default:
+          return;
+      }
+    }
   }
 
   getNonce() {
     return generateNonce();
-  }
-
-  async signOut() {
-    // TODO delete cookie @Note: maybe just handle in nextjs action
   }
 }

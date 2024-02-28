@@ -5,7 +5,7 @@
 import "@mantine/core/styles.css";
 
 import { ColorSchemeScript, MantineProvider } from "@mantine/core";
-import Web3Provider from "./Web3Provider";
+import Web3Provider from "@frontend/utils/Web3Provider";
 import { metadata } from "@frontend/utils/consts";
 
 export default function RootLayout({

@@ -42,5 +42,7 @@ export async function getTenant() {
 
 export async function logout() {
   cookies().delete("tenant");
-  redirect("/login");
+  console.log("called logout");
+  cookies().delete("session");
+  return true;
 }

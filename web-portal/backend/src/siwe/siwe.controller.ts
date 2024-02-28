@@ -21,15 +21,19 @@ export class SiweController {
     @Res() response: Response,
   ): Promise<any> {
     console.log('Get Session from cookie using siwe');
-    const sessionCookie = request?.cookies?.get('session')?.value ?? null;
-
-    console.log(sessionCookie);
+    const sessionCookie = request?.cookies['session'];
 
     if (!sessionCookie) {
       return response.status(HttpStatus.BAD_REQUEST).send(false);
     }
 
-    return this.siweService.getSession(sessionCookie);
+    const session = await this.siweService.getSession(sessionCookie);
+
+    if (!session) {
+      return response.status(HttpStatus.BAD_REQUEST).send(false);
+    }
+
+    return response.status(HttpStatus.OK).send(session);
   }
 
   @Post()
@@ -46,10 +50,11 @@ export class SiweController {
       nonce,
     });
 
+    console.log('authentication was ', authenticated);
+
     return response
       .status(authenticated ? HttpStatus.OK : HttpStatus.NOT_FOUND)
       .cookie('session', authenticated, {
-        httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
       })
       .send(Boolean(authenticated));
@@ -59,11 +64,5 @@ export class SiweController {
   async getNonce(@Res() response: Response) {
     const nonce = this.siweService.getNonce();
     return response.status(HttpStatus.OK).send(nonce);
-  }
-
-  @Delete()
-  async signOut(): Promise<any> {
-    console.log('SIWE logout');
-    return this.siweService.signOut();
   }
 }

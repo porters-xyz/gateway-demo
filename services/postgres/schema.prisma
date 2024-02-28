@@ -3,7 +3,7 @@ datasource db {
     // TODO: production fix required
     // url      = env("DATABASE_URL") // prod
     // url      = "postgresql://postgres:pass@postgres:5432" // docker
-    url      = "postgresql://postgres:pass@localhost:5432" // local
+    url      = "postgresql://memosys:I3YrOztbPn0x@ep-crimson-firefly-a5hrtyp9.us-east-2.aws.neon.tech/neondb?sslmode=require" // local
 }
 
 generator client {

@@ -21,7 +21,7 @@ func main() {
         //proxy.Register(plugins.ApiKeyAuth{"X-API"})
         //proxy.Register(plugins.Quota{})
         mask := proxy.LifecycleMask(proxy.Auth|proxy.AccountLookup|proxy.BalanceCheck|proxy.RateLimit)
-        proxy.Register(plugins.NoopFilter{mask})
+        proxy.Register(plugins.NoopFilter{LifecycleStage: mask})
 
         log.Println("starting gateway")
         proxy.Start()

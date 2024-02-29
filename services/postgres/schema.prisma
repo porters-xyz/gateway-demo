@@ -1,9 +1,9 @@
 datasource db {
     provider = "postgresql"
     // TODO: production fix required
-    url      = env("DATABASE_URL") // prod
+    // url      = env("DATABASE_URL") // prod
     // url      = "postgresql://postgres:pass@postgres:5432" // docker
-    // url      = "postgresql://postgres:pass@localhost:5432" // local
+    url      = "postgresql://postgres:pass@localhost:5432" // local
 }
 
 generator client {

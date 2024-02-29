@@ -1,7 +1,6 @@
 package plugins
 
 import (
-    "log"
     "reflect"
     "testing"
     "porters/proxy"

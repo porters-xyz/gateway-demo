@@ -4,14 +4,13 @@ package plugins
 
 
 import (
-    "context"
     "fmt"
     "net/http"
 )
 
 type LeakyBucketPlugin struct {
     // Allows for multiple versions of leaky buckets focused on different scopes
-    scopeContext proxy.ScopeContext
+    scopeContext string // switch to type on proxy for scopes (tenant, provider, app, client)
 }
 
 // For each request lookup set of buckets for app/key/tenant etc

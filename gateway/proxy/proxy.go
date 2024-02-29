@@ -2,7 +2,6 @@ package proxy
 
 import (
     "context"
-    "fmt"
     "errors"
     "io"
     "log"
@@ -10,7 +9,6 @@ import (
     "net/http"
     "net/http/httputil"
     "os"
-    "sync"
 
     "porters/db"
 )
@@ -34,15 +32,9 @@ func Start() {
 
     healthHandler := func() func(http.ResponseWriter, *http.Request) {
         return func(resp http.ResponseWriter, req *http.Request) {
-            pong, err := db.Healthcheck()
+            hc := (&db.Cache{}).Healthcheck()
             resp.Header().Set("Content-Type", "application/json")
-            var json string
-            if err != nil {
-                json = fmt.Sprintf(`{"redis": "%s"}`, err.Error())
-            } else {
-                json = fmt.Sprintf(`{"redis": "%s"}`, pong)
-            }
-            io.WriteString(resp, json)
+            io.WriteString(resp, hc.ToJson())
         }
     }
 

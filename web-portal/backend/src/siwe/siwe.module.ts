@@ -4,6 +4,6 @@ import { SiweService } from './siwe.service';
 
 @Module({
   controllers: [SiweController],
-  providers: [SiweService]
+  providers: [SiweService],
 })
 export class SiweModule {}

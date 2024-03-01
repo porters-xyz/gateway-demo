@@ -4,7 +4,7 @@ import {
   NotAcceptableException,
 } from '@nestjs/common';
 import { sealData, unsealData } from 'iron-session';
-import { SiweMessage, generateNonce, SiweErrorType } from 'siwe';
+import { SiweMessage, generateNonce } from 'siwe';
 
 interface ISession {
   nonce?: string;

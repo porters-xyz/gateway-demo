@@ -5,7 +5,6 @@ import { CustomPrismaModule } from 'nestjs-prisma';
 import { PrismaClient } from '@/.generated/client';
 import { TenantModule } from './tenant/tenant.module';
 import { AppController } from './app.controller';
-import { AuthkeysModule } from './authkeys/authkeys.module';
 import { SiweModule } from './siwe/siwe.module';
 
 @Module({
@@ -19,7 +18,7 @@ import { SiweModule } from './siwe/siwe.module';
       envFilePath: ['@/.env', '.env.local'],
     }),
     TenantModule,
-    AuthkeysModule,
+
     SiweModule,
   ],
   providers: [AppService],

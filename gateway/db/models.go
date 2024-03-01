@@ -1,8 +1,13 @@
 package db
 
 import (
-    "context"
     "strings"
+)
+
+const (
+    TENANT string = "TENANT"
+    APP           = "APP"
+    
 )
 
 type tenant struct {
@@ -40,38 +45,6 @@ func parseTxType(str string) TxType {
         return Debit
     }else {
         return Unknown
-    }
-}
-
-func (t *tenant) writeToCache(ctx context.Context) {
-    // TODO call redis create with key format
-    err := getClient().HSet(ctx, GenAccountKey(t.id), "enabled", t.enabled).Err()
-    if err != nil {
-        // TODO handle errors should they happen
-    }
-}
-
-func (a *apiKey) writeToCache(ctx context.Context) {
-    // TODO call redis create with key format
-    err := getClient().HSet(ctx, GenApiKey(a.key), "account", a.tenantId, "enabled", a.enabled).Err()
-    if err != nil {
-        // TODO handle errors correctly
-    }
-}
-
-func (p *paymentTx) writeToCache(ctx context.Context) {
-    var err error
-    if p.txType == Credit {
-        err = getClient().HIncrBy(ctx, GenAccountKey(p.tenantId), "cached_remaining", int64(p.amount)).Err()
-        if err != nil {
-            // TODO handle errors should they happen
-        }
-        err = getClient().HIncrBy(ctx, GenAccountKey(p.tenantId), "relays_remaining", int64(p.amount)).Err()
-    } else {
-        err = getClient().HIncrBy(ctx, GenAccountKey(p.tenantId), "cached_remaining", -int64(p.amount)).Err()
-    }
-    if err != nil {
-        // TODO handle errors should they happen
     }
 }
 

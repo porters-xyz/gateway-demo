@@ -24,7 +24,7 @@ type Cache struct {
 var client *redis.Client
 var redisMutex sync.Once
 
-func getClient() *redis.Client {
+func getCache() *redis.Client {
     redisMutex.Do(func() {
         // TODO figure out which redis instance to connect to
         opts, err := redis.ParseURL(os.Getenv("REDIS_URL"))
@@ -45,7 +45,7 @@ func getClient() *redis.Client {
 // TODO make this a method on cache object
 func (c *Cache) Healthcheck() *common.HealthCheckStatus {
     hcs := common.NewHealthCheckStatus()
-    client := getClient()
+    client := getCache()
     ctx := context.Background()
     status, err := client.Ping(ctx).Result()
     if err != nil {
@@ -55,4 +55,37 @@ func (c *Cache) Healthcheck() *common.HealthCheckStatus {
     }
 
     return hcs
+}
+
+func (t *tenant) writeToCache(ctx context.Context) {
+    // TODO call redis create with key format
+    err := getCache().HSet(ctx, GenAccountKey(t.id), "enabled", t.enabled).Err()
+    if err != nil {
+        // TODO handle errors should they happen
+    }
+}
+
+func (a *apiKey) writeToCache(ctx context.Context) {
+    // TODO call redis create with key format
+    err := getCache().HSet(ctx, GenApiKey(a.key), "account", a.tenantId, "enabled", a.enabled).Err()
+    if err != nil {
+        // TODO handle errors correctly
+    }
+}
+
+// TODO can this be done in single hop? maybe put in lua script?
+func (p *paymentTx) writeToCache(ctx context.Context) {
+    var err error
+    if p.txType == Credit {
+        err = getCache().HIncrBy(ctx, GenAccountKey(p.tenantId), "cached_remaining", int64(p.amount)).Err()
+        if err != nil {
+            // TODO handle errors should they happen
+        }
+        err = getCache().HIncrBy(ctx, GenAccountKey(p.tenantId), "relays_remaining", int64(p.amount)).Err()
+    } else {
+        err = getCache().HIncrBy(ctx, GenAccountKey(p.tenantId), "cached_remaining", -int64(p.amount)).Err()
+    }
+    if err != nil {
+        // TODO handle errors should they happen
+    }
 }

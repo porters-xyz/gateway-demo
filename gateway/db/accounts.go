@@ -16,7 +16,7 @@ type Account struct {
 
 func IncRelayCount(ctx context.Context, account string) {
     // TODO figure out account scheme
-    _, err := getClient().Incr(ctx, account).Result()
+    _, err := getCache().Incr(ctx, account).Result()
     if err != nil {
         // TODO handle errors properly
         fmt.Println(err)
@@ -27,7 +27,7 @@ func IncRelayCount(ctx context.Context, account string) {
 
 // TODO remove, just for testing
 func IncrCounter(ctx context.Context, name string) int64 {
-    result, err := getClient().Incr(ctx, name).Result()
+    result, err := getCache().Incr(ctx, name).Result()
     if err != nil {
         // TODO handle errors properly
         return 0
@@ -37,7 +37,7 @@ func IncrCounter(ctx context.Context, name string) int64 {
 
 // TODO just for testing
 func DecrCounter(ctx context.Context, name string) int64 {
-    result, err := getClient().Decr(ctx, name).Result()
+    result, err := getCache().Decr(ctx, name).Result()
     if err != nil {
         // TODO handle errors properly
         return 0
@@ -51,7 +51,7 @@ func DecrCounter(ctx context.Context, name string) int64 {
 func IsValidAccount(ctx context.Context, account Account) bool {
     key := GenAccountKey(account.id)
     log.Println("acctkey", key)
-    result, err := getClient().HGet(ctx, key, "enabled").Result()
+    result, err := getCache().HGet(ctx, key, "enabled").Result()
     resbool, err2 := strconv.ParseBool(result)
     log.Println("enabled", resbool)
     if err != nil || err2 != nil{
@@ -62,7 +62,7 @@ func IsValidAccount(ctx context.Context, account Account) bool {
 }
 
 func GetIntVal(ctx context.Context, name string) int {
-    result, err := getClient().Get(ctx, name).Result()
+    result, err := getCache().Get(ctx, name).Result()
     if err != nil {
         // TODO how do we handle errors
         return 0
@@ -80,7 +80,7 @@ func LookupAccount(ctx context.Context, apiKey string) (Account, bool) {
     // TODO do this in tx that checks and gets account information?
     hashedKey := utils.Hash(apiKey)
     key := GenApiKey(hashedKey)
-    result, err := getClient().HGet(ctx, key, "account").Result()
+    result, err := getCache().HGet(ctx, key, "account").Result()
     if err != nil {
         // TODO handle errors better
         return Account{}, false
@@ -91,12 +91,12 @@ func LookupAccount(ctx context.Context, apiKey string) (Account, bool) {
 func UseRelay(ctx context.Context, apiKey string) {
     hashedKey := utils.Hash(apiKey)
     key := GenApiKey(hashedKey)
-    account, err := getClient().HGet(ctx, key, "account").Result()
+    account, err := getCache().HGet(ctx, key, "account").Result()
     if err != nil {
         // TODO log error to alert, will need manual cleanup
     } else {
         acctKey := GenAccountKey(account)
-        err2 := getClient().HIncrBy(ctx, acctKey, "relays_remaining", -1).Err()
+        err2 := getCache().HIncrBy(ctx, acctKey, "relays_remaining", -1).Err()
         if err2 != nil {
             // TODO also clean this up, not decr'd
         }
@@ -106,12 +106,12 @@ func UseRelay(ctx context.Context, apiKey string) {
 func HasRelays(ctx context.Context, apiKey string) bool {
     hashedKey := utils.Hash(apiKey)
     key := GenApiKey(hashedKey)
-    account, err := getClient().HGet(ctx, key, "account").Result()
+    account, err := getCache().HGet(ctx, key, "account").Result()
     if err != nil {
         // TODO account issues need to be handled
     } else {
         acctKey := GenAccountKey(account)
-        remainder, err2 := getClient().HGet(ctx, acctKey, "relays_remaining").Result()
+        remainder, err2 := getCache().HGet(ctx, acctKey, "relays_remaining").Result()
         if err2 != nil {
             // TODO another error to handle
         }

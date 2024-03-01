@@ -9,6 +9,7 @@ import (
 )
 
 // TODO cleanup, this moved to model.go
+// TODO this file needs major refactor
 type Account struct {
     id string
 }

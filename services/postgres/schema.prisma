@@ -45,12 +45,13 @@ model Tenant {
 }
 
 model User {
-    id        String    @id @unique @default(cuid())
-    orgs      Org[]
-    active    Boolean   @default(true)
-    deletedAt DateTime?
-    createdAt DateTime  @default(now())
-    updatedAt DateTime  @updatedAt
+    id         String    @id @unique @default(cuid())
+    orgs       Org[]
+    ethAddress String
+    active     Boolean   @default(true)
+    deletedAt  DateTime?
+    createdAt  DateTime  @default(now())
+    updatedAt  DateTime  @updatedAt
 }
 
 model App {
@@ -116,15 +117,3 @@ model RelayLedger {
     transactionType TransactionType
     createdAt       DateTime        @default(now())
 }
-
-// [x] todo one- one relation for ruletype and app rule
-
-// TBD- order of application of rules (in gateway side)
-
-// [x] ApiKeys should not be editable
-
-// [x] APIkey should have a relation to tenant, and pulled away from the app (no longer related to app)
-
-// [x] Api Key in App becomes a string
-
-// [x] RelayLedger should reference apikey(id) (populated from redis)

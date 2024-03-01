@@ -8,7 +8,6 @@ CREATE TABLE "Org" (
     "deletedAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-    "appId" TEXT,
     "enterpriseId" TEXT NOT NULL,
 
     CONSTRAINT "Org_pkey" PRIMARY KEY ("id")
@@ -18,7 +17,7 @@ CREATE TABLE "Org" (
 CREATE TABLE "Enterprise" (
     "id" TEXT NOT NULL,
     "deletedAt" TIMESTAMP(3),
-    "enabled" BOOLEAN NOT NULL,
+    "enabled" BOOLEAN NOT NULL DEFAULT true,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -160,9 +159,6 @@ CREATE UNIQUE INDEX "_OrgToUser_AB_unique" ON "_OrgToUser"("A", "B");
 
 -- CreateIndex
 CREATE INDEX "_OrgToUser_B_index" ON "_OrgToUser"("B");
-
--- AddForeignKey
-ALTER TABLE "Org" ADD CONSTRAINT "Org_appId_fkey" FOREIGN KEY ("appId") REFERENCES "App"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Org" ADD CONSTRAINT "Org_enterpriseId_fkey" FOREIGN KEY ("enterpriseId") REFERENCES "Enterprise"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

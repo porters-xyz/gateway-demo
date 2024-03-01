@@ -1,9 +1,6 @@
 datasource db {
     provider = "postgresql"
-    // TODO: production fix required
-    // url      = env("DATABASE_URL") // prod
-    // url      = "postgresql://postgres:pass@postgres:5432" // docker
-    url      = "postgresql://postgres:pass@localhost:5432" // local
+    url      = env("DATABASE_URL")
 }
 
 generator client {
@@ -19,9 +16,7 @@ model Org {
     deletedAt    DateTime?
     createdAt    DateTime   @default(now())
     updatedAt    DateTime   @updatedAt
-    App          App?       @relation(fields: [appId], references: [id])
-    appId        String?
-    Enterprise   Enterprise @relation(fields: [enterpriseId], references: [id])
+    enterprise   Enterprise @relation(fields: [enterpriseId], references: [id])
     enterpriseId String
 }
 
@@ -43,7 +38,7 @@ model Tenant {
     Enterprise    Enterprise      @relation(fields: [enterpriseId], references: [id])
     enterpriseId  String
     secretKey     String          @unique
-    app           App[]
+    apps          App[]
     deletedAt     DateTime?
     createdAt     DateTime        @default(now())
     updatedAt     DateTime        @updatedAt
@@ -60,7 +55,6 @@ model User {
 
 model App {
     id        String    @id @unique @default(cuid())
-    orgs      Org[]
     appRules  AppRule[]
     deletedAt DateTime?
     createdAt DateTime  @default(now())

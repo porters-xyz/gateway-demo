@@ -39,13 +39,10 @@ export class SiweService {
   }) {
     try {
       const siweMessage = new SiweMessage(message);
-      const { data: fields } = await siweMessage.verify({
-        signature,
-        nonce: nonce,
-      });
+      const { data: fields } = await siweMessage.verify({ signature, nonce });
 
       if (fields.nonce !== nonce) {
-        return new ConflictException('Invalid Nonce');
+        throw new ConflictException('Invalid Nonce');
       }
 
       const session: ISession = {
@@ -57,14 +54,7 @@ export class SiweService {
       const cookie = await sealData(session, SESSION_OPTIONS);
       return cookie;
     } catch (error) {
-      switch (error) {
-        case SiweErrorType.INVALID_NONCE:
-        case SiweErrorType.INVALID_SIGNATURE:
-          return new NotAcceptableException(`Couldn't verify signature`);
-
-        default:
-          return;
-      }
+      return new NotAcceptableException(error);
     }
   }
 

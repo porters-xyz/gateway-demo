@@ -4,81 +4,47 @@ package proxy
 // Uses singleton so different parts of the lifecycle have access to plugins
 
 import (
+    "errors"
+    "log"
     "sync"
 )
 
 type registry struct {
-    preFilters []Filter
-    postFilters []Filter
-    preProcessors []Processor
-    postProcessors []Processor
+    plugins []Plugin
+    keySet map[string]Plugin
 }
 
-type PreOrPost int
-const (
-    PRE PreOrPost = iota
-    POST
-)
-
-var r *registry = nil
+var pluginRegistry *registry = nil
 var registryMutex sync.Once
-
-func Register(p Plugin, stage PreOrPost) {
-    _ = GetRegistry() // init singleton
-    p.Load()
-
-    filter, ok := p.(Filter)
-    if ok {
-        switch stage {
-        case PRE:
-            r.preFilters = append(r.preFilters, filter)
-        case POST:
-            r.postFilters = append(r.postFilters, filter)
-        }
-    }
-
-    processor, ok := p.(Processor)
-    if ok {
-        switch stage {
-        case PRE:
-            r.preProcessors = append(r.preProcessors, processor)
-        case POST:
-            r.postProcessors = append(r.postProcessors, processor)
-        }
-    }
-}
 
 func GetRegistry() *registry {
     registryMutex.Do(func() {
-        r = &registry{
-            preFilters: make([]Filter, 0),
-            postFilters: make([]Filter, 0),
-            preProcessors: make([]Processor, 0),
-            postProcessors: make([]Processor, 0),
+        pluginRegistry = &registry{
+            plugins: make([]Plugin, 0),
+            keySet: make(map[string]Plugin),
         }
     })
-    return r
+    return pluginRegistry
 }
 
-func (r registry) GetFilterChain(stage PreOrPost) FilterChain {
-    var chain FilterChain
-    switch stage {
-    case PRE:
-        chain = FilterChain{}.Init(r.preFilters)
-    case POST:
-        chain = FilterChain{}.Init(r.postFilters)
+func Register(plugin Plugin) {
+    _ = GetRegistry() // init singleton
+    err := avoidCollision(plugin)
+    if err != nil {
+        log.Println("unable to load plugin", plugin.Name(), "due to", err.Error())
+        return
     }
-    return chain
+    plugin.Load()
+
+    pluginRegistry.plugins = append(pluginRegistry.plugins, plugin)
 }
 
-func (r registry) GetProcessorSet(stage PreOrPost) ProcessorSet {
-    var set ProcessorSet
-    switch stage {
-    case PRE:
-        set = ProcessorSet{}.Init(r.preProcessors)
-    case POST:
-        set = ProcessorSet{}.Init(r.postProcessors)
+func avoidCollision(plugin Plugin) error {
+    _ = GetRegistry() // just to make sure
+    key := plugin.Key()
+    if pluginRegistry.keySet[key] != nil {
+        return errors.New("another plugin uses same key")
     }
-    return set
-
+    pluginRegistry.keySet[key] = plugin
+    return nil
 }

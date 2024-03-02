@@ -4,34 +4,38 @@ package plugins
 
 
 import (
-    "context"
+    "fmt"
     "net/http"
 )
 
+type LeakyBucketPlugin struct {
+    // Allows for multiple versions of leaky buckets focused on different scopes
+    scopeContext string // switch to type on proxy for scopes (tenant, provider, app, client)
+}
+
+// For each request lookup set of buckets for app/key/tenant etc
 type LeakyBucket struct {
     // TODO each limiter has a bucket of different size
-    name string
-    key string
     size int64
     rate int64 // specified in count per period
     period int64 // length of period in seconds
 }
 
-func (l LeakyBucket) Name() string {
-    return l.name
+func (l LeakyBucketPlugin) Name() string {
+    return "leaky bucket"
 }
 
-func (l LeakyBucket) Key() string {
-    return l.key
+func (l LeakyBucketPlugin) Key() string {
+    return fmt.Sprintf(`%s:%s`, "LEAKY", l.scopeContext)
 }
 
-func (l LeakyBucket) Load() {
-    // TODO read from db and initialize
+func (l LeakyBucketPlugin) Load() {
+    // TODO initialize
 }
 
-func (l LeakyBucket) Filter(ctx context.Context, resp http.ResponseWriter, req http.Request) context.Context {
+func (l LeakyBucketPlugin) HandleRequest(req *http.Request) {
     // TODO read api-key (from context?)
     // TODO check limit
-    // TODO move leaky bucket
-    return ctx
+    // TODO if out, synchronously refill; else async refill
+    // TODO take from bucket (leak/decrement)
 }

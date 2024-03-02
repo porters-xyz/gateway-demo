@@ -8,15 +8,25 @@ export class TenantService {
   constructor(
     @Inject('Postgres')
     private prisma: CustomPrismaService<PrismaClient>, // <-- Inject the PrismaClient
-  ) { }
+  ) {}
 
   async create() {
     const secretKey = randomBytes(8).toString('hex');
     const hashedKey = createHash('sha256').update(secretKey).digest('hex');
 
+    const enterprise = await this.prisma.client.enterprise.create({
+      data: {},
+    });
+
+    if (!enterprise.id)
+      throw new HttpException(
+        'Unable to create tenant',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+
     const tenant = await this.prisma.client.tenant.create({
       data: {
-        active: true,
+        enterpriseId: enterprise.id,
         secretKey: hashedKey,
       },
     });
@@ -56,15 +66,6 @@ export class TenantService {
         active: true,
         createdAt: true,
         updatedAt: true,
-        keys: {
-          select: {
-            id: true,
-            appId: true,
-            active: true,
-            createdAt: true,
-            updatedAt: true,
-          },
-        },
       },
     });
 

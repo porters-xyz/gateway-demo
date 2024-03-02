@@ -4,7 +4,7 @@ import { TenantService } from './tenant.service';
 
 @Controller('tenant')
 export class TenantController {
-  constructor(private readonly tenantService: TenantService) { }
+  constructor(private readonly tenantService: TenantService) {}
 
   @Post()
   async createTenant() {
@@ -26,10 +26,7 @@ export class TenantController {
   }
 
   @Post(':id/credits')
-  async applyCredits(
-    @Param('id') id: string,
-    @Query('amount') amount: string,
-  ) {
+  async applyCredits(@Param('id') id: string, @Query('amount') amount: string) {
     // TODO: Remove this endpoint as its temporary
     console.log('This action applies free credits to a tenant');
     return this.tenantService.addCredits(id, Number(amount));

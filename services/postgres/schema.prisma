@@ -1,9 +1,6 @@
 datasource db {
     provider = "postgresql"
-    // TODO: production fix required
-    // url      = env("DATABASE_URL") // prod
-    // url      = "postgresql://postgres:pass@postgres:5432" // docker
-    url      = "postgresql://postgres:pass@localhost:5432" // local
+    url      = env("DATABASE_URL")
 }
 
 generator client {
@@ -13,11 +10,22 @@ generator client {
 }
 
 model Org {
-    id        String    @id @unique @default(cuid())
-    users     User[]
-    apps      App[]
-    active    Boolean   @default(true)
+    id           String     @id @unique @default(cuid()) @db.VarChar(8)
+    users        User[]
+    active       Boolean    @default(true)
+    deletedAt    DateTime?
+    createdAt    DateTime   @default(now())
+    updatedAt    DateTime   @updatedAt
+    enterprise   Enterprise @relation(fields: [enterpriseId], references: [id])
+    enterpriseId String
+}
+
+model Enterprise {
+    id        String    @id @unique @default(cuid()) @db.VarChar(8)
+    orgs      Org[]
+    tenants   Tenant[]
     deletedAt DateTime?
+    enabled   Boolean   @default(true)
     createdAt DateTime  @default(now())
     updatedAt DateTime  @updatedAt
 }
@@ -27,36 +35,33 @@ model Tenant {
     active        Boolean         @default(true)
     paymentLedger PaymentLedger[]
     relayLedger   RelayLedger[]
+    Enterprise    Enterprise      @relation(fields: [enterpriseId], references: [id])
+    enterpriseId  String
     secretKey     String          @unique
-    keys          TenantAuthKey[]
+    apps          App[]
     deletedAt     DateTime?
     createdAt     DateTime        @default(now())
     updatedAt     DateTime        @updatedAt
 }
 
 model User {
-    id        String    @id @unique @default(cuid())
-    org       Org       @relation(fields: [orgId], references: [id])
-    orgId     String
-    apps      App[]     @relation("UserApps")
-    active    Boolean   @default(true)
-    deletedAt DateTime?
-    createdAt DateTime  @default(now())
-    updatedAt DateTime  @updatedAt
+    id         String    @id @unique @default(cuid())
+    orgs       Org[]
+    ethAddress String    @unique
+    active     Boolean   @default(true)
+    deletedAt  DateTime?
+    createdAt  DateTime  @default(now())
+    updatedAt  DateTime  @updatedAt
 }
 
 model App {
-    id        String    @id @unique @default(cuid())
-    org       Org       @relation(fields: [orgId], references: [id])
-    orgId     String
-    user      User      @relation("UserApps", fields: [userId], references: [id])
-    userId    String
+    id        String    @id @unique @default(cuid()) @db.VarChar(8)
     appRules  AppRule[]
-    apikey    String //  TenantAuthKey
-    active    Boolean   @default(true)
     deletedAt DateTime?
     createdAt DateTime  @default(now())
     updatedAt DateTime  @updatedAt
+    Tenant    Tenant    @relation(fields: [tenantId], references: [id])
+    tenantId  String
 }
 
 model AppRule {
@@ -86,18 +91,6 @@ model RuleType {
     updatedAt       DateTime  @updatedAt
 }
 
-model TenantAuthKey {
-    id        String    @id @unique @default(cuid())
-    appId     String
-    keyValue  String
-    tenant    Tenant    @relation(fields: [tenantId], references: [id])
-    tenantId  String
-    active    Boolean   @default(true)
-    deletedAt DateTime?
-    createdAt DateTime  @default(now())
-    updatedAt DateTime  @updatedAt
-}
-
 model PaymentLedger {
     id              String          @id @unique @default(cuid())
     tenant          Tenant          @relation(fields: [tenantId], references: [id])
@@ -124,15 +117,3 @@ model RelayLedger {
     transactionType TransactionType
     createdAt       DateTime        @default(now())
 }
-
-// [x] todo one- one relation for ruletype and app rule
-
-// TBD- order of application of rules (in gateway side)
-
-// [x] ApiKeys should not be editable
-
-// [x] APIkey should have a relation to tenant, and pulled away from the app (no longer related to app)
-
-// [x] Api Key in App becomes a string
-
-// [x] RelayLedger should reference apikey(id) (populated from redis)

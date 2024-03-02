@@ -5,7 +5,6 @@ import (
     "fmt"
     "log"
     "strconv"
-    "porters/utils"
 )
 
 // TODO cleanup, this moved to model.go
@@ -48,9 +47,8 @@ func DecrCounter(ctx context.Context, name string) int64 {
 // Uses QUOTA to determine account existing, does not guarantee relays remaining
 // TODO use tenant hash
 // TODO remove logging
-func IsValidAccount(ctx context.Context, account Account) bool {
-    key := GenAccountKey(account.id)
-    log.Println("acctkey", key)
+func IsValidAccount(ctx context.Context, tenant tenant) bool {
+    key := tenant.Key()
     result, err := getCache().HGet(ctx, key, "enabled").Result()
     resbool, err2 := strconv.ParseBool(result)
     log.Println("enabled", resbool)
@@ -61,6 +59,7 @@ func IsValidAccount(ctx context.Context, account Account) bool {
     return resbool
 }
 
+// utility function
 func GetIntVal(ctx context.Context, name string) int {
     result, err := getCache().Get(ctx, name).Result()
     if err != nil {
@@ -76,6 +75,9 @@ func GetIntVal(ctx context.Context, name string) int {
 }
 
 // TODO check redis, if missing check postgres (and cache), if neither return false
+// TODO change account to tenant
+// TODO uncomment with app id for lookup, replace API key verification as rule
+/*
 func LookupAccount(ctx context.Context, apiKey string) (Account, bool) {
     // TODO do this in tx that checks and gets account information?
     hashedKey := utils.Hash(apiKey)
@@ -88,6 +90,8 @@ func LookupAccount(ctx context.Context, apiKey string) (Account, bool) {
     return Account{result}, true
 }
 
+
+// TODO make this a method of productCounter
 func UseRelay(ctx context.Context, apiKey string) {
     hashedKey := utils.Hash(apiKey)
     key := GenApiKey(hashedKey)
@@ -103,6 +107,7 @@ func UseRelay(ctx context.Context, apiKey string) {
     }
 }
 
+// TODO This should loookup tenant by app id
 func HasRelays(ctx context.Context, apiKey string) bool {
     hashedKey := utils.Hash(apiKey)
     key := GenApiKey(hashedKey)
@@ -125,3 +130,4 @@ func HasRelays(ctx context.Context, apiKey string) bool {
     // TODO probably a false negative
     return false
 }
+*/

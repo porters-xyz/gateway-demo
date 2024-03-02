@@ -59,31 +59,38 @@ func (c *Cache) Healthcheck() *common.HealthCheckStatus {
 
 func (t *tenant) writeToCache(ctx context.Context) {
     // TODO call redis create with key format
-    err := getCache().HSet(ctx, GenAccountKey(t.id), "enabled", t.enabled).Err()
+    err := getCache().HSet(ctx, t.Key(), "active", t.active).Err()
     if err != nil {
         // TODO handle errors should they happen
     }
 }
 
-func (a *apiKey) writeToCache(ctx context.Context) {
+func (a *app) writeToCache(ctx context.Context) {
     // TODO call redis create with key format
-    err := getCache().HSet(ctx, GenApiKey(a.key), "account", a.tenantId, "enabled", a.enabled).Err()
+    err := getCache().HSet(ctx, a.Key(), "account", a.tenant.id, "active", a.active).Err()
     if err != nil {
         // TODO handle errors correctly
     }
 }
 
 // TODO can this be done in single hop? maybe put in lua script?
+func (p *productCounter) writeToCache(ctx context.Context) {
+    //app := p.app
+    //tenant := app.tenant
+    // TODO increment all the right counters
+    // TODO decrement all the right counters
+}
+
 func (p *paymentTx) writeToCache(ctx context.Context) {
-    var err error
+    var err error = nil
     if p.txType == Credit {
-        err = getCache().HIncrBy(ctx, GenAccountKey(p.tenantId), "cached_remaining", int64(p.amount)).Err()
-        if err != nil {
+        //err = getCache().HIncrBy(ctx, p.Key(), "cached_remaining", int64(p.amount)).Err()
+        //if err != nil {
             // TODO handle errors should they happen
-        }
-        err = getCache().HIncrBy(ctx, GenAccountKey(p.tenantId), "relays_remaining", int64(p.amount)).Err()
+        //}
+        //err = getCache().HIncrBy(ctx, tenant.Key(), "relays_remaining", int64(p.amount)).Err()
     } else {
-        err = getCache().HIncrBy(ctx, GenAccountKey(p.tenantId), "cached_remaining", -int64(p.amount)).Err()
+        //err = getCache().HIncrBy(ctx, tenant.Key(), "cached_remaining", -int64(p.amount)).Err()
     }
     if err != nil {
         // TODO handle errors should they happen

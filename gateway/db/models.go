@@ -1,33 +1,85 @@
 package db
 
 import (
+    "fmt"
     "strings"
 )
 
 const (
     TENANT string = "TENANT"
     APP           = "APP"
-    
+    APPRULE       = "APPRULE"
+    PAYMENTTX     = "PAYMENTTX"
+    USAGETX       = "USAGETX"
+    PRODUCTCTR    = "PRODUCTCTR"
 )
 
 type tenant struct {
     id string
-    enabled bool
+    active bool
+
+    // counters
     balanceSettled int
     balanceActive int
 }
 
-type apiKey struct {
-    key string
-    enabled bool
-    tenantId string
-    chainId string
+type app struct {
+    id string
+    active bool
+    tenant tenant
+
+    // counters
+    requested int
+    success int
+    failure int
+}
+
+type appRule struct {
+    id string
+    appId string
+    active bool
+    ruleType ruleType
+}
+
+type ruleType struct {
+    id string
+    name string
+    active bool
 }
 
 type paymentTx struct {
+    id string
     tenantId string
+    reference string
     amount int
     txType TxType
+}
+
+type usageTx struct {
+    id string
+    tenantId string
+    reference string
+    amount int
+    prodId string
+    txType TxType
+}
+
+// Allow multiple names for same underlying product
+type product struct {
+    id string
+    name string // subdomain on endpoint
+    num int // optional (for evm chain)
+    weight int
+}
+
+type productCounter struct {
+    app app
+    product product
+
+    // counters
+    requested int
+    success int
+    failure int
 }
 
 // Unknown is basically error, shouldn't rely on it
@@ -48,15 +100,15 @@ func parseTxType(str string) TxType {
     }
 }
 
-func GenAccountKey(tenantId string) string {
-    return "ACCOUNT:" + tenantId
+func (t *tenant) Key() string {
+    return fmt.Sprintf("%s:%s", TENANT, t.id)
 }
 
-func GenApiKey(apiKey string) string {
-    return "APIKEY:" + apiKey + ":meta"
+func (a *app) Key() string {
+    return fmt.Sprintf("%s:%s", APP, a.id)
 }
 
 // TODO placeholder for when relays are tracked per "chain"
-func GenChainKey(apiKey string, chainId string) string {
-    return "APIKEY:" + apiKey + ":" + chainId
+func (p *productCounter) Key() string {
+    return fmt.Sprintf("%s:%s:%s", PRODUCTCTR, p.app.id, p.product.id)
 }

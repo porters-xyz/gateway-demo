@@ -6,6 +6,7 @@ import { PrismaClient } from '@/.generated/client';
 import { TenantModule } from './tenant/tenant.module';
 import { AppController } from './app.controller';
 import { SiweModule } from './siwe/siwe.module';
+import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
@@ -20,6 +21,8 @@ import { SiweModule } from './siwe/siwe.module';
     TenantModule,
 
     SiweModule,
+
+    UserModule,
   ],
   providers: [AppService],
   controllers: [AppController],

@@ -18,7 +18,7 @@ export class SiweController {
     @Req() request: Request,
     @Res() response: Response,
   ): Promise<any> {
-    console.log('Get Session from cookie using siwe');
+    // @note: Get Session from cookie using siwe
     const sessionCookie = request?.cookies['session'];
 
     if (!sessionCookie) {
@@ -36,7 +36,7 @@ export class SiweController {
 
   @Post()
   async verifyMessage(@Req() request: Request, @Res() response: Response) {
-    console.log('Verify ownership using siwe');
+    // @note: This actions is used to Verify ownership using siwe
     const { message, signature } = request.body;
 
     const nonceRegex = /Nonce: (\S+)/;
@@ -47,8 +47,6 @@ export class SiweController {
       signature,
       nonce,
     });
-
-    console.log('authentication was ', authenticated);
 
     return response
       .status(authenticated ? HttpStatus.OK : HttpStatus.NOT_FOUND)

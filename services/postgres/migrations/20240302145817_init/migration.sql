@@ -3,7 +3,7 @@ CREATE TYPE "TransactionType" AS ENUM ('CREDIT', 'DEBIT');
 
 -- CreateTable
 CREATE TABLE "Org" (
-    "id" TEXT NOT NULL,
+    "id" VARCHAR(8) NOT NULL,
     "active" BOOLEAN NOT NULL DEFAULT true,
     "deletedAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -15,7 +15,7 @@ CREATE TABLE "Org" (
 
 -- CreateTable
 CREATE TABLE "Enterprise" (
-    "id" TEXT NOT NULL,
+    "id" VARCHAR(8) NOT NULL,
     "deletedAt" TIMESTAMP(3),
     "enabled" BOOLEAN NOT NULL DEFAULT true,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -51,7 +51,7 @@ CREATE TABLE "User" (
 
 -- CreateTable
 CREATE TABLE "App" (
-    "id" TEXT NOT NULL,
+    "id" VARCHAR(8) NOT NULL,
     "deletedAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -118,7 +118,7 @@ CREATE TABLE "RelayLedger" (
 
 -- CreateTable
 CREATE TABLE "_OrgToUser" (
-    "A" TEXT NOT NULL,
+    "A" VARCHAR(8) NOT NULL,
     "B" TEXT NOT NULL
 );
 
@@ -136,6 +136,9 @@ CREATE UNIQUE INDEX "Tenant_secretKey_key" ON "Tenant"("secretKey");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "User_id_key" ON "User"("id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "User_ethAddress_key" ON "User"("ethAddress");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "App_id_key" ON "App"("id");

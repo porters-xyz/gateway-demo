@@ -6,51 +6,28 @@ package proxy
 //   - Limiter: checks a precondition and allows or rejects proxy forwarding
 
 import (
-    "context"
     "net/http"
 )
 
 type Plugin interface {
     Name() string // used for human readability
+    Key() string
     Load()
 }
 
-// Filters run consecutively and modify the input, output, or context
-type Filter interface {
+// Prehandlers run in order and can modify the request, or run process based on
+// it
+// Implementation should put any state needed between handlers into context of
+// request
+type PreHandler interface {
     Plugin
-    Key() string // unique across all plugins loaded
-    Filter(context.Context, http.ResponseWriter, *http.Request) (context.Context, error)
+    HandleRequest(*http.Request)
 }
 
-// Processors run in parallel and don't impact the request in any way
-// e.g. Gather metrics on requests that don't impact response
-type Processor interface {
+// Posthandlers run in order and can modify the response, or run process based
+// on the response
+// Implementation should handle context through Response.Request
+type PostHandler interface {
     Plugin
-    Key() string
-    Process(context.Context, http.ResponseWriter, *http.Request) error
-}
-
-// Limiter is a type of Filter that tracks relays and may block
-type Limiter interface {
-    Filter
-    // TODO Parent/child stuff
-}
-
-type FilterChain struct {
-    filters []Filter
-    // TODO add other attributes as needed
-}
-
-func (fc FilterChain) Init(filters []Filter) FilterChain {
-    fc.filters = filters
-    return fc
-}
-
-type ProcessorSet struct {
-    procs []Processor
-}
-
-func (ps ProcessorSet) Init(procs []Processor) ProcessorSet {
-    ps.procs = procs
-    return ps
+    HandleResponse(*http.Response) error
 }

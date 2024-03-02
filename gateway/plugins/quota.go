@@ -29,7 +29,7 @@ func (q Quota) Load() {
 // TODO set headers if needing to block
 // TODO update context to reflect
 // Requires: AUTH upstream
-func (q Quota) Filter(ctx context.Context, resp http.ResponseWriter, req *http.Request) (context.Context, error) {
+func (q Quota) PreFilter(ctx context.Context, resp http.ResponseWriter, req *http.Request) (context.Context, error) {
     // TODO check relays left
     newCtx := ctx
     var err error
@@ -43,7 +43,7 @@ func (q Quota) Filter(ctx context.Context, resp http.ResponseWriter, req *http.R
         if quota {
             log.Println("quota remaining")
             lifecycle := proxy.SetStageComplete(ctx, proxy.BalanceCheck)
-            newCtx, err = lifecycle.UpdateContext(ctx)
+            newCtx = lifecycle.UpdateContext(ctx)
         } else {
             log.Println("none remaining", key, quota)
             err = proxy.NewBalanceExceededError()
@@ -51,4 +51,12 @@ func (q Quota) Filter(ctx context.Context, resp http.ResponseWriter, req *http.R
     }
 
     return newCtx, err
+}
+
+func (q Quota) PostProcessor(ctx context.Context, resp http.ResponseWriter, req *http.Request) error {
+    // TODO check response for success
+    //code := resp.
+    // TODO update usage count
+    // TODO log properly
+    return nil
 }

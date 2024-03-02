@@ -2,7 +2,6 @@ package proxy
 
 import (
     "context"
-    "fmt"
     "errors"
     "io"
     "log"
@@ -10,7 +9,6 @@ import (
     "net/http"
     "net/http/httputil"
     "os"
-    "sync"
 
     "porters/db"
 )
@@ -19,6 +17,7 @@ func Start() {
     // TODO grab url for gateway kit
     proxyUrl := os.Getenv("PROXY_TO")
     remote, err := url.Parse(proxyUrl)
+    log.Println("remote", remote)
     if err != nil {
         log.Println(err)
     }
@@ -26,67 +25,20 @@ func Start() {
     handler := func(proxy *httputil.ReverseProxy) func(http.ResponseWriter, *http.Request) {
         return func(resp http.ResponseWriter, req *http.Request) {
             log.Println(req.URL)
-            ctx, cancel := setupContext(req)
-
-            // TODO move to filter
-            req.Host = remote.Host
-
-            pluginRegistry := GetRegistry()
-
-            // TODO structure this in a reasonable way
-            prefilters := pluginRegistry.GetFilterChain(PRE)
-
-            ctx, err := runFilterChain(ctx, prefilters, resp, req)
-            if err != nil {
-                var httpErr *HTTPError
-                var code int
-                if errors.As(err, &httpErr) {
-                    code = httpErr.code
-                } else {
-                    code = http.StatusInternalServerError
-                }
-
-                http.Error(resp, err.Error(), code)
-                return
-            }
-
-            // TODO meant to track incoming requests without slowing things down, read-only
-            //nonBlockingPrehandlers(ctx, resp, req)
-
-            lifecycle := lifecycleFromContext(ctx)
-            log.Println("lifecycle", lifecycle)
-            if !lifecycle.checkComplete() {
-                cancel()
-                status := http.StatusInternalServerError
-                http.Error(resp, http.StatusText(status), status)
-            } else {
-                log.Println("actually serving")
-                proxy.ServeHTTP(resp, req)
-            }
-
-            // TODO is this needed? after serving blocking may be dumb
-            //blockingPosthandlers(ctx, resp, req)
-
-            // TODO any longer tasks that should spawn after handling request
-            //nonBlockingPosthandlers(ctx, resp, req)
+            setupContext(req)
+            proxy.ServeHTTP(resp, req)
         }
     }
 
     healthHandler := func() func(http.ResponseWriter, *http.Request) {
         return func(resp http.ResponseWriter, req *http.Request) {
-            pong, err := db.Healthcheck()
+            hc := (&db.Cache{}).Healthcheck()
             resp.Header().Set("Content-Type", "application/json")
-            var json string
-            if err != nil {
-                json = fmt.Sprintf(`{"redis": "%s"}`, err.Error())
-            } else {
-                json = fmt.Sprintf(`{"redis": "%s"}`, pong)
-            }
-            io.WriteString(resp, json)
+            io.WriteString(resp, hc.ToJson())
         }
     }
 
-    revProxy := httputil.NewSingleHostReverseProxy(remote)
+    revProxy := setupProxy(remote)
     http.HandleFunc("/", handler(revProxy))
     http.HandleFunc("/health", healthHandler())
     err2 := http.ListenAndServe(":9000", nil)
@@ -95,42 +47,82 @@ func Start() {
     }
 }
 
-func setupContext(req *http.Request) (context.Context, context.CancelFunc) {
-    // TODO read ctx from request and make any modifications
-    parent := req.Context()
-    ctx, cancel := context.WithCancel(parent)
-    ctx, _ = Lifecycle{}.UpdateContext(ctx)
-    return ctx, cancel
+func RequestCanceler(req *http.Request) context.CancelCauseFunc {
+    ctx, cancel := context.WithCancelCause(req.Context())
+    *req = *req.WithContext(ctx)
+    return cancel
 }
 
-func runFilterChain(ctx context.Context, fc FilterChain, resp http.ResponseWriter, req *http.Request) (context.Context, error) {
-    nextCtx := ctx
-    for _, f := range fc.filters {
-        retCtx, err := func() (context.Context, error) {
-            log.Println("filtering", f.Name())
-            select {
-            case <-nextCtx.Done():
-                return nextCtx, nextCtx.Err()
-            default:
-                return f.Filter(nextCtx, resp, req)
+func setupProxy(remote *url.URL) *httputil.ReverseProxy {
+    revProxy := httputil.NewSingleHostReverseProxy(remote)
+    reg := GetRegistry()
+
+    defaultDirector := revProxy.Director
+    revProxy.Director = func(req *http.Request) {
+        defaultDirector(req)
+
+        // TODO move to filter
+        req.Host = remote.Host
+
+        log.Println(req)
+        cancel := RequestCanceler(req)
+
+        for _, p := range (*reg).plugins {
+            h, ok := p.(PreHandler)
+            if ok {
+                log.Println("encountered", p.Name())
+                select {
+                case <-req.Context().Done():
+                    return
+                default:
+                    h.HandleRequest(req)
+                }
             }
-        }()
-        if err != nil {
-            log.Println(err)
-            return nil, err
         }
-        nextCtx = retCtx
+
+        // Cancel if necessary lifecycle stages not completed
+        lifecycle := lifecycleFromContext(req.Context())
+        if !lifecycle.checkComplete() {
+            err := NewLifecycleIncompleteError()
+            log.Println("lifecycle incomplete", lifecycle)
+            cancel(err)
+        }
     }
-    return nextCtx, nil
+
+    revProxy.ModifyResponse = func(resp *http.Response) error {
+        var err error
+        for _, p := range (*reg).plugins {
+            h, ok := p.(PostHandler)
+            if ok {
+                newerr := h.HandleResponse(resp)
+                if newerr != nil {
+                    err = errors.Join(err, newerr)
+                }
+            }
+        }
+        return err
+    }
+
+    revProxy.ErrorHandler = func(resp http.ResponseWriter, req *http.Request, err error) {
+        // TODO handle errors elegantly
+        log.Println(err)
+        var httpErr *HTTPError
+        if errors.As(err, &httpErr) {
+            status := httpErr.code
+            http.Error(resp, http.StatusText(status), status)
+        } else if err != nil {
+            status := http.StatusBadGateway
+            http.Error(resp, http.StatusText(status), status)
+        }
+    }
+
+    return revProxy
 }
 
-func runProcessingSet(ctx context.Context, procs ProcessorSet, resp http.ResponseWriter, req *http.Request) sync.WaitGroup {
-    var wg sync.WaitGroup
-    for _, p := range procs.procs {
-        go func() {
-            p.Process(ctx, resp, req)
-        }()
-        wg.Add(1)
-    }
-    return wg
+func setupContext(req *http.Request) {
+    // TODO read ctx from request and make any modifications
+    ctx := req.Context()
+    lifecyclectx := Lifecycle{}.UpdateContext(ctx)
+    *req = *req.WithContext(lifecyclectx)
 }
+

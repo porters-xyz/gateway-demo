@@ -20,6 +20,16 @@ func NewBalanceExceededError() *BalanceExceededError {
     return &BalanceExceededError{&HTTPError{http.StatusForbidden}}
 }
 
+type LifecycleIncompleteError struct {
+    error
+}
+func (lie *LifecycleIncompleteError) Error() string {
+    return "lifecycle incomplete"
+}
+func NewLifecycleIncompleteError() *LifecycleIncompleteError {
+    return &LifecycleIncompleteError{&HTTPError{http.StatusBadGateway}}
+}
+
 type HTTPError struct {
     code int
 }

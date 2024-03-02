@@ -7,13 +7,21 @@ import (
     "sync"
 
     "github.com/redis/go-redis/v9"
+
+    "porters/common"
 )
 
 const (
     ACCOUNT_SET = "VALID_ACCOUNTS"
+    REDIS = "redis"
 )
 
-var client *redis.Client = nil
+// access redis functions through this object
+type Cache struct {
+
+}
+
+var client *redis.Client
 var redisMutex sync.Once
 
 func getClient() *redis.Client {
@@ -35,15 +43,16 @@ func getClient() *redis.Client {
 }
 
 // TODO make this a method on cache object
-func Healthcheck() (string, error) {
+func (c *Cache) Healthcheck() *common.HealthCheckStatus {
+    hcs := common.NewHealthCheckStatus()
     client := getClient()
     ctx := context.Background()
     status, err := client.Ping(ctx).Result()
     if err != nil {
-        log.Println("Error in redis connection", err)
+        hcs.AddError(REDIS, err)
     } else {
-        log.Println("redis:", status)
+        hcs.AddHealthy(REDIS, status)
     }
 
-    return status, err
+    return hcs
 }

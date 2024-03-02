@@ -1,15 +1,21 @@
 package plugins
 
 import (
-    "fmt"
+    "log"
 )
 
+// Plugins that don't implement pre or post handler exist outside of request
+// lifecycle
 type Noop struct {}
 
 func (n Noop) Load() {
-    fmt.Println("loading " + n.Name())
+    log.Println("loading " + n.Name())
 }
 
 func (n Noop) Name() string {
     return "noop"
+}
+
+func (n Noop) Key() string {
+    return "NOOP"
 }

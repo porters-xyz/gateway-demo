@@ -3,7 +3,7 @@ CREATE TYPE "TransactionType" AS ENUM ('CREDIT', 'DEBIT');
 
 -- CreateTable
 CREATE TABLE "Org" (
-    "id" VARCHAR(8) NOT NULL,
+    "id" TEXT NOT NULL,
     "active" BOOLEAN NOT NULL DEFAULT true,
     "deletedAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -15,7 +15,7 @@ CREATE TABLE "Org" (
 
 -- CreateTable
 CREATE TABLE "Enterprise" (
-    "id" VARCHAR(8) NOT NULL,
+    "id" TEXT NOT NULL,
     "deletedAt" TIMESTAMP(3),
     "enabled" BOOLEAN NOT NULL DEFAULT true,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -51,7 +51,7 @@ CREATE TABLE "User" (
 
 -- CreateTable
 CREATE TABLE "App" (
-    "id" VARCHAR(8) NOT NULL,
+    "id" TEXT NOT NULL,
     "deletedAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -118,7 +118,7 @@ CREATE TABLE "RelayLedger" (
 
 -- CreateTable
 CREATE TABLE "_OrgToUser" (
-    "A" VARCHAR(8) NOT NULL,
+    "A" TEXT NOT NULL,
     "B" TEXT NOT NULL
 );
 

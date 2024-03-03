@@ -4,7 +4,8 @@ import { useForm } from "@mantine/form";
 import { useFormState } from "react-dom";
 import { recoverTenant } from "./actions";
 import NewTenantModal from "./modal.component";
-import { ConnectKitButton } from "connectkit";
+import { ConnectKitButton, useSIWE } from "connectkit";
+import { useRouter } from "next/navigation";
 
 const initialState = {
   key: "",
@@ -23,6 +24,14 @@ export default function Login() {
     () => recoverTenant(values.key),
     initialState,
   );
+  const router = useRouter();
+
+  const { data, isReady, isRejected, isLoading, isSignedIn, signOut, signIn } =
+    useSIWE();
+
+  if (isReady) {
+    console.log({ data });
+  }
 
   return (
     <Container
@@ -49,7 +58,7 @@ export default function Login() {
           fullWidth
           style={{ marginTop: 8 }}
         >
-          Login
+          Recover Tenant
         </Button>
       </form>
       <ConnectKitButton />

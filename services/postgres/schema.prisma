@@ -10,7 +10,7 @@ generator client {
 }
 
 model Org {
-    id           String     @id @unique @default(cuid()) @db.VarChar(8)
+    id           String     @id @unique @default(cuid())
     users        User[]
     active       Boolean    @default(true)
     deletedAt    DateTime?
@@ -21,7 +21,7 @@ model Org {
 }
 
 model Enterprise {
-    id        String    @id @unique @default(cuid()) @db.VarChar(8)
+    id        String    @id @unique @default(cuid())
     orgs      Org[]
     tenants   Tenant[]
     deletedAt DateTime?
@@ -55,7 +55,7 @@ model User {
 }
 
 model App {
-    id        String    @id @unique @default(cuid()) @db.VarChar(8)
+    id        String    @id() @unique @default(cuid())
     appRules  AppRule[]
     deletedAt DateTime?
     createdAt DateTime  @default(now())

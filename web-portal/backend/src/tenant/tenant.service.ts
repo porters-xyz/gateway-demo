@@ -66,6 +66,20 @@ export class TenantService {
         active: true,
         createdAt: true,
         updatedAt: true,
+        apps: {
+          select: {
+            id: true,
+            _count: true,
+          },
+        },
+        enterpriseId: true,
+        Enterprise: {
+          select: {
+            id: true,
+            _count: true,
+            enabled: true,
+          },
+        },
       },
     });
 

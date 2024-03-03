@@ -31,9 +31,11 @@ export class SiweService {
 
     if (address) {
       // @note: create or get user if a valid session is found
-      await this.userService.getOrCreate(address);
+      const user = await this.userService.getOrCreate(address);
+      return user?.secret
+        ? { address, chainId, secret: user.secret }
+        : { address, chainId };
     }
-    return { address, chainId };
   }
 
   async verifyMessage({

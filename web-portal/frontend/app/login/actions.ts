@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { apiUrl } from "@frontend/utils/consts";
 
-export async function validateTenant(key: string) {
+export async function recoverTenant(key: string) {
   if (!key) {
     return { valid: false, id: null };
   }
@@ -18,20 +18,5 @@ export async function validateTenant(key: string) {
     cookies().set("tenant", data?.id, { expires });
     redirect("/dashboard/");
   }
-  return data;
-}
-
-export async function createTenant() {
-  const response = await fetch(`${apiUrl}tenant/`, {
-    method: "POST",
-  });
-  if (!response.ok) {
-    throw new Error("Failed to create tenant");
-  }
-
-  const data = await response.json();
-
-  redirect("/login?secret=" + data?.secret);
-
   return data;
 }

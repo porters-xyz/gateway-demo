@@ -44,6 +44,8 @@ export const getSession = async () => {
   const res = await fetch("/siwe");
   if (!res.ok) throw new Error("Failed to fetch SIWE session");
 
-  const { address, chainId } = await res.json();
-  return address && chainId ? { address, chainId } : null;
+  const { address, chainId, secret } = await res.json();
+  return address && chainId
+    ? { address, chainId, secret: secret || null }
+    : null;
 };

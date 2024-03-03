@@ -1,8 +1,8 @@
 "use client";
-import { Container, Button, TextInput, Text } from "@mantine/core";
+import { Container, Button, TextInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { useFormState } from "react-dom";
-import { createTenant, validateTenant } from "./actions";
+import { recoverTenant } from "./actions";
 import NewTenantModal from "./modal.component";
 import { ConnectKitButton } from "connectkit";
 
@@ -20,11 +20,9 @@ export default function Login() {
   });
 
   const [validated, validateAction] = useFormState(
-    () => validateTenant(values.key),
+    () => recoverTenant(values.key),
     initialState,
   );
-
-  const [created, createAction] = useFormState(createTenant, null);
 
   return (
     <Container
@@ -52,12 +50,6 @@ export default function Login() {
           style={{ marginTop: 8 }}
         >
           Login
-        </Button>
-      </form>
-
-      <form action={createAction}>
-        <Button type="submit" variant="light" fullWidth>
-          Create Key
         </Button>
       </form>
       <ConnectKitButton />

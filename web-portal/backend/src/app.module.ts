@@ -19,9 +19,7 @@ import { UserModule } from './user/user.module';
       envFilePath: ['@/.env', '.env.local'],
     }),
     TenantModule,
-
     SiweModule,
-
     UserModule,
   ],
   providers: [AppService],

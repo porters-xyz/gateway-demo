@@ -3,8 +3,9 @@ package plugins
 import (
     "log"
     "net/http"
-    "porters/db"
     "strconv"
+
+    "porters/db"
 )
 
 type Counter struct {}
@@ -21,12 +22,16 @@ func (c Counter) Key() string {
     return "COUNTER"
 }
 
+func (c Counter) Field() string {
+    return "requests"
+}
+
 // Just count all requests
 // and add header for now
 // TODO make this asynchronous and remove header set
 func (c Counter) HandleResponse(resp *http.Response) error {
-    newCount := db.IncrCounter(resp.Request.Context(), c.Key())
-    log.Println("count", strconv.FormatInt(newCount, 10))
-    resp.Header.Set("X-Counter", strconv.FormatInt(newCount, 10))
+    newCount := db.Increment(resp.Request.Context(), c, 1)
+    log.Println("count", newCount)
+    resp.Header.Set("X-Counter", strconv.Itoa(newCount))
     return nil
 }

@@ -3,64 +3,63 @@ package db
 import (
     "fmt"
     "strings"
+    "time"
 )
 
 const (
     TENANT string = "TENANT"
     APP           = "APP"
     APPRULE       = "APPRULE"
+    RULETYPE      = "RULETYPE"
     PAYMENTTX     = "PAYMENTTX"
-    USAGETX       = "USAGETX"
-    PRODUCTCTR    = "PRODUCTCTR"
+    RELAYTX       = "RELAYTX"
+    PRODUCT       = "PRODUCT"
 )
 
 type tenant struct {
     id string
     active bool
-
-    // counters
-    balanceSettled int
-    balanceActive int
+    cached time.Time
 }
 
 type app struct {
     id string
     active bool
+    missed time.Time 
+    cached time.Time
     tenant tenant
-
-    // counters
-    requested int
-    success int
-    failure int
 }
 
-type appRule struct {
+type apprule struct {
     id string
-    appId string
     active bool
-    ruleType ruleType
+    value string
+    cached time.Time
+    app app
+    ruleType ruletype
 }
 
-type ruleType struct {
+type ruletype struct {
     id string
     name string
     active bool
 }
 
-type paymentTx struct {
+type paymenttx struct {
     id string
-    tenantId string
     reference string
     amount int
+    tenant tenant
     txType TxType
 }
 
-type usageTx struct {
+// This gets written back to postgres
+type relaytx struct {
     id string
-    tenantId string
     reference string
     amount int
-    prodId string
+    product product
+    tenant tenant
     txType TxType
 }
 
@@ -70,16 +69,6 @@ type product struct {
     name string // subdomain on endpoint
     num int // optional (for evm chain)
     weight int
-}
-
-type productCounter struct {
-    app app
-    product product
-
-    // counters
-    requested int
-    success int
-    failure int
 }
 
 // Unknown is basically error, shouldn't rely on it
@@ -95,7 +84,7 @@ func parseTxType(str string) TxType {
         return Credit
     } else if strings.EqualFold(str, "DEBIT") {
         return Debit
-    }else {
+    } else {
         return Unknown
     }
 }
@@ -108,7 +97,25 @@ func (a *app) Key() string {
     return fmt.Sprintf("%s:%s", APP, a.id)
 }
 
-// TODO placeholder for when relays are tracked per "chain"
-func (p *productCounter) Key() string {
-    return fmt.Sprintf("%s:%s:%s", PRODUCTCTR, p.app.id, p.product.id)
+// Keys to a set
+func (ar *apprule) Key() string {
+    return fmt.Sprintf("%s:%s", APPRULE, ar.app.id)
+}
+
+func (rt *ruletype) Key() string {
+    return fmt.Sprintf("%s:%s", RULETYPE, rt.id)
+}
+
+// TODO is this needed?
+func (p *paymenttx) Key() string {
+   return "" 
+}
+
+// TODO sort out how this is used
+func (r *relaytx) Key() string {
+    return fmt.Sprintf("%s:%s", RELAYTX, r.id)
+}
+
+func (p *product) Key() string {
+    return fmt.Sprintf("%s:%s", PRODUCT, p.id)
 }

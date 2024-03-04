@@ -70,6 +70,9 @@ export class TenantService {
           select: {
             id: true,
             _count: true,
+            appRules: true,
+            createdAt: true,
+            updatedAt: true,
           },
         },
         enterpriseId: true,

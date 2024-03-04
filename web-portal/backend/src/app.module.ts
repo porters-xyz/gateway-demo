@@ -7,6 +7,7 @@ import { TenantModule } from './tenant/tenant.module';
 import { AppController } from './app.controller';
 import { SiweModule } from './siwe/siwe.module';
 import { UserModule } from './user/user.module';
+import { AppsModule } from './apps/apps.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { UserModule } from './user/user.module';
     TenantModule,
     SiweModule,
     UserModule,
+    AppsModule,
   ],
   providers: [AppService],
   controllers: [AppController],

@@ -25,6 +25,12 @@ export class AppsService {
   }
 
   async createApp(tenantId: string) {
+    const Tenant = await this.prisma.client.tenant.findFirst({
+      where: {
+        id: tenantId,
+      },
+    });
+    if (!Tenant) return;
     const newApp = await this.prisma.client.app.create({
       data: {
         tenantId,

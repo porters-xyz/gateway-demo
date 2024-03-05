@@ -11,7 +11,7 @@ export async function createApp() {
     return redirect("/login");
   }
 
-  const response = await fetch(`${apiUrl}apps`, {
+  const response = await fetch(`${apiUrl}apps/${tenantId}`, {
     method: "POST",
     cache: "no-store",
   });

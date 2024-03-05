@@ -11,11 +11,11 @@ export class AppsController {
     return this.appsService.getAppsByTenant(tenantId);
   }
 
-  @Post()
-  async createApp() {
+  @Post(':tenantId')
+  async createApp(@Param('tenantId') tenantId: string) {
     // @note: This action creates app for tenant;
     // TODO- decide how to get tenantId; via cookies or some other alternative;
-    const tenantId = 'hellotenant';
+    // const tenantId = 'hellotenant';
     return this.appsService.createApp(tenantId);
   }
 }

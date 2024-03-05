@@ -12,7 +12,7 @@ export default async function User() {
   return (
     <>
       <Suspense fallback={<div>Loading...</div>}>
-        <Container
+        {/* <Container
           style={{
             height: "100vh",
             maxWidth: "900px",
@@ -23,23 +23,23 @@ export default async function User() {
             gap: 8,
             paddingTop: 200,
           }}
+        > */}
+        <NewAppModal />
+        <Flex
+          justify={"space-between"}
+          align={"center"}
+          style={{ marginBottom: 20 }}
         >
-          <NewAppModal />
-          <Flex
-            justify={"space-between"}
-            align={"center"}
-            style={{ marginBottom: 20 }}
-          >
-            <Title order={5}>logged in as: {tenant?.id}</Title>
-            <Flex gap="md">
-              <Link href="?new=app">
-                <Button> New App</Button>
-              </Link>
-              <LogoutButton />
-            </Flex>
+          <Title order={5}>logged in as: {tenant?.id}</Title>
+          <Flex gap="md">
+            <Link href="?new=app">
+              <Button> New App</Button>
+            </Link>
+            <LogoutButton />
           </Flex>
-          <AppList list={tenant?.keys} />
-        </Container>
+        </Flex>
+        {/* <AppList list={tenant?} /> */}
+        {/* </Container> */}
       </Suspense>
     </>
   );

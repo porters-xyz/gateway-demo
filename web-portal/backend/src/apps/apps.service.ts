@@ -23,4 +23,21 @@ export class AppsService {
     }
     return apps;
   }
+
+  async createApp(tenantId: string) {
+    const newApp = await this.prisma.client.app.create({
+      data: {
+        tenantId,
+      },
+    });
+
+    if (!newApp) {
+      return new HttpException(
+        `Could not create app for this tenant`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+
+    return newApp;
+  }
 }

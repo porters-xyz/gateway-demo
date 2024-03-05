@@ -11,7 +11,7 @@ export async function createApp() {
     return redirect("/login");
   }
 
-  const response = await fetch(`${apiUrl}tenant/${tenantId}/authkey`, {
+  const response = await fetch(`${apiUrl}apps`, {
     method: "POST",
     cache: "no-store",
   });
@@ -21,18 +21,17 @@ export async function createApp() {
   }
 
   revalidatePath("/dashboard/");
-
   redirect("/dashboard?new=app&key=" + (await response.json()).secretKey);
 }
 
 export async function getTenant() {
-  const id = cookies().get("tenant")?.value;
+  const tenantId = cookies().get("tenant")?.value;
 
-  if (!id) {
+  if (!tenantId) {
     redirect("/login");
   }
 
-  const response = await fetch(`${apiUrl}tenant/${id}`);
+  const response = await fetch(`${apiUrl}tenant/${tenantId}`);
 
   if (!response.ok) {
     throw new Error("Failed to fetch tenant");

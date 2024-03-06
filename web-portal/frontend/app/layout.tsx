@@ -7,6 +7,7 @@ import "@mantine/core/styles.css";
 import { ColorSchemeScript, MantineProvider } from "@mantine/core";
 import Web3Provider from "@frontend/utils/Web3Provider";
 import { metadata } from "@frontend/utils/consts";
+import { theme } from "@frontend/utils/theme";
 
 export default function RootLayout({
   children,
@@ -20,7 +21,7 @@ export default function RootLayout({
       </head>
       <body>
         <Web3Provider>
-          <MantineProvider>{children}</MantineProvider>
+          <MantineProvider theme={theme}>{children}</MantineProvider>
         </Web3Provider>
       </body>
     </html>

@@ -21,7 +21,7 @@ export default async function User() {
           <Title order={5}>logged in as: {tenant?.id}</Title>
           <Flex gap="md">
             <Link href="?new=app">
-              <Button>New App</Button>
+              <Button color="carrot.1">New App</Button>
             </Link>
             <LogoutButton />
           </Flex>

@@ -56,6 +56,7 @@ export default function Login() {
           type="submit"
           variant="filled"
           fullWidth
+          color="umbra.1"
           style={{ marginTop: 8 }}
         >
           Recover Tenant

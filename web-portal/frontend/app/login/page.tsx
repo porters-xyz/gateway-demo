@@ -1,8 +1,11 @@
 "use client";
-import { Container, Button, TextInput } from "@mantine/core";
+import { Container, Flex, TextInput, Title } from "@mantine/core";
 import { RecoverTenantModal } from "./modal.component";
 import { ConnectKitButton, useSIWE } from "connectkit";
+import Image from "next/image";
+import logo from "@frontend/public/logo.png";
 import Link from "next/link";
+import WelcomeShape from "./welcomeShape.component";
 
 export default function Login() {
   return (
@@ -17,9 +20,20 @@ export default function Login() {
         gap: 8,
       }}
     >
-      <ConnectKitButton />
-      <Link href={"?recover=true"}>Recover</Link>
-      <RecoverTenantModal />
+      <WelcomeShape>
+        <Image src={logo.src} alt="hello" width="160" height="58" />
+        <Title order={2} style={{ color: "white", textAlign: "center" }}>
+          Welcome to Porters. Let’s get started!
+        </Title>
+        <ConnectKitButton />
+        <Link
+          href={"?recover=true"}
+          style={{ color: "#FFA44B", textDecorationColor: "#FFA44B" }}
+        >
+          Recover
+        </Link>
+        <RecoverTenantModal />
+      </WelcomeShape>
     </Container>
   );
 }

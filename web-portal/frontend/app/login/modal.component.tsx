@@ -1,9 +1,25 @@
 "use client";
-import { Modal, Button, CopyButton, Stack, Title, Flex } from "@mantine/core";
+import {
+  Modal,
+  Button,
+  CopyButton,
+  Stack,
+  Title,
+  Flex,
+  TextInput,
+} from "@mantine/core";
+import { useForm } from "@mantine/form";
+import { useFormState } from "react-dom";
 import { IconCopy, IconClipboardCheck } from "@tabler/icons-react";
 import { useSearchParams, useRouter } from "next/navigation";
+import { recoverTenant } from "./actions";
 
-export default function NewTenantModal() {
+const initialState = {
+  key: "",
+};
+
+// TODO: move it to apt place (after /dashboard login)
+export function NewTenantModal() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const secret = searchParams.get("secret");
@@ -35,6 +51,58 @@ export default function NewTenantModal() {
             </Button>
           )}
         </CopyButton>
+      </Stack>
+    </Modal>
+  );
+}
+
+export function RecoverTenantModal() {
+  const searchParams = useSearchParams();
+  const showRecover = searchParams.get("recover") === "true";
+  const [validated, validateAction] = useFormState(
+    () => recoverTenant(values.key),
+    initialState,
+  );
+
+  const { values, getInputProps } = useForm({
+    initialValues: initialState,
+    validateInputOnChange: true,
+    validate: {
+      key: (value) => (value.length === 16 ? null : "Invalid Key"),
+    },
+  });
+
+  const router = useRouter();
+  return (
+    <Modal
+      opened={Boolean(showRecover)}
+      onClose={() => router.replace("/login")}
+      title="Recover User Account"
+      centered
+    >
+      <Stack>
+        <Title order={4}>
+          You can recover your user account if you have your secret key,
+          generated during signup.
+        </Title>
+        <form action={validateAction}>
+          <TextInput
+            label="Secret Key"
+            placeholder="Secret"
+            width={"full"}
+            {...getInputProps("key")}
+          />
+
+          <Button
+            type="submit"
+            variant="filled"
+            fullWidth
+            color="umbra.1"
+            style={{ marginTop: 8 }}
+          >
+            Recover User
+          </Button>
+        </form>
       </Stack>
     </Modal>
   );

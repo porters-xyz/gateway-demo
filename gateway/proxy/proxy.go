@@ -10,6 +10,8 @@ import (
     "net/http/httputil"
     "os"
 
+    "github.com/gorilla/mux"
+
     "porters/db"
 )
 
@@ -39,9 +41,10 @@ func Start() {
     }
 
     revProxy := setupProxy(remote)
-    http.HandleFunc("/", handler(revProxy))
-    http.HandleFunc("/health", healthHandler())
-    err2 := http.ListenAndServe(":9000", nil)
+    router := mux.NewRouter()
+    router.HandleFunc("/{appId}", handler(revProxy))
+    router.HandleFunc("/health", healthHandler())
+    err2 := http.ListenAndServe(":9000", router)
     if err2 != nil {
         panic(err2)
     }

@@ -80,43 +80,43 @@ func (c *Cache) Healthcheck() *common.HealthCheckStatus {
     return hcs
 }
 
-func (t *tenant) cache(ctx context.Context) {
+func (t *Tenant) cache(ctx context.Context) {
     // TODO call redis create with key format
     cached := time.Now()
     err := getCache().HSet(ctx, t.Key(),
-        "active", t.active,
+        "active", t.Active,
         "cached", cached).Err()
     if err != nil {
         // TODO handle errors should they happen
     }
 }
 
-func (a *app) cache(ctx context.Context) {
+func (a *App) cache(ctx context.Context) {
     // TODO call redis create with key format
     cached := time.Now()
     err := getCache().HSet(ctx, a.Key(),
-        "active", a.active,
-        "tenant", a.tenant.id,
+        "active", a.Active,
+        "tenant", a.Tenant.Id,
         "cached", cached).Err()
     if err != nil {
         // TODO handle errors correctly
     }
 }
 
-func (ar *apprule) cache(ctx context.Context) {
+func (ar *Apprule) cache(ctx context.Context) {
     // TODO call redis create with key format
     err := getCache().HSet(ctx, ar.Key(), 
-        "active", ar.active,
-        "value", ar.value,
-        "active", ar.active).Err()
+        "active", ar.Active,
+        "value", ar.Value,
+        "active", ar.Active).Err()
     if err != nil {
         // TODO handle errors correctly
     }
 }
 
-func (p *paymenttx) cache(ctx context.Context) {
+func (p *Paymenttx) cache(ctx context.Context) {
     var err error = nil
-    if p.txType == Credit {
+    if p.TxType == Credit {
         //err = getCache().HIncrBy(ctx, p.Key(), "cached_remaining", int64(p.amount)).Err()
         //if err != nil {
             // TODO handle errors should they happen
@@ -139,19 +139,31 @@ func (p *paymenttx) cache(ctx context.Context) {
     // TODO decrement all the right counters
 //}
 
-// Uses QUOTA to determine account existing, does not guarantee relays remaining
-// TODO use tenant hash
-// TODO remove logging
-func (t *tenant) lookup(ctx context.Context) (*tenant, bool) {
+func (t *Tenant) Lookup(ctx context.Context) {
     key := t.Key()
-    result, err := getCache().HGet(ctx, key, "enabled").Result()
-    resbool, err2 := strconv.ParseBool(result)
-    log.Println("enabled", resbool)
-    if err != nil || err2 != nil{
-        // TODO clean this up
-        resbool = false
+    result, err := getCache().HGetAll(ctx, key).Result()
+    // TODO errors should probably cause postgres lookup
+    if err == nil {
+        t.Active, _ = strconv.ParseBool(result["active"])
+        t.Balance, _ = strconv.Atoi(result["balance"])
+        t.CachedBalance, _ = strconv.Atoi(result["cachedBalance"])
+        t.CachedAt, _ = time.Parse(time.RFC3339, result["cachedAt"])
     }
-    return t, resbool
+}
+
+func (a *App) Lookup(ctx context.Context) {
+    key := a.Key()
+    result, err := getCache().HGetAll(ctx, key).Result()
+    if err == nil {
+        a.Active, _ = strconv.ParseBool(result["active"])
+        tenant := Tenant{Id: result["tenant"]}
+        a.Tenant = tenant
+    }
+}
+
+// TODO hardcoding 1 minute cache refresh for now, move to config
+func (t *Tenant) refreshAt() time.Time {
+    return t.CachedAt.Add(1 * time.Minute)
 }
 
 // utility function

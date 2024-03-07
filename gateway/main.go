@@ -15,9 +15,9 @@ func main() {
     arg := os.Args[1]
     if arg == "gateway" {
         // currently registering plugins via main
-        proxy.Register(plugins.Counter{})
-        proxy.Register(plugins.ApiKeyAuth{"X-API"})
-        proxy.Register(plugins.Quota{})
+        proxy.Register(&plugins.Counter{})
+        proxy.Register(&plugins.ApiKeyAuth{"X-API"})
+        proxy.Register(&plugins.BalanceTracker{})
 
         log.Println("starting gateway")
         proxy.Start()

@@ -16,59 +16,66 @@ const (
     PRODUCT       = "PRODUCT"
 )
 
-type tenant struct {
-    id string
-    active bool
-    cached time.Time
+type Tenant struct {
+    Id string
+    Active bool
+    Balance int // calculated
+    CachedBalance int // not-persisted
+    CachedAt time.Time
 }
 
-type app struct {
-    id string
-    active bool
-    missed time.Time 
-    cached time.Time
-    tenant tenant
+type App struct {
+    Id string
+    Active bool
+    MissedAt time.Time
+    CachedAt time.Time
+    Tenant Tenant
 }
 
-type apprule struct {
-    id string
-    active bool
-    value string
-    cached time.Time
-    app app
-    ruleType ruletype
+type Apprule struct {
+    Id string
+    Active bool
+    Value string
+    CachedAt time.Time
+    App App
+    RuleType Ruletype
 }
 
-type ruletype struct {
-    id string
-    name string
-    active bool
+type Ruletype struct {
+    Id string
+    Name string
+    Active bool
 }
 
-type paymenttx struct {
-    id string
-    reference string
-    amount int
-    tenant tenant
-    txType TxType
+// tied to tenant, this isn't cached directly
+type Paymenttx struct {
+    Id string
+    Reference string
+    Amount int
+    Tenant Tenant
+    TxType TxType
+    CreatedAt time.Time
 }
 
 // This gets written back to postgres
-type relaytx struct {
-    id string
-    reference string
-    amount int
-    product product
-    tenant tenant
-    txType TxType
+type Relaytx struct {
+    Id string
+    Reference string
+    Amount int
+    Product Product
+    Tenant Tenant
+    TxType TxType
 }
 
+// TODO this needs to be added to postgres schema
 // Allow multiple names for same underlying product
-type product struct {
-    id string
-    name string // subdomain on endpoint
-    num int // optional (for evm chain)
-    weight int
+// product miss means subdomain on endpoint doesn't match known product
+type Product struct {
+    Id string
+    Name string // subdomain on endpoint
+    Num int // optional (for evm chain)
+    Weight int
+    MissedAt time.Time
 }
 
 // Unknown is basically error, shouldn't rely on it
@@ -89,33 +96,45 @@ func parseTxType(str string) TxType {
     }
 }
 
-func (t *tenant) Key() string {
-    return fmt.Sprintf("%s:%s", TENANT, t.id)
+func NewTenant(id string) Tenant {
+    return Tenant{
+        Id: id,
+    }
 }
 
-func (a *app) Key() string {
-    return fmt.Sprintf("%s:%s", APP, a.id)
+func NewApp(id string) App {
+    return App{
+        Id: id,
+    }
+}
+
+func (t *Tenant) Key() string {
+    return fmt.Sprintf("%s:%s", TENANT, t.Id)
+}
+
+func (a *App) Key() string {
+    return fmt.Sprintf("%s:%s", APP, a.Id)
 }
 
 // Keys to a set
-func (ar *apprule) Key() string {
-    return fmt.Sprintf("%s:%s", APPRULE, ar.app.id)
+func (ar *Apprule) Key() string {
+    return fmt.Sprintf("%s:%s", APPRULE, ar.App.Id)
 }
 
-func (rt *ruletype) Key() string {
-    return fmt.Sprintf("%s:%s", RULETYPE, rt.id)
+func (rt *Ruletype) Key() string {
+    return fmt.Sprintf("%s:%s", RULETYPE, rt.Id)
 }
 
 // TODO is this needed?
-func (p *paymenttx) Key() string {
+func (p *Paymenttx) Key() string {
    return "" 
 }
 
 // TODO sort out how this is used
-func (r *relaytx) Key() string {
-    return fmt.Sprintf("%s:%s", RELAYTX, r.id)
+func (r *Relaytx) Key() string {
+    return fmt.Sprintf("%s:%s", RELAYTX, r.Id)
 }
 
-func (p *product) Key() string {
-    return fmt.Sprintf("%s:%s", PRODUCT, p.id)
+func (p *Product) Key() string {
+    return fmt.Sprintf("%s:%s", PRODUCT, p.Id)
 }

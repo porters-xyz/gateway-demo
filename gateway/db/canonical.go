@@ -98,7 +98,6 @@ func (t *Tenant) canonicalBalance(ctx context.Context) error {
 }
 
 func (a *App) fetch(ctx context.Context) error {
-    log.Println("fetching app")
     db := getCanonicalDB()
     row := db.QueryRowContext(ctx, `SELECT id, "tenantId" FROM "App" WHERE id = $1 AND "deletedAt" IS NULL`, a.Id)
     err := row.Scan(&a.Id, &a.Tenant.Id)

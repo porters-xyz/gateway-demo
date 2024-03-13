@@ -30,7 +30,7 @@ func (c Counter) Field() string {
 // and add header for now
 // TODO make this asynchronous and remove header set
 func (c Counter) HandleResponse(resp *http.Response) error {
-    newCount := db.Increment(resp.Request.Context(), c, 1)
+    newCount := db.IncrementCounter(resp.Request.Context(), c.Key(), 1)
     log.Println("count", newCount)
     resp.Header.Set("X-Counter", strconv.Itoa(newCount))
     return nil

@@ -86,7 +86,6 @@ func (t *Tenant) cache(ctx context.Context) error {
     err := getCache().HSet(ctx, t.Key(),
         "active", t.Active,
         "balance", t.Balance,
-        "cachedBalance", t.CachedBalance,
         "cached", cached).Err()
     if err != nil {
         // TODO handle errors should they happen
@@ -150,7 +149,7 @@ func (p *Paymenttx) cache(ctx context.Context) error {
     // TODO decrement all the right counters
 //}
 
-func (t *Tenant) Lookup(ctx context.Context) {
+func (t *Tenant) Lookup(ctx context.Context) error {
     key := t.Key()
     result, err := getCache().HGetAll(ctx, key).Result()
     // TODO errors should probably cause postgres lookup
@@ -160,12 +159,12 @@ func (t *Tenant) Lookup(ctx context.Context) {
     } else {
         t.Active, _ = strconv.ParseBool(result["active"])
         t.Balance, _ = strconv.Atoi(result["balance"])
-        t.CachedBalance, _ = strconv.Atoi(result["cachedBalance"])
         t.CachedAt, _ = time.Parse(time.RFC3339, result["cachedAt"])
     }
+    return nil
 }
 
-func (a *App) Lookup(ctx context.Context) {
+func (a *App) Lookup(ctx context.Context) error {
     key := a.Key()
     log.Println("checking cache for app", key)
     result, err := getCache().HGetAll(ctx, key).Result()
@@ -184,6 +183,7 @@ func (a *App) Lookup(ctx context.Context) {
         a.Tenant.Id = result["tenant"]
         a.Tenant.Lookup(ctx)
     }
+    return nil
 }
 
 // Refresh does the psql calls to build cache
@@ -255,7 +255,7 @@ func GetIntVal(ctx context.Context, name string) int {
     return intval
 }
 
-func Increment(ctx context.Context, incr incrementable, amount int) int {
+func IncrementField(ctx context.Context, incr incrementable, amount int) int {
     incrBy := int64(amount)
     newVal, err := getCache().HIncrBy(ctx, incr.Key(), incr.Field(), incrBy).Result()
     if err != nil {
@@ -264,13 +264,37 @@ func Increment(ctx context.Context, incr incrementable, amount int) int {
     return int(newVal)
 }
 
-func Decrement(ctx context.Context, decr decrementable, amount int) int {
+func DecrementField(ctx context.Context, decr decrementable, amount int) int {
     decrBy := -int64(amount)
     newVal, err := getCache().HIncrBy(ctx, decr.Key(), decr.Field(), decrBy).Result()
     if err != nil {
         // TODO handle errors
     }
     return int(newVal)
+}
+
+func IncrementCounter(ctx context.Context, key string, amount int) int {
+    incrBy := int64(amount)
+    newVal, err := getCache().IncrBy(ctx, key, incrBy).Result()
+    if err != nil {
+        // TODO handle error
+    }
+    return int(newVal)
+}
+
+func DecrementCounter(ctx context.Context, key string, amount int) int {
+    decrBy := int64(amount)
+    newVal, err := getCache().DecrBy(ctx, key, decrBy).Result()
+    if err != nil {
+        // TODO handle error
+    }
+    return int(newVal)
+}
+
+// returns false if counter already exists
+func InitCounter(ctx context.Context, key string, initValue int) (bool, error) {
+    // TODO no expiration for now
+    return getCache().SetNX(ctx, key, initValue, 0).Result()
 }
 
 // TODO check redis, if missing check postgres (and cache), if neither return false

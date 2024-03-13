@@ -35,7 +35,6 @@ type Tenant struct {
     Id string
     Active bool
     Balance int // calculated
-    CachedBalance int // not-persisted
     CachedAt time.Time
 }
 

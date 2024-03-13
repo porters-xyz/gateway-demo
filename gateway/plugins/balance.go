@@ -47,7 +47,7 @@ func (q *BalanceTracker) HandleRequest(req *http.Request) {
     } else {
         log.Println("none remaining", path)
         ctx, cancel := context.WithCancelCause(ctx)
-        err := proxy.NewBalanceExceededError()
+        err := proxy.BalanceExceededError
         *req = *req.WithContext(ctx)
         cancel(err)
     }

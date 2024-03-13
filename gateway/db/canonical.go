@@ -22,7 +22,8 @@ type DB interface {
 }
 
 type Canonical struct {
-
+    // any instance specific stuff here
+    // singleton holds 
 }
 
 type DBFunc func(*sql.Conn) error
@@ -85,11 +86,11 @@ func (t *Tenant) fetch(ctx context.Context) error {
 func (t *Tenant) canonicalBalance(ctx context.Context) error {
     db := getCanonicalDB()
     query := `SELECT
-    SUM(case when "transactionType"='CREDIT' then amount else 0 end) -
-    SUM(case when "transactionType"='DEBIT' then amount else 0 end) 
+    COALESCE(SUM(case when "transactionType"='CREDIT' then amount else 0 end) -
+    SUM(case when "transactionType"='DEBIT' then amount else 0 end), 0) 
         AS balance FROM "PaymentLedger" WHERE "tenantId" = $1`
     row := db.QueryRowContext(ctx, query, t.Id)
-    err := row.Scan(t.Balance)
+    err := row.Scan(&t.Balance)
     if err != nil {
         return err
     }

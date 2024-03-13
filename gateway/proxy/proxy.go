@@ -21,6 +21,7 @@ func Start() {
     remote, err := url.Parse(proxyUrl)
     log.Println("remote", remote)
     if err != nil {
+        // TODO probably panic here, can't proxy anywhere
         log.Println(err)
     }
 
@@ -67,7 +68,6 @@ func setupProxy(remote *url.URL) *httputil.ReverseProxy {
         // TODO move to filter
         req.Host = remote.Host
 
-        log.Println(req)
         cancel := RequestCanceler(req)
 
         for _, p := range (*reg).plugins {
@@ -86,7 +86,7 @@ func setupProxy(remote *url.URL) *httputil.ReverseProxy {
         // Cancel if necessary lifecycle stages not completed
         lifecycle := lifecycleFromContext(req.Context())
         if !lifecycle.checkComplete() {
-            err := NewLifecycleIncompleteError()
+            err := LifecycleIncompleteError
             log.Println("lifecycle incomplete", lifecycle)
             cancel(err)
         }
@@ -108,9 +108,11 @@ func setupProxy(remote *url.URL) *httputil.ReverseProxy {
 
     revProxy.ErrorHandler = func(resp http.ResponseWriter, req *http.Request, err error) {
         // TODO handle errors elegantly
-        log.Println(err)
+        log.Println("handling error:", err)
         var httpErr *HTTPError
-        if errors.As(err, &httpErr) {
+        cause := context.Cause(req.Context())
+        log.Println("cancel cause", cause)
+        if errors.As(cause, &httpErr) {
             status := httpErr.code
             http.Error(resp, http.StatusText(status), status)
         } else if err != nil {

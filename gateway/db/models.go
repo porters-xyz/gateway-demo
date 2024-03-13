@@ -1,6 +1,7 @@
 package db
 
 import (
+    "context"
     "fmt"
     "strings"
     "time"
@@ -15,6 +16,20 @@ const (
     RELAYTX       = "RELAYTX"
     PRODUCT       = "PRODUCT"
 )
+
+type fetchable interface {
+    fetch(ctx context.Context) error // populate pointer with values
+}
+
+type writable interface {
+    write(ctx context.Context) error // writes data at pointer to db
+}
+
+type cachable interface {
+    refreshable
+    cache(ctx context.Context) error // writes data to cache
+    Lookup(ctx context.Context) error // read from cache w/ passthru
+}
 
 type Tenant struct {
     Id string

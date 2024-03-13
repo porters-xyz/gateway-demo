@@ -16,6 +16,7 @@ import (
 const (
     ACCOUNT_SET = "VALID_ACCOUNTS"
     REDIS = "redis"
+    MISSED_FALSE = "0001-01-01T00:00:00Z"
 )
 
 // access redis functions through this object
@@ -25,6 +26,7 @@ type Cache struct {
 
 type refreshable interface {
     refreshAt() time.Time
+    refresh(ctx context.Context) error
 }
 
 type incrementable interface {
@@ -78,7 +80,7 @@ func (c *Cache) Healthcheck() *common.HealthCheckStatus {
     return hcs
 }
 
-func (t *Tenant) cache(ctx context.Context) {
+func (t *Tenant) cache(ctx context.Context) error {
     // TODO call redis create with key format
     cached := time.Now()
     err := getCache().HSet(ctx, t.Key(),
@@ -88,10 +90,12 @@ func (t *Tenant) cache(ctx context.Context) {
         "cached", cached).Err()
     if err != nil {
         // TODO handle errors should they happen
+        return err
     }
+    return nil
 }
 
-func (a *App) cache(ctx context.Context) {
+func (a *App) cache(ctx context.Context) error {
     // TODO call redis create with key format
     cached := time.Now()
     err := getCache().HSet(ctx, a.Key(),
@@ -101,10 +105,12 @@ func (a *App) cache(ctx context.Context) {
         "missedAt", a.MissedAt).Err()
     if err != nil {
         // TODO handle errors correctly
+        return err
     }
+    return nil
 }
 
-func (ar *Apprule) cache(ctx context.Context) {
+func (ar *Apprule) cache(ctx context.Context) error {
     // TODO call redis create with key format
     err := getCache().HSet(ctx, ar.Key(), 
         "active", ar.Active,
@@ -112,10 +118,12 @@ func (ar *Apprule) cache(ctx context.Context) {
         "active", ar.Active).Err()
     if err != nil {
         // TODO handle errors correctly
+        return err
     }
+    return nil
 }
 
-func (p *Paymenttx) cache(ctx context.Context) {
+func (p *Paymenttx) cache(ctx context.Context) error {
     var err error = nil
     if p.TxType == Credit {
         //err = getCache().HIncrBy(ctx, p.Key(), "cached_remaining", int64(p.amount)).Err()
@@ -128,7 +136,9 @@ func (p *Paymenttx) cache(ctx context.Context) {
     }
     if err != nil {
         // TODO handle errors should they happen
+        return err
     }
+    return nil
 }
 
 // TODO can this be done in single hop? maybe put in lua script?
@@ -144,7 +154,7 @@ func (t *Tenant) Lookup(ctx context.Context) {
     key := t.Key()
     result, err := getCache().HGetAll(ctx, key).Result()
     // TODO errors should probably cause postgres lookup
-    if err != nil || len(result) == 0 {
+    if err != nil || len(result) == 0 || expired(result["cachedAt"]) {
         log.Println("tenant not found", t)
         t.refresh(ctx)
     } else {
@@ -159,10 +169,10 @@ func (a *App) Lookup(ctx context.Context) {
     key := a.Key()
     log.Println("checking cache for app", key)
     result, err := getCache().HGetAll(ctx, key).Result()
-    if err != nil || len(result) == 0 {
+    if err != nil || len(result) == 0 || expired(result["cachedAt"]) {
         log.Println("missed app", key)
         a.refresh(ctx)
-    } else if result["missedAt"] != "" {
+    } else if result["missedAt"] != MISSED_FALSE {
         if backoff(result["missedAt"]) {
             log.Println("missed and backing off")
         } else {
@@ -186,7 +196,7 @@ func (t *Tenant) refresh(ctx context.Context) {
     } else {
         err := t.canonicalBalance(ctx)
         if err != nil {
-            log.Println("error getting balance")
+            log.Println("error getting balance", err)
         }
         t.cache(ctx)
     }
@@ -214,8 +224,20 @@ func (a *App) refreshAt() time.Time {
 }
 
 func backoff(missedAt string) bool {
-    missedTime, _ := time.Parse(time.RFC3339, missedAt)
-    return time.Now().After(missedTime.Add(5 * time.Minute))
+    missedTime, err := time.Parse(time.RFC3339, missedAt)
+    if err != nil {
+        return false // something is wrong with time format, refresh to fix
+    }
+    return time.Now().Before(missedTime.Add(5 * time.Minute))
+}
+
+// TODO might want to expire at different cadences, move to refreshAt
+func expired(cachedAt string) bool {
+    cachedTime, err := time.Parse(time.RFC3339, cachedAt)
+    if err != nil {
+        return true
+    }
+    return time.Now().After(cachedTime.Add(1 * time.Minute))
 }
 
 // utility function

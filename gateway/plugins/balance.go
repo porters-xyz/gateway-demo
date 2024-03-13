@@ -26,13 +26,14 @@ func (q *BalanceTracker) Key() string {
 
 func (q *BalanceTracker) Load() {
     // Setup any plugin state
+    log.Println("Loading", q.Name())
 }
 
 // TODO check request against available relays
 // TODO set headers if needing to block
 // TODO update context to reflect
 // TODO script this to avoid multi-hops
-func (q *BalanceTracker) PreHandler(req *http.Request) {
+func (q *BalanceTracker) HandleRequest(req *http.Request) {
     ctx := req.Context()
     path := mux.Vars(req)[proxy.APP_PATH]
     tmpapp := db.NewApp(path)
@@ -52,7 +53,7 @@ func (q *BalanceTracker) PreHandler(req *http.Request) {
     }
 }
 
-func (q *BalanceTracker) PostHandler(resp *http.Response) error {
+func (q *BalanceTracker) HandleResponse(resp *http.Response) error {
     // TODO check response for success
     //code := resp.
     // TODO update usage count

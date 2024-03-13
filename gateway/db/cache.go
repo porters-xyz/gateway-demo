@@ -18,8 +18,6 @@ const (
     REDIS = "redis"
 )
 
-
-
 // access redis functions through this object
 type Cache struct {
 
@@ -85,6 +83,8 @@ func (t *Tenant) cache(ctx context.Context) {
     cached := time.Now()
     err := getCache().HSet(ctx, t.Key(),
         "active", t.Active,
+        "balance", t.Balance,
+        "cachedBalance", t.CachedBalance,
         "cached", cached).Err()
     if err != nil {
         // TODO handle errors should they happen
@@ -97,7 +97,8 @@ func (a *App) cache(ctx context.Context) {
     err := getCache().HSet(ctx, a.Key(),
         "active", a.Active,
         "tenant", a.Tenant.Id,
-        "cached", cached).Err()
+        "cached", cached,
+        "missedAt", a.MissedAt).Err()
     if err != nil {
         // TODO handle errors correctly
     }
@@ -143,7 +144,10 @@ func (t *Tenant) Lookup(ctx context.Context) {
     key := t.Key()
     result, err := getCache().HGetAll(ctx, key).Result()
     // TODO errors should probably cause postgres lookup
-    if err == nil {
+    if err != nil || len(result) == 0 {
+        log.Println("tenant not found", t)
+        t.refresh(ctx)
+    } else {
         t.Active, _ = strconv.ParseBool(result["active"])
         t.Balance, _ = strconv.Atoi(result["balance"])
         t.CachedBalance, _ = strconv.Atoi(result["cachedBalance"])
@@ -153,17 +157,65 @@ func (t *Tenant) Lookup(ctx context.Context) {
 
 func (a *App) Lookup(ctx context.Context) {
     key := a.Key()
+    log.Println("checking cache for app", key)
     result, err := getCache().HGetAll(ctx, key).Result()
-    if err == nil {
+    if err != nil || len(result) == 0 {
+        log.Println("missed app", key)
+        a.refresh(ctx)
+    } else if result["missedAt"] != "" {
+        if backoff(result["missedAt"]) {
+            log.Println("missed and backing off")
+        } else {
+            a.refresh(ctx)
+        }
+    } else {
+        log.Println("got app", result)
         a.Active, _ = strconv.ParseBool(result["active"])
-        tenant := Tenant{Id: result["tenant"]}
-        a.Tenant = tenant
+        a.Tenant.Id = result["tenant"]
+        a.Tenant.Lookup(ctx)
     }
+}
+
+// Refresh does the psql calls to build cache
+func (t *Tenant) refresh(ctx context.Context) {
+    log.Println("refreshing tenant cache", t.Id)
+    err := t.fetch(ctx)
+    if err != nil {
+        log.Println("tenant missing, something's wrong", err)
+        // TODO how do we handle this?
+    } else {
+        err := t.canonicalBalance(ctx)
+        if err != nil {
+            log.Println("error getting balance")
+        }
+        t.cache(ctx)
+    }
+}
+
+func (a *App) refresh(ctx context.Context) {
+    log.Println("refreshing app cache", a.Id)
+    err := a.fetch(ctx)
+    if err != nil {
+        log.Println("err seen", err)
+        a.MissedAt = time.Now()
+    } else {
+        a.Tenant.Lookup(ctx)
+    }
+    a.cache(ctx)
 }
 
 // TODO hardcoding 1 minute cache refresh for now, move to config
 func (t *Tenant) refreshAt() time.Time {
     return t.CachedAt.Add(1 * time.Minute)
+}
+
+func (a *App) refreshAt() time.Time {
+    return a.CachedAt.Add(1 * time.Minute)
+}
+
+func backoff(missedAt string) bool {
+    missedTime, _ := time.Parse(time.RFC3339, missedAt)
+    return time.Now().After(missedTime.Add(5 * time.Minute))
 }
 
 // utility function
@@ -217,9 +269,8 @@ func LookupAccount(ctx context.Context, apiKey string) (Account, bool) {
 
 
 // TODO make this a method of productCounter
-func UseRelay(ctx context.Context, apiKey string) {
-    hashedKey := utils.Hash(apiKey)
-    key := GenApiKey(hashedKey)
+func (t *Tenant) UseRelay(ctx context.Context) {
+    key := t.Key()
     account, err := getCache().HGet(ctx, key, "account").Result()
     if err != nil {
         // TODO log error to alert, will need manual cleanup

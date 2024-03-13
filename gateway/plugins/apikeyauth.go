@@ -4,7 +4,6 @@ package plugins
 // Implements Filter interface
 
 import (
-    "fmt"
     "context"
     "log"
     "net/http"
@@ -22,7 +21,7 @@ func (a ApiKeyAuth) Name() string {
 
 func (a ApiKeyAuth) Load() {
     // load plugin
-    fmt.Println("loading", a.Name())
+    log.Println("loading", a.Name())
 }
 
 func (a ApiKeyAuth) Key() string {

@@ -18,6 +18,7 @@ func main() {
         proxy.Register(&plugins.Counter{})
         proxy.Register(&plugins.ApiKeyAuth{"X-API"})
         proxy.Register(&plugins.BalanceTracker{})
+        proxy.Register(&plugins.NoopFilter{proxy.LifecycleMask(proxy.AccountLookup|proxy.RateLimit)})
 
         log.Println("starting gateway")
         proxy.Start()

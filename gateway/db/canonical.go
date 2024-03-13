@@ -15,6 +15,12 @@ import (
 
 // Cache sits in front of canonical db (postgres)
 // Protect access to this to reduce it to minimal traffic
+type DB interface {
+    common.HealthCheck
+    Conn(ctx context.Context) (*sql.Conn, error)
+    Report() sql.DBStats
+}
+
 type Canonical struct {
 
 }
@@ -38,13 +44,13 @@ func getCanonicalDB() *sql.DB {
 }
 
 // Wrapping conn function to not expose the DB outside package
-func Conn(ctx context.Context) (*sql.Conn, error) {
+func (c *Canonical) Conn(ctx context.Context) (*sql.Conn, error) {
     db := getCanonicalDB()
     return db.Conn(ctx)
 }
 
 // TODO switch this to send to prometheus
-func Report() sql.DBStats {
+func (c *Canonical) Report() sql.DBStats {
     db := getCanonicalDB()
     return db.Stats()
 }
@@ -63,8 +69,9 @@ func (c *Canonical) Healthcheck() *common.HealthCheckStatus {
 
 func (t *Tenant) fetch(ctx context.Context) error {
     db := getCanonicalDB()
-    row := db.QueryRowContext(ctx, `SELECT id, active FROM "Tenant" WHERE id = ?`, t.Id)
-    err := row.Scan(t.Id, t.Active)
+    query := `SELECT id, active FROM "Tenant" WHERE id = $1 AND "deletedAt" IS NULL`
+    row := db.QueryRowContext(ctx, query, t.Id) 
+    err := row.Scan(&t.Id, &t.Active)
     if err != nil {
         return err
     }
@@ -77,7 +84,11 @@ func (t *Tenant) fetch(ctx context.Context) error {
 // "createdAt"
 func (t *Tenant) canonicalBalance(ctx context.Context) error {
     db := getCanonicalDB()
-    row := db.QueryRowContext(ctx, `SELECT SUM(case when "transactionType"='CREDIT' then amount else 0 end) - SUM(case when "transactionType"='DEBIT' then amount else 0 end) AS balance FROM "PaymentLedger" WHERE "tenantId" = ?`, t.Id)
+    query := `SELECT
+    SUM(case when "transactionType"='CREDIT' then amount else 0 end) -
+    SUM(case when "transactionType"='DEBIT' then amount else 0 end) 
+        AS balance FROM "PaymentLedger" WHERE "tenantId" = $1`
+    row := db.QueryRowContext(ctx, query, t.Id)
     err := row.Scan(t.Balance)
     if err != nil {
         return err
@@ -86,19 +97,21 @@ func (t *Tenant) canonicalBalance(ctx context.Context) error {
 }
 
 func (a *App) fetch(ctx context.Context) error {
+    log.Println("fetching app")
     db := getCanonicalDB()
-    row := db.QueryRowContext(ctx, `SELECT id, active FROM "App" WHERE id = ?`, a.Id)
-    err := row.Scan(a.Id, a.Active)
+    row := db.QueryRowContext(ctx, `SELECT id, "tenantId" FROM "App" WHERE id = $1 AND "deletedAt" IS NULL`, a.Id)
+    err := row.Scan(&a.Id, &a.Tenant.Id)
     if err != nil {
         return err
     }
+    a.Active = true // TODO this needs to be in DB, hardcoding for now
     return nil
 }
 
 // TODO this doesn't exist in database yet, returns unimplemented for now
 func (p *Product) fetch(ctx context.Context) error {
     db := getCanonicalDB()
-    _ = db.QueryRowContext(ctx, `SELECT * FROM "Product" WHERE id = ?`, p.Id)
+    _ = db.QueryRowContext(ctx, `SELECT * FROM "Product" WHERE id = $1`, p.Id)
     return errors.New("unimplemented SQL table")
 }
 
@@ -113,7 +126,7 @@ func (ptx *Paymenttx) fetch(ctx context.Context) error {
 // TODO we might just write this.
 func (rtx *Relaytx) fetch(ctx context.Context) error {
     db := getCanonicalDB()
-    row := db.QueryRowContext(ctx, `SELECT id FROM "RelayLedger" WHERE id = ?`, rtx.Id)
+    row := db.QueryRowContext(ctx, `SELECT id FROM "RelayLedger" WHERE id = $1`, rtx.Id)
     err := row.Scan()
     if err != nil {
         return err

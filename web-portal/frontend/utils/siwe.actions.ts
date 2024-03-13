@@ -1,5 +1,5 @@
+"use client";
 import { SiweMessage } from "siwe";
-
 export const getNonce = async () => {
   const res = await fetch("/siwe", { method: "PUT" });
   if (!res.ok) throw new Error("Failed to fetch SIWE nonce");
@@ -40,12 +40,21 @@ export const verifyMessage = async ({
     headers: { "Content-Type": "application/json" },
   }).then((res) => res.ok);
 };
+
 export const getSession = async () => {
   const res = await fetch("/siwe");
   if (!res.ok) throw new Error("Failed to fetch SIWE session");
 
-  const { address, chainId, secret } = await res.json();
-  return address && chainId
-    ? { address, chainId, secret: secret || null }
-    : null;
+  const userSession = await res.json();
+
+  return userSession;
+};
+
+export const signOut = async () => {
+  const res = await fetch("/siwe", {
+    method: "DELETE",
+  });
+
+  if (res.ok) return true;
+  return false;
 };

@@ -21,7 +21,6 @@ export class SiweController {
   ): Promise<any> {
     // @note: Get Session from cookie using siwe
     const sessionCookie = request?.cookies['session'];
-
     if (!sessionCookie) {
       return response.status(HttpStatus.BAD_REQUEST).send(false);
     }

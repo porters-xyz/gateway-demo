@@ -1,13 +1,19 @@
 "use client";
-import { Container, Flex, TextInput, Title } from "@mantine/core";
+import { Container, Title } from "@mantine/core";
 import { RecoverTenantModal } from "./modal.component";
 import { ConnectKitButton, useSIWE } from "connectkit";
 import Image from "next/image";
 import logo from "@frontend/public/logo.png";
 import Link from "next/link";
 import WelcomeShape from "./welcomeShape.component";
+import { useRouter } from "next/navigation";
 
 export default function Login() {
+  const { isSignedIn, isReady } = useSIWE();
+  const router = useRouter();
+
+  if (isSignedIn && isReady) router.replace("/dashboard");
+
   return (
     <Container
       style={{
@@ -32,6 +38,7 @@ export default function Login() {
         >
           Recover
         </Link>
+
         <RecoverTenantModal />
       </WelcomeShape>
     </Container>

@@ -7,10 +7,10 @@ import { mainnet } from "wagmi/chains";
 import {
   getNonce,
   getSession,
+  signOut,
   verifyMessage,
   createMessage,
 } from "@frontend/utils/siwe.actions";
-import { logout } from "@frontend/app/dashboard/actions";
 import {
   ConnectKitProvider,
   SIWEConfig,
@@ -35,7 +35,7 @@ const siweConfig = {
   createMessage,
   verifyMessage,
   getSession,
-  signOut: logout,
+  signOut,
 } satisfies SIWEConfig;
 
 const Web3Provider: FC<PropsWithChildren<{}>> = ({ children }) => {

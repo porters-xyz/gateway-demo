@@ -9,10 +9,10 @@ import {
   TextInput,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
-import { useFormState } from "react-dom";
+import useRecoverTenant from "./hooks";
 import { IconCopy, IconClipboardCheck } from "@tabler/icons-react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { recoverTenant } from "./actions";
+import { useState } from "react";
 
 const initialState = {
   key: "",
@@ -20,9 +20,8 @@ const initialState = {
 
 // TODO: move it to apt place (after /dashboard login)
 export function NewTenantModal() {
-  const searchParams = useSearchParams();
   const router = useRouter();
-  const secret = searchParams.get("secret");
+  const secret = useSearchParams()?.get("secret");
 
   return (
     <Modal
@@ -59,10 +58,7 @@ export function NewTenantModal() {
 export function RecoverTenantModal() {
   const searchParams = useSearchParams();
   const showRecover = searchParams.get("recover") === "true";
-  const [validated, validateAction] = useFormState(
-    () => recoverTenant(values.key),
-    initialState,
-  );
+  const router = useRouter();
 
   const { values, getInputProps } = useForm({
     initialValues: initialState,
@@ -72,7 +68,9 @@ export function RecoverTenantModal() {
     },
   });
 
-  const router = useRouter();
+  const [submit, setSubmit] = useState(false);
+
+  const tenant = useRecoverTenant(values?.key, submit);
   return (
     <Modal
       opened={Boolean(showRecover)}
@@ -85,7 +83,7 @@ export function RecoverTenantModal() {
           You can recover your user account if you have your secret key,
           generated during signup.
         </Title>
-        <form action={validateAction}>
+        <form onSubmit={() => setSubmit(true)}>
           <TextInput
             label="Secret Key"
             placeholder="Secret"

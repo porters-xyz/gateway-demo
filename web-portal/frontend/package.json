@@ -19,8 +19,8 @@
     "@mantine/nprogress": "^7.4.2",
     "@mantine/spotlight": "^7.4.2",
     "@tabler/icons-react": "^2.47.0",
-    "@tanstack/react-query": "^5.24.1",
-    "connectkit": "^1.7.1",
+    "@tanstack/react-query": "^5.27.5",
+    "connectkit": "^1.7.2",
     "dayjs": "^1.11.10",
     "encoding": "^0.1.13",
     "iron-session": "^8.0.1",
@@ -29,6 +29,7 @@
     "react-dom": "^18",
     "recharts": "2",
     "siwe": "^2.1.4",
+    "viem": "2.x",
     "wagmi": "^2.5.7"
   },
   "devDependencies": {

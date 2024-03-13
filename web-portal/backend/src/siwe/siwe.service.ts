@@ -32,10 +32,10 @@ export class SiweService {
     if (address) {
       // @note: create or get user if a valid session is found
       const user = await this.userService.getOrCreate(address);
-      return user?.secret
-        ? { address, chainId, secret: user.secret }
-        : { address, chainId };
+      return { chainId, ...user };
     }
+
+    return null;
   }
 
   async verifyMessage({

@@ -8,6 +8,7 @@ import { AppController } from './app.controller';
 import { SiweModule } from './siwe/siwe.module';
 import { UserModule } from './user/user.module';
 import { AppsModule } from './apps/apps.module';
+import { OrgModule } from './org/org.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { AppsModule } from './apps/apps.module';
     SiweModule,
     UserModule,
     AppsModule,
+    OrgModule,
   ],
   providers: [AppService],
   controllers: [AppController],

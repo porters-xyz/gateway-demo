@@ -16,12 +16,73 @@ export class UserService {
       where: {
         ethAddress: createHash('sha256').update(ethAddress).digest('hex'),
       },
+      include: {
+        orgs: {
+          include: {
+            _count: true,
+          },
+        },
+      },
     });
 
-    if (!existingUser) {
+    if (!existingUser || existingUser?.orgs?.length === 0) {
+      // @note: this will generate enterprise + tenant before creating a new user;
+      const { enterpriseId, secret } = await this.tenantService.create(); // <- show this secret for the first time user to backup
+
+      if (!enterpriseId) {
+        throw new HttpException(
+          'Unable to create tenant',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+
+      if (existingUser) {
+        const updateExistingUser = await this.prisma.client.user.update({
+          where: {
+            id: existingUser.id,
+          },
+          data: {
+            orgs: {
+              create: {
+                enterprise: {
+                  connect: {
+                    id: enterpriseId,
+                  },
+                },
+              },
+            },
+          },
+
+          include: {
+            orgs: {
+              include: {
+                _count: true,
+              },
+            },
+          },
+        });
+        const { id, active, createdAt, orgs } = updateExistingUser;
+        return { id, active, createdAt, orgs };
+      }
       const newUser = await this.prisma.client.user.create({
         data: {
           ethAddress: createHash('sha256').update(ethAddress).digest('hex'),
+          orgs: {
+            create: {
+              enterprise: {
+                connect: {
+                  id: enterpriseId,
+                },
+              },
+            },
+          },
+        },
+        include: {
+          orgs: {
+            include: {
+              _count: true,
+            },
+          },
         },
       });
 
@@ -30,14 +91,13 @@ export class UserService {
           'Unable to create tenant',
           HttpStatus.INTERNAL_SERVER_ERROR,
         );
-      // @note: this will generate user-tied tenant and enterprise for the given user;
-      const { secret } = await this.tenantService.create(); // <- show this secret for the first time user to backup
-      const { id, active, createdAt } = newUser;
 
-      return { id, active, createdAt, secret };
+      const { id, active, createdAt, orgs } = newUser;
+
+      return { id, active, createdAt, secret, orgs };
     }
 
-    const { id, active, createdAt } = existingUser;
-    return { id, active, createdAt };
+    const { id, active, createdAt, orgs } = existingUser;
+    return { id, active, createdAt, orgs };
   }
 }

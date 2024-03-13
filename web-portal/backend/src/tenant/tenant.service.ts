@@ -35,7 +35,7 @@ export class TenantService {
         'Unable to create tenant',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
-    return { secret: secretKey };
+    return { secret: secretKey, enterpriseId: enterprise.id };
   }
 
   async validateTenant(rawKey: string) {
@@ -70,8 +70,8 @@ export class TenantService {
           select: {
             id: true,
             _count: true,
-
             appRules: true,
+            deletedAt: true,
             createdAt: true,
             updatedAt: true,
           },
@@ -82,6 +82,29 @@ export class TenantService {
             id: true,
             _count: true,
             enabled: true,
+            deletedAt: true,
+            createdAt: true,
+            updatedAt: true,
+            orgs: {
+              select: {
+                id: true,
+                _count: true,
+                active: true,
+                deletedAt: true,
+                createdAt: true,
+                updatedAt: true,
+                enterpriseId: true,
+                users: {
+                  select: {
+                    id: true,
+                    active: true,
+                    deletedAt: true,
+                    createdAt: true,
+                    updatedAt: true,
+                  },
+                },
+              },
+            },
           },
         },
       },

@@ -9,25 +9,26 @@ import {
   Flex,
   TextInput,
 } from "@mantine/core";
-import { useRouter } from "next/navigation";
 import { IconCopy, IconClipboardCheck } from "@tabler/icons-react";
 import { useSIWE } from "connectkit";
-
+import { useCreateAppMutation } from "./hooks";
 export default function NewAppModal() {
   const searchParams = useSearchParams();
   const shouldOpen = searchParams.get("new") === "app";
   const secretKey = searchParams.get("key");
-  const router = useRouter();
-  const session = useSIWE();
+  const { data, isReady } = useSIWE();
+  const createApp = useCreateAppMutation(data?.address);
+  // TOOD: figure when to return the api key
+
   return (
     <Modal
       opened={shouldOpen}
-      onClose={() => router.replace("/dashboard")}
+      onClose={() => console.log("close modal")}
       title="Create New App"
       centered
     >
-      {!session.isReady && !secretKey && (
-        <form onSubmit={() => console.log("create new")}>
+      {isReady && !secretKey && (
+        <form onSubmit={() => createApp.mutateAsync()}>
           <TextInput
             label="App Name"
             placeholder="Name for your app"
@@ -41,7 +42,8 @@ export default function NewAppModal() {
           </Button>
         </form>
       )}
-
+      {/* @note: following code doesn't work right now as we migrated to api key
+      as one of the app rules */}
       {secretKey && (
         <Stack>
           <Title order={4}>

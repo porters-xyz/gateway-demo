@@ -9,13 +9,17 @@ import WelcomeShape from "./welcomeShape.component";
 import { useRouter } from "next/navigation";
 
 export default function Login() {
-  const { isSignedIn, isReady } = useSIWE();
+  const { isSignedIn, isReady } = useSIWE({
+    onSignIn: () => {
+      router.replace("/dashboard");
+    },
+    onSignOut: () => {
+      router.replace("/login");
+    },
+  });
   const router = useRouter();
 
-  console.log(isReady, isSignedIn);
-
   if (isReady && isSignedIn) {
-    console.log(isReady, isSignedIn);
     router.replace("/dashboard");
   }
 

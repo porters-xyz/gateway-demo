@@ -7,5 +7,6 @@ import { TenantService } from '../tenant/tenant.service';
 @Module({
   controllers: [SiweController],
   providers: [SiweService, UserService, TenantService],
+  exports: [SiweService],
 })
 export class SiweModule {}

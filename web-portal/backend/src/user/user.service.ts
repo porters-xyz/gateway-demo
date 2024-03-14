@@ -17,11 +17,7 @@ export class UserService {
         ethAddress: createHash('sha256').update(ethAddress).digest('hex'),
       },
       include: {
-        orgs: {
-          include: {
-            _count: true,
-          },
-        },
+        orgs: {},
       },
     });
 
@@ -54,11 +50,7 @@ export class UserService {
           },
 
           include: {
-            orgs: {
-              include: {
-                _count: true,
-              },
-            },
+            orgs: {},
           },
         });
         const { id, active, createdAt, orgs } = updateExistingUser;
@@ -78,11 +70,7 @@ export class UserService {
           },
         },
         include: {
-          orgs: {
-            include: {
-              _count: true,
-            },
-          },
+          orgs: {},
         },
       });
 

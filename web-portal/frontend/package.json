@@ -24,6 +24,7 @@
     "dayjs": "^1.11.10",
     "encoding": "^0.1.13",
     "iron-session": "^8.0.1",
+    "lodash": "^4.17.21",
     "next": "14.0.4",
     "react": "^18",
     "react-dom": "^18",
@@ -33,6 +34,7 @@
     "wagmi": "^2.5.7"
   },
   "devDependencies": {
+    "@types/lodash": "^4.17.0",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",

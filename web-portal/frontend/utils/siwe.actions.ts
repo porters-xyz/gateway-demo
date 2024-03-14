@@ -1,6 +1,6 @@
 "use client";
 import { SiweMessage } from "siwe";
-import { SIWESession } from "connectkit";
+import { redirect, useRouter } from "next/navigation";
 export const getNonce = async () => {
   const res = await fetch("/siwe", { method: "PUT" });
   if (!res.ok) throw new Error("Failed to fetch SIWE nonce");
@@ -48,9 +48,7 @@ export const getSession = async () => {
 
   const userSession = await res.json();
 
-  const { address, chainId } = userSession;
-
-  return { address, chainId } satisfies SIWESession;
+  return userSession;
 };
 
 export const signOut = async () => {

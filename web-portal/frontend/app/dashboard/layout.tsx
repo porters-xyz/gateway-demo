@@ -2,6 +2,7 @@
 import { AppShell, Burger, Group, Box } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import logo from "@frontend/public/logo.png";
+import { useSIWE } from "connectkit";
 import {
   IconBook,
   IconApps,
@@ -48,8 +49,10 @@ export default function DashboardLayout({
   const [opened, { toggle }] = useDisclosure();
   const path = usePathname();
   const router = useRouter();
+
   const links = tabs.map(({ link, label, icon }) => (
     <Box
+      key={link}
       style={{
         display: "flex",
         justifyContent: "flex-start",

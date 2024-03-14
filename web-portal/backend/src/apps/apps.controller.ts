@@ -5,17 +5,15 @@ import { AppsService } from './apps.service';
 export class AppsController {
   constructor(private readonly appsService: AppsService) {}
 
-  @Get(':tenantId')
-  async getTenantApps(@Param('tenantId') tenantId: string) {
+  @Get(':userAddress')
+  async getUserApps(@Param('userAddress') userAddress: string) {
     // @note: This action fetches apps by tenant;
-    return this.appsService.getAppsByTenant(tenantId);
+    return this.appsService.getAppsByUser(userAddress);
   }
 
-  @Post(':tenantId')
-  async createApp(@Param('tenantId') tenantId: string) {
-    // @note: This action creates app for tenant;
-    // TODO- decide how to get tenantId; via cookies or some other alternative;
-    // const tenantId = 'hellotenant';
-    return this.appsService.createApp(tenantId);
+  @Post(':userAddress')
+  async createApp(@Param('userAddress') userAddress: string) {
+    // @note: This action creates app for tenant by enterpriseId;
+    return this.appsService.createApp(userAddress);
   }
 }

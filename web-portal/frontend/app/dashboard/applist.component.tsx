@@ -13,7 +13,7 @@ export const AppList: React.FC<{ list: Array<IApp> }> = ({ list }) => (
 const AppCard: React.FC<{ app: IApp }> = ({ app }) => (
   <Card padding="lg" radius="md" withBorder>
     <Group justify="flex-start" mb="xs" gap={8}>
-      <Text fw={500}>AppId: {app.appId}</Text>
+      <Text fw={500}>AppId: {app.id}</Text>
       <Badge color="green">{app.active ? "Active" : "Not Active"}</Badge>
     </Group>
     <Text size="sm">Created At: {app.createdAt}</Text>

@@ -1,34 +1,13 @@
 package proxy
 
 import (
+    "fmt"
     "net/http"
 )
 
-type FilterBlockError struct {}
-func (fbe *FilterBlockError) Error() string {
-    return "filter chain stopped"
-}
-
-type BalanceExceededError struct {
-    error
-}
-func (bee *BalanceExceededError) Error() string {
-    return "balance exceeded"
-}
-func NewBalanceExceededError() *BalanceExceededError {
-    // TODO make sure this error code is fair
-    return &BalanceExceededError{&HTTPError{http.StatusForbidden}}
-}
-
-type LifecycleIncompleteError struct {
-    error
-}
-func (lie *LifecycleIncompleteError) Error() string {
-    return "lifecycle incomplete"
-}
-func NewLifecycleIncompleteError() *LifecycleIncompleteError {
-    return &LifecycleIncompleteError{&HTTPError{http.StatusBadGateway}}
-}
+var FilterBlockError error = fmt.Errorf("filter chain stopped")
+var BalanceExceededError error = fmt.Errorf("balance exceeded: %w", NewHTTPError(http.StatusForbidden))
+var LifecycleIncompleteError error = fmt.Errorf("lifecycle incomplete: %w", NewHTTPError(http.StatusBadGateway))
 
 type HTTPError struct {
     code int

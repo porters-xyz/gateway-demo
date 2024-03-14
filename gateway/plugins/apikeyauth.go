@@ -4,11 +4,10 @@ package plugins
 // Implements Filter interface
 
 import (
-    "fmt"
     "context"
     "log"
     "net/http"
-    "porters/db"
+
     "porters/proxy"
 )
 
@@ -22,7 +21,7 @@ func (a ApiKeyAuth) Name() string {
 
 func (a ApiKeyAuth) Load() {
     // load plugin
-    fmt.Println("loading", a.Name())
+    log.Println("loading", a.Name())
 }
 
 func (a ApiKeyAuth) Key() string {
@@ -30,19 +29,19 @@ func (a ApiKeyAuth) Key() string {
 }
 
 func (a ApiKeyAuth) HandleRequest(req *http.Request) {
-    // TODO this is plaintext in db now, but will need to be checked and hashed
     apiKey := req.Header.Get(a.ApiKeyName)
     // TODO remove logging
     log.Println("apikey", apiKey)
     newCtx := context.WithValue(req.Context(), proxy.AUTH_VAL, apiKey)
 
     if validApiKey(apiKey) {
-        // TODO account may be changed to appId which will be in path
-        acct, ok := db.LookupAccount(newCtx, apiKey)
-        if !ok || !db.IsValidAccount(newCtx, acct) {
+        // TODO get app id from ctx
+        // TODO check api key is active
+        //acct, ok := db.LookupAccount(newCtx, apiKey)
+        //if !ok || !db.IsValidAccount(newCtx, acct) {
             // returning without updating 
-            return
-        }
+            //return
+        //}
     } else {
         return
     }

@@ -2,27 +2,94 @@ package db
 
 import (
     "context"
+    "fmt"
     "strings"
+    "time"
 )
 
-type tenant struct {
-    id string
-    enabled bool
-    balanceSettled int
-    balanceActive int
+const (
+    TENANT string = "TENANT"
+    APP           = "APP"
+    APPRULE       = "APPRULE"
+    RULETYPE      = "RULETYPE"
+    PAYMENTTX     = "PAYMENTTX"
+    RELAYTX       = "RELAYTX"
+    PRODUCT       = "PRODUCT"
+)
+
+type fetchable interface {
+    fetch(ctx context.Context) error // populate pointer with values
 }
 
-type apiKey struct {
-    key string
-    enabled bool
-    tenantId string
-    chainId string
+type writable interface {
+    write(ctx context.Context) error // writes data at pointer to db
 }
 
-type paymentTx struct {
-    tenantId string
-    amount int
-    txType TxType
+type cachable interface {
+    refreshable
+    cache(ctx context.Context) error // writes data to cache
+    Lookup(ctx context.Context) error // read from cache w/ passthru
+}
+
+type Tenant struct {
+    Id string
+    Active bool
+    Balance int // calculated
+    CachedAt time.Time
+}
+
+type App struct {
+    Id string
+    Active bool
+    MissedAt time.Time
+    CachedAt time.Time
+    Tenant Tenant
+}
+
+type Apprule struct {
+    Id string
+    Active bool
+    Value string
+    CachedAt time.Time
+    App App
+    RuleType Ruletype
+}
+
+type Ruletype struct {
+    Id string
+    Name string
+    Active bool
+}
+
+// tied to tenant, this isn't cached directly
+type Paymenttx struct {
+    Id string
+    Reference string
+    Amount int
+    Tenant Tenant
+    TxType TxType
+    CreatedAt time.Time
+}
+
+// This gets written back to postgres
+type Relaytx struct {
+    Id string
+    Reference string
+    Amount int
+    Product Product
+    Tenant Tenant
+    TxType TxType
+}
+
+// TODO this needs to be added to postgres schema
+// Allow multiple names for same underlying product
+// product miss means subdomain on endpoint doesn't match known product
+type Product struct {
+    Id string
+    Name string // subdomain on endpoint
+    Num int // optional (for evm chain)
+    Weight int
+    MissedAt time.Time
 }
 
 // Unknown is basically error, shouldn't rely on it
@@ -38,52 +105,50 @@ func parseTxType(str string) TxType {
         return Credit
     } else if strings.EqualFold(str, "DEBIT") {
         return Debit
-    }else {
+    } else {
         return Unknown
     }
 }
 
-func (t *tenant) writeToCache(ctx context.Context) {
-    // TODO call redis create with key format
-    err := getClient().HSet(ctx, GenAccountKey(t.id), "enabled", t.enabled).Err()
-    if err != nil {
-        // TODO handle errors should they happen
+func NewTenant(id string) Tenant {
+    return Tenant{
+        Id: id,
     }
 }
 
-func (a *apiKey) writeToCache(ctx context.Context) {
-    // TODO call redis create with key format
-    err := getClient().HSet(ctx, GenApiKey(a.key), "account", a.tenantId, "enabled", a.enabled).Err()
-    if err != nil {
-        // TODO handle errors correctly
+func NewApp(id string) App {
+    return App{
+        Id: id,
     }
 }
 
-func (p *paymentTx) writeToCache(ctx context.Context) {
-    var err error
-    if p.txType == Credit {
-        err = getClient().HIncrBy(ctx, GenAccountKey(p.tenantId), "cached_remaining", int64(p.amount)).Err()
-        if err != nil {
-            // TODO handle errors should they happen
-        }
-        err = getClient().HIncrBy(ctx, GenAccountKey(p.tenantId), "relays_remaining", int64(p.amount)).Err()
-    } else {
-        err = getClient().HIncrBy(ctx, GenAccountKey(p.tenantId), "cached_remaining", -int64(p.amount)).Err()
-    }
-    if err != nil {
-        // TODO handle errors should they happen
-    }
+func (t *Tenant) Key() string {
+    return fmt.Sprintf("%s:%s", TENANT, t.Id)
 }
 
-func GenAccountKey(tenantId string) string {
-    return "ACCOUNT:" + tenantId
+func (a *App) Key() string {
+    return fmt.Sprintf("%s:%s", APP, a.Id)
 }
 
-func GenApiKey(apiKey string) string {
-    return "APIKEY:" + apiKey + ":meta"
+// Keys to a set
+func (ar *Apprule) Key() string {
+    return fmt.Sprintf("%s:%s", APPRULE, ar.App.Id)
 }
 
-// TODO placeholder for when relays are tracked per "chain"
-func GenChainKey(apiKey string, chainId string) string {
-    return "APIKEY:" + apiKey + ":" + chainId
+func (rt *Ruletype) Key() string {
+    return fmt.Sprintf("%s:%s", RULETYPE, rt.Id)
+}
+
+// TODO is this needed?
+func (p *Paymenttx) Key() string {
+   return "" 
+}
+
+// TODO sort out how this is used
+func (r *Relaytx) Key() string {
+    return fmt.Sprintf("%s:%s", RELAYTX, r.Id)
+}
+
+func (p *Product) Key() string {
+    return fmt.Sprintf("%s:%s", PRODUCT, p.Id)
 }

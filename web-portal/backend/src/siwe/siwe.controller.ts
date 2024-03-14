@@ -6,6 +6,7 @@ import {
   Req,
   Res,
   HttpStatus,
+  Delete,
 } from '@nestjs/common';
 import { SiweService } from './siwe.service';
 import { Request, Response } from 'express';
@@ -60,5 +61,15 @@ export class SiweController {
   async getNonce(@Res() response: Response) {
     const nonce = this.siweService.getNonce();
     return response.status(HttpStatus.OK).send(nonce);
+  }
+
+  @Delete()
+  async signOut(@Req() request: Request, @Res() response: Response) {
+    const sessionCookie = request?.cookies['session'];
+    if (sessionCookie) {
+      sessionCookie.destroy();
+      return response.status(HttpStatus.OK);
+    }
+    return response.status(HttpStatus.BAD_REQUEST);
   }
 }

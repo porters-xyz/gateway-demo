@@ -1,5 +1,6 @@
 "use client";
 import { SiweMessage } from "siwe";
+import { SIWESession } from "connectkit";
 export const getNonce = async () => {
   const res = await fetch("/siwe", { method: "PUT" });
   if (!res.ok) throw new Error("Failed to fetch SIWE nonce");
@@ -43,11 +44,13 @@ export const verifyMessage = async ({
 
 export const getSession = async () => {
   const res = await fetch("/siwe");
-  if (!res.ok) throw new Error("Failed to fetch SIWE session");
+  if (!res.ok) console.log("Failed to fetch SIWE session");
 
   const userSession = await res.json();
 
-  return userSession;
+  const { address, chainId } = userSession;
+
+  return { address, chainId } satisfies SIWESession;
 };
 
 export const signOut = async () => {

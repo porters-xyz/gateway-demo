@@ -12,7 +12,12 @@ export default function Login() {
   const { isSignedIn, isReady } = useSIWE();
   const router = useRouter();
 
-  if (isSignedIn && isReady) router.replace("/dashboard");
+  console.log(isReady, isSignedIn);
+
+  if (isReady && isSignedIn) {
+    console.log(isReady, isSignedIn);
+    router.replace("/dashboard");
+  }
 
   return (
     <Container

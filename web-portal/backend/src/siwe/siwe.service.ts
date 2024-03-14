@@ -32,7 +32,7 @@ export class SiweService {
     if (address) {
       // @note: create or get user if a valid session is found
       const user = await this.userService.getOrCreate(address);
-      return { chainId, ...user };
+      return { chainId, address, ...user };
     }
 
     return null;

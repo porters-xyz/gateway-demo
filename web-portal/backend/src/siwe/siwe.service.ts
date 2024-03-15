@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { sealData, unsealData } from 'iron-session';
 import { SiweMessage, generateNonce } from 'siwe';
+import { UserService } from '../user/user.service';
 
 interface ISession {
   nonce?: string;
@@ -20,12 +21,21 @@ const SESSION_OPTIONS = {
 
 @Injectable()
 export class SiweService {
+  constructor(private readonly userService: UserService) {}
+
   async getSession(sessionCookie: string) {
     const { address, chainId } = await unsealData<ISession>(
       sessionCookie,
       SESSION_OPTIONS,
     );
-    return { address, chainId };
+
+    if (address) {
+      // @note: create or get user if a valid session is found
+      const user = await this.userService.getOrCreate(address);
+      return { chainId, address, ...user };
+    }
+
+    return null;
   }
 
   async verifyMessage({

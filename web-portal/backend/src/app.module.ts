@@ -6,6 +6,9 @@ import { PrismaClient } from '@/.generated/client';
 import { TenantModule } from './tenant/tenant.module';
 import { AppController } from './app.controller';
 import { SiweModule } from './siwe/siwe.module';
+import { UserModule } from './user/user.module';
+import { AppsModule } from './apps/apps.module';
+import { OrgModule } from './org/org.module';
 
 @Module({
   imports: [
@@ -18,8 +21,10 @@ import { SiweModule } from './siwe/siwe.module';
       envFilePath: ['@/.env', '.env.local'],
     }),
     TenantModule,
-
     SiweModule,
+    UserModule,
+    AppsModule,
+    OrgModule,
   ],
   providers: [AppService],
   controllers: [AppController],

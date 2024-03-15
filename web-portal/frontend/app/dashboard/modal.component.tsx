@@ -1,42 +1,49 @@
 "use client";
 import { useSearchParams } from "next/navigation";
-import { Modal, Button, CopyButton, Stack, Title, Flex } from "@mantine/core";
-import { useRouter } from "next/navigation";
-import { useFormState } from "react-dom";
-import { createApp } from "./actions";
+import {
+  Modal,
+  Button,
+  CopyButton,
+  Stack,
+  Title,
+  Flex,
+  TextInput,
+} from "@mantine/core";
 import { IconCopy, IconClipboardCheck } from "@tabler/icons-react";
-
+import { useSIWE } from "connectkit";
+import { useCreateAppMutation } from "./hooks";
 export default function NewAppModal() {
   const searchParams = useSearchParams();
   const shouldOpen = searchParams.get("new") === "app";
   const secretKey = searchParams.get("key");
-  const router = useRouter();
-
-  const [state, formAction] = useFormState(createApp, null);
+  const { data, isReady } = useSIWE();
+  const createApp = useCreateAppMutation(data?.address);
+  // TOOD: figure when to return the api key
 
   return (
     <Modal
       opened={shouldOpen}
-      onClose={() => router.replace("/dashboard")}
+      onClose={() => console.log("close modal")}
       title="Create New App"
       centered
     >
-      {!state && !secretKey && (
-        <form action={formAction}>
-          {/* <TextInput
+      {isReady && !secretKey && (
+        <form onSubmit={() => createApp.mutateAsync()}>
+          <TextInput
             label="App Name"
             placeholder="Name for your app"
             description="Name your app"
             inputWrapperOrder={["label", "error", "input", "description"]}
             withAsterisk
-        /> */}
+          />
 
           <Button type="submit" style={{ marginTop: 32 }}>
             Create New App
           </Button>
         </form>
       )}
-
+      {/* @note: following code doesn't work right now as we migrated to api key
+      as one of the app rules */}
       {secretKey && (
         <Stack>
           <Title order={4}>

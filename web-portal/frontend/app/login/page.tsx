@@ -1,30 +1,27 @@
 "use client";
-import { Container, Button, TextInput, Text } from "@mantine/core";
-import { useForm } from "@mantine/form";
-import { useFormState } from "react-dom";
-import { createTenant, validateTenant } from "./actions";
-import NewTenantModal from "./modal.component";
-import { ConnectKitButton } from "connectkit";
-
-const initialState = {
-  key: "",
-};
+import { Container, Title } from "@mantine/core";
+import { RecoverTenantModal } from "./modal.component";
+import { ConnectKitButton, useSIWE } from "connectkit";
+import Image from "next/image";
+import logo from "@frontend/public/logo.png";
+import Link from "next/link";
+import WelcomeShape from "./welcomeShape.component";
+import { useRouter } from "next/navigation";
 
 export default function Login() {
-  const { values, getInputProps } = useForm({
-    initialValues: initialState,
-    validateInputOnChange: true,
-    validate: {
-      key: (value) => (value.length === 16 ? null : "Invalid Key"),
+  const { isSignedIn, isReady } = useSIWE({
+    onSignIn: () => {
+      router.replace("/dashboard");
+    },
+    onSignOut: () => {
+      router.replace("/login");
     },
   });
+  const router = useRouter();
 
-  const [validated, validateAction] = useFormState(
-    () => validateTenant(values.key),
-    initialState,
-  );
-
-  const [created, createAction] = useFormState(createTenant, null);
+  if (isReady && isSignedIn) {
+    router.replace("/dashboard");
+  }
 
   return (
     <Container
@@ -33,35 +30,26 @@ export default function Login() {
         width: "50vh",
         display: "flex",
         flexDirection: "column",
+        alignItems: "center",
         justifyContent: "center",
         gap: 8,
       }}
     >
-      <form action={validateAction}>
-        <TextInput
-          label="Secret Key"
-          placeholder="Secret"
-          width={"full"}
-          {...getInputProps("key")}
-        />
-
-        <Button
-          type="submit"
-          variant="filled"
-          fullWidth
-          style={{ marginTop: 8 }}
+      <WelcomeShape>
+        <Image src={logo.src} alt="hello" width="160" height="58" />
+        <Title order={2} style={{ color: "white", textAlign: "center" }}>
+          Welcome to Porters. Let’s get started!
+        </Title>
+        <ConnectKitButton />
+        <Link
+          href={"?recover=true"}
+          style={{ color: "#FFA44B", textDecorationColor: "#FFA44B" }}
         >
-          Login
-        </Button>
-      </form>
+          Recover
+        </Link>
 
-      <form action={createAction}>
-        <Button type="submit" variant="light" fullWidth>
-          Create Key
-        </Button>
-      </form>
-      <ConnectKitButton />
-      <NewTenantModal />
+        <RecoverTenantModal />
+      </WelcomeShape>
     </Container>
   );
 }

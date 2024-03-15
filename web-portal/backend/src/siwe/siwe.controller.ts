@@ -6,9 +6,11 @@ import {
   Req,
   Res,
   HttpStatus,
+  Delete,
 } from '@nestjs/common';
 import { SiweService } from './siwe.service';
 import { Request, Response } from 'express';
+
 @Controller('siwe')
 export class SiweController {
   constructor(private readonly siweService: SiweService) {}
@@ -18,9 +20,8 @@ export class SiweController {
     @Req() request: Request,
     @Res() response: Response,
   ): Promise<any> {
-    console.log('Get Session from cookie using siwe');
+    // @note: Get Session from cookie using siwe
     const sessionCookie = request?.cookies['session'];
-
     if (!sessionCookie) {
       return response.status(HttpStatus.BAD_REQUEST).send(false);
     }
@@ -36,7 +37,7 @@ export class SiweController {
 
   @Post()
   async verifyMessage(@Req() request: Request, @Res() response: Response) {
-    console.log('Verify ownership using siwe');
+    // @note: This actions is used to Verify ownership using siwe
     const { message, signature } = request.body;
 
     const nonceRegex = /Nonce: (\S+)/;
@@ -47,8 +48,6 @@ export class SiweController {
       signature,
       nonce,
     });
-
-    console.log('authentication was ', authenticated);
 
     return response
       .status(authenticated ? HttpStatus.OK : HttpStatus.NOT_FOUND)
@@ -62,5 +61,15 @@ export class SiweController {
   async getNonce(@Res() response: Response) {
     const nonce = this.siweService.getNonce();
     return response.status(HttpStatus.OK).send(nonce);
+  }
+
+  @Delete()
+  async signOut(@Req() request: Request, @Res() response: Response) {
+    const sessionCookie = request?.cookies['session'];
+    if (sessionCookie) {
+      sessionCookie.destroy();
+      return response.status(HttpStatus.OK);
+    }
+    return response.status(HttpStatus.BAD_REQUEST);
   }
 }

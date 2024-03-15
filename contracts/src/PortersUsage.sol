@@ -9,33 +9,29 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 // TODO think about upgradability
 contract PortersUsage is ERC20Pausable, Ownable {
 
-    uint256 price;
+    event Apply(bytes32 indexed _identifier, uint256 amount);
 
-    constructor() ERC20("PORTERS Gateway", "GATE") Ownable(_msgSender()) {
+    uint256 price = 0;
+    address priceFeed = address(0);
+
+    constructor() ERC20("PORTERS Gateway", "PORTR") Ownable(_msgSender()) {
         // TODO add anything needed on constructor
         this;
     }
 
-    // TODO admin can mint without payment (used for liquidity provision/OTC)
-    function adminMint(address _to, uint256 _amount) onlyOwner external {
-
-        _mint(_to, _amount);
-    }
-
     // TODO mint new tokens based on payable amount
     function mint() external payable {
-
-    }
-
-    // don't bother minting and burning, just apply
-    function mintAndApply(string calldata _identifier) external payable {
-        _identifier; // emit this
+        require(price > 0, "price not set");
+        require(priceFeed != address(0), "price feed not set");
+        // TODO calculate amount
+        uint256 _amount = 0;
+        _mint(_msgSender(), _amount);
     }
 
     // TODO burn tokens and emit special event
-    function applyToTenant(address _account, uint256 _amount, string calldata _identifier) external {
-        _identifier; // emit this
-        _burn(_account, _amount);
+    function applyToAccount(bytes32 _identifier, uint256 _amount) external {
+        _burn(_msgSender(), _amount);
+        emit Apply(_identifier, _amount);
     }
 
     function pause() onlyOwner external {
@@ -44,5 +40,20 @@ contract PortersUsage is ERC20Pausable, Ownable {
 
     function unpause() onlyOwner external {
         _unpause();
+    }
+
+    // ADMIN AREA //
+
+    function adminMint(address _to, uint256 _amount) onlyOwner external {
+        _mint(_to, _amount);
+    }
+
+    function setPrice(uint256 _price) onlyOwner external {
+        price = _price;
+    }
+
+    function setPriceAndFeed(address _feed, uint256 _price) onlyOwner external {
+        price = _price;
+        priceFeed = _feed;
     }
 }

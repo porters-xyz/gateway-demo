@@ -1,5 +1,5 @@
 export const apiUrl =
-  process.env.NEXT_PUBLIC_API_ENDPOINT || "http://localhost:4000/";
+  process.env.NEXT_PUBLIC_API_ENDPOINT!;
 export const APP_NAME = "Porters Frontend";
 export const metadata = {
   title: "Gateway Demo Portal",

@@ -1,6 +1,5 @@
-FROM node:21-alpine AS build
+FROM node:18 AS build
 
-RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
 
@@ -11,7 +10,7 @@ ENV NEXT_TELEMETRY_DISABLED 1
 RUN corepack enable pnpm && pnpm i && pnpm build
 
 
-FROM node:21-alpine As production
+FROM node:18 As production
 
 ENV NODE_ENV production
 

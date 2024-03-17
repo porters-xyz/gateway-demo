@@ -1,4 +1,5 @@
 /** @type {import('next').NextConfig} */
+const apiUrl = process.env.NEXT_PUBLIC_API_ENDPOINT;
 const nextConfig = {
   output: "standalone",
   webpack: (config) => {
@@ -10,7 +11,7 @@ const nextConfig = {
     return [
       {
         source: "/siwe",
-        destination: process.env.NEXT_PUBLIC_API_ENDPOINT + "siwe",
+        destination: `${apiUrl}siwe`,
       },
     ];
   },

@@ -10,9 +10,7 @@ const nextConfig = {
     return [
       {
         source: "/siwe",
-        destination:
-          process.env.NEXT_PUBLIC_API_ENDPOINT + "siwe" ||
-          "http://localhost:4000/siwe",
+        destination: process.env.NEXT_PUBLIC_API_ENDPOINT + "siwe",
       },
     ];
   },

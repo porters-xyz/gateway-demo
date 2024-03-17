@@ -27,7 +27,6 @@ USER nextjs
 
 EXPOSE 3000
 ENV PORT 3000
-ENV API_ENDPOINT "http://backend:4000/"
 
 ENV HOSTNAME "0.0.0.0"
 

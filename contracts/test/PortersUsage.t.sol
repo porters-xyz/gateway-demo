@@ -9,6 +9,7 @@ contract PortersUsageTest is Test {
 
     function setUp() public {
         usage = new PortersUsage();
+
     }
 
     function test_Mint() public {

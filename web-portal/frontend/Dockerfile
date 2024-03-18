@@ -7,12 +7,18 @@ COPY . .
 
 ENV NEXT_TELEMETRY_DISABLED 1
 
+# INJECT ENV VARIABLES AT BUILD TIME
+ARG NEXT_PUBLIC_API_ENDPOINT
+ARG NEXT_PUBLIC_RPC_ENDPOINT
+ARG NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID
+
 RUN corepack enable pnpm && pnpm i && pnpm build
 
 
 FROM node:18 As production
 
 ENV NODE_ENV production
+
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs

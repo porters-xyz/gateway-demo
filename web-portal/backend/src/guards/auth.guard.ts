@@ -1,13 +1,42 @@
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
-import { Observable } from 'rxjs';
+import {
+  CanActivate,
+  ExecutionContext,
+  HttpException,
+  HttpStatus,
+  Injectable,
+} from '@nestjs/common';
+import { unsealData } from 'iron-session';
+import { ISession, SESSION_OPTIONS } from '../siwe/siwe.service';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
-  canActivate(
-    context: ExecutionContext,
-  ): boolean | Promise<boolean> | Observable<boolean> {
-    console.log('Inside AuthGuard');
-    const request = context.switchToHttp().getRequest();
-    return true; // @note: temp  returning true for testing
+  async canActivate(context: ExecutionContext) {
+    try {
+      const request = context.switchToHttp().getRequest();
+      const sessionCookie = request.cookies?.session;
+
+      if (!sessionCookie) {
+        throw new HttpException(
+          'Unauthorized: Session cookie not found',
+          HttpStatus.UNAUTHORIZED,
+        );
+      }
+
+      const { address, chainId } = await unsealData<ISession>(
+        sessionCookie,
+        SESSION_OPTIONS,
+      );
+
+      if (!address || !chainId) {
+        throw new HttpException(
+          'Unauthorized: Invalid session data',
+          HttpStatus.UNAUTHORIZED,
+        );
+      }
+
+      return true;
+    } catch (error) {
+      return false;
+    }
   }
 }

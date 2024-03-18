@@ -6,14 +6,13 @@ import {
 import { sealData, unsealData } from 'iron-session';
 import { SiweMessage, generateNonce } from 'siwe';
 import { UserService } from '../user/user.service';
-
-interface ISession {
+export interface ISession {
   nonce?: string;
   chainId?: number;
   address?: string;
 }
 
-const SESSION_OPTIONS = {
+export const SESSION_OPTIONS = {
   ttl: 60 * 60, // 1 hour
   password:
     process.env.SESSION_SECRET! ?? `NNb774sZ7bNnGkWTwkXE3T9QWCAC5DkY0HTLz`, // TODO: get via env vars only

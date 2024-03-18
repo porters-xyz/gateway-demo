@@ -28,7 +28,8 @@ contract PortersUsage is ERC20Pausable, Ownable {
         require(price > 0, "price not set");
         require(address(dataFeed) != address(0), "price feed not set");
         // TODO calculate amount
-        uint256 _amount = 0;
+        (,int256 _answer,,,) = dataFeed.latestRoundData();
+        uint256 _amount = uint256(_answer) * msg.value / price; // or divide by?
         _mint(_msgSender(), _amount);
     }
 

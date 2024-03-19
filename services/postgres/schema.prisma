@@ -71,7 +71,8 @@ model AppRule {
     id        String    @id @unique @default(cuid())
     app       App       @relation(fields: [appId], references: [id])
     appId     String
-    rule      RuleType?
+    rule      RuleType  @relation(fields: [ruleId], references: [id])
+    ruleId    String
     value     String
     active    Boolean   @default(true)
     deletedAt DateTime?
@@ -86,12 +87,11 @@ model RuleType {
     isMultiple      Boolean
     validationType  String
     validationValue String
-    appRule         AppRule   @relation(fields: [appRuleId], references: [id])
-    appRuleId       String    @unique
     active          Boolean   @default(true)
     deletedAt       DateTime?
     createdAt       DateTime  @default(now())
     updatedAt       DateTime  @updatedAt
+    AppRule         AppRule[]
 }
 
 model PaymentLedger {

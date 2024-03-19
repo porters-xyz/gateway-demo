@@ -1,8 +1,10 @@
-import { Controller, Get, Post, Param, Query } from '@nestjs/common';
+import { Controller, Get, Post, Param, Query, UseGuards } from '@nestjs/common';
 
 import { TenantService } from './tenant.service';
+import { AuthGuard } from '../guards/auth.guard';
 
 @Controller('tenant')
+@UseGuards(AuthGuard)
 export class TenantController {
   constructor(private readonly tenantService: TenantService) {}
 

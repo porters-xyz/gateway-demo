@@ -1,9 +1,8 @@
 import { useQuery, useMutation, QueryClient } from "@tanstack/react-query";
-import { apiUrl } from "@frontend/utils/consts";
 
 export const useUserApps = (userAddress: string) => {
   const fetchApps = async () => {
-    const response = await fetch(`${apiUrl}apps/${userAddress}`);
+    const response = await fetch(`/api/apps/${userAddress}`);
     if (!response.ok) {
       throw new Error("Failed to validate tenant");
     }
@@ -19,7 +18,7 @@ export const useUserApps = (userAddress: string) => {
 
 export const useCreateAppMutation = (userAddress: string) => {
   const createAppMutation = async () => {
-    const response = await fetch(`${apiUrl}apps/${userAddress}`, {
+    const response = await fetch(`/api/apps/${userAddress}`, {
       method: "POST",
     });
     if (!response.ok) {

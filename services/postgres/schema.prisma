@@ -25,7 +25,7 @@ model Enterprise {
     orgs      Org[]
     tenants   Tenant[]
     deletedAt DateTime?
-    enabled   Boolean   @default(true)
+    active    Boolean   @default(true)
     createdAt DateTime  @default(now())
     updatedAt DateTime  @updatedAt
 }
@@ -55,13 +55,16 @@ model User {
 }
 
 model App {
-    id        String    @id() @unique @default(cuid())
-    appRules  AppRule[]
-    deletedAt DateTime?
-    createdAt DateTime  @default(now())
-    updatedAt DateTime  @updatedAt
-    Tenant    Tenant    @relation(fields: [tenantId], references: [id])
-    tenantId  String
+    id          String    @id() @unique @default(cuid())
+    name        String
+    description String?
+    appRules    AppRule[]
+    active      Boolean   @default(true)
+    deletedAt   DateTime?
+    createdAt   DateTime  @default(now())
+    updatedAt   DateTime  @updatedAt
+    Tenant      Tenant    @relation(fields: [tenantId], references: [id])
+    tenantId    String
 }
 
 model AppRule {
@@ -112,8 +115,21 @@ model RelayLedger {
     tenantId        String
     referenceId     String
     amount          Int
-    chainId         String
-    keyId           String // fed from redis(redis-pg sync service // tbd
+    product         Products        @relation(fields: [productId], references: [id])
+    productId       String
+    keyId           String // fed from redis(redis-pg sync service // tbd (@plor: should this be gone?)
     transactionType TransactionType
     createdAt       DateTime        @default(now())
+}
+
+model Products {
+    id          String        @id @unique @default(cuid())
+    name        String
+    weight      Float
+    params      String
+    active      Boolean       @default(true)
+    deletedAt   DateTime?
+    createdAt   DateTime      @default(now())
+    updatedAt   DateTime      @updatedAt
+    RelayLedger RelayLedger[]
 }

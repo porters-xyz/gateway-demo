@@ -1,12 +1,4 @@
-import {
-  Stack,
-  Flex,
-  Title,
-  Text,
-  SegmentedControl,
-  Card,
-  Group,
-} from "@mantine/core";
+import { Stack, Flex, Title, SegmentedControl, Card } from "@mantine/core";
 import React, { useState } from "react";
 import classes from "./insight.module.css";
 import { AreaChart } from "@mantine/charts";
@@ -45,6 +37,45 @@ export const data = [
   },
 ];
 
+const MetricCard: React.FC<{ title: string; value: string }> = ({
+  title,
+  value,
+}) => {
+  return (
+    <Card shadow="none" padding="lg" radius="md" bg="#fff" w={400}>
+      <Title order={3} fw={500}>
+        {title}
+      </Title>
+      <Title w="full" h="full" style={{ textAlign: "right", fontSize: 80 }}>
+        {value}
+      </Title>
+    </Card>
+  );
+};
+
+const RingCard: React.FC<{ title: string }> = ({ title }) => {
+  return (
+    <Card shadow="none" padding="lg" radius="md" bg="#fff" w={400}>
+      <Title order={3} fw={500}>
+        {title}
+      </Title>
+      <Title
+        w="full"
+        h="100%"
+        style={{
+          textAlign: "center",
+          fontSize: 50,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        99.9%
+      </Title>
+    </Card>
+  );
+};
+
 const Insights: React.FC = () => {
   const [value, setValue] = useState(timeOptions[0]);
 
@@ -61,21 +92,28 @@ const Insights: React.FC = () => {
           data={timeOptions.map((value) => ({ value, label: value }))}
         />
       </Flex>
-      <Card shadow="none" padding="lg" radius="md" bg="#fff" w={500}>
-        <Title order={3} fw={500}>
-          Usage
-        </Title>
+      <Flex gap={8}>
+        <Card shadow="none" padding="lg" radius="md" bg="#fff" w={400}>
+          <Title order={3} fw={500}>
+            Usage
+          </Title>
 
-        <AreaChart
-          mt={20}
-          h={300}
-          data={data}
-          dataKey="date"
-          className={classes.root}
-          strokeWidth={0.5}
-          series={[{ name: "Apples", color: "var(--area-color)" }]}
-        />
-      </Card>
+          <AreaChart
+            mt={20}
+            h={275}
+            data={data}
+            dataKey="date"
+            className={classes.root}
+            strokeWidth={0.5}
+            series={[{ name: "Apples", color: "var(--area-color)" }]}
+          />
+        </Card>
+        <Stack>
+          <MetricCard title="Number of Requests" value="1.2K" />
+          <MetricCard title="Balance" value="3.3M" />
+        </Stack>
+        <RingCard title="Requests" />
+      </Flex>
     </Stack>
   );
 };

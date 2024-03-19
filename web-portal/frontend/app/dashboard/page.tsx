@@ -7,7 +7,7 @@ import { useSIWE } from "connectkit";
 import { useRouter } from "next/navigation";
 import { useUserApps } from "./hooks";
 import _ from "lodash";
-import { IconChevronRight } from "@tabler/icons-react";
+
 import Insights from "./insights";
 
 // const tabs = ["Insights", "My Apps", "Usage"];
@@ -31,20 +31,8 @@ export default function User() {
       <NewAppModal />
 
       <Insights />
-      <Stack>
-        <Flex justify={"space-between"}>
-          <Title order={3}>My Apps</Title>
-          <Text
-            size="sm"
-            fw={500}
-            c="dimmed"
-            style={{ display: "flex", alignItems: "center" }}
-          >
-            View all <IconChevronRight size={16} />
-          </Text>
-        </Flex>
-        {apps && <AppList list={apps} />}
-      </Stack>
+
+      {apps && <AppList list={apps} />}
     </Stack>
   );
 }

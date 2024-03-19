@@ -4,6 +4,7 @@ import { RecoverTenantModal } from "./modal.component";
 import { ConnectKitButton, useSIWE } from "connectkit";
 import Image from "next/image";
 import logo from "@frontend/public/logo.png";
+import background from "@frontend/public/background.png";
 import Link from "next/link";
 import WelcomeShape from "./welcomeShape.component";
 import { useRouter } from "next/navigation";

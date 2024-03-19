@@ -1,5 +1,14 @@
 "use client";
-import { AppShell, Burger, Group, Box } from "@mantine/core";
+import {
+  AppShell,
+  Burger,
+  Group,
+  Box,
+  Flex,
+  Title,
+  Button,
+} from "@mantine/core";
+import Link from "next/link";
 import { useDisclosure } from "@mantine/hooks";
 import logo from "@frontend/public/logo.png";
 import { useSIWE } from "connectkit";
@@ -12,6 +21,7 @@ import {
 } from "@tabler/icons-react";
 import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
+import LogoutButton from "./logout";
 
 const tabs = [
   {
@@ -49,6 +59,7 @@ export default function DashboardLayout({
   const [opened, { toggle }] = useDisclosure();
   const path = usePathname();
   const router = useRouter();
+  const { data, isReady, isSignedIn } = useSIWE();
 
   const links = tabs.map(({ link, label, icon }) => (
     <Box
@@ -73,7 +84,7 @@ export default function DashboardLayout({
 
   return (
     <AppShell
-      header={{ height: 60 }}
+      header={{ height: 80 }}
       layout="alt"
       navbar={{
         width: 300,
@@ -83,10 +94,27 @@ export default function DashboardLayout({
       padding="md"
     >
       <AppShell.Header>
-        <Burger opened={opened} onClick={toggle} hiddenFrom="sm" size="sm" />
+        <Burger
+          opened={opened}
+          onClick={toggle}
+          hiddenFrom="sm"
+          size="sm"
+          p={12}
+        />
+        <Flex justify={"space-between"} align={"center"} h="100%" px={"2%"}>
+          <Title order={2}>
+            Welcome, {(data?.address as string).substring(0, 10)}
+          </Title>
+          <Flex gap="md">
+            <Link href="?new=app">
+              <Button>Create App</Button>
+            </Link>
+            <LogoutButton />
+          </Flex>
+        </Flex>
       </AppShell.Header>
 
-      <AppShell.Navbar p="md" bg="umbra.1" style={{ color: "white" }}>
+      <AppShell.Navbar p="md" bg="umbra.1" style={{ color: "white" }} px={"2%"}>
         <Image src={logo.src} alt="hello" width="160" height="58" />
         <Group style={{ marginTop: 32, gap: 2 }}>{links}</Group>
       </AppShell.Navbar>

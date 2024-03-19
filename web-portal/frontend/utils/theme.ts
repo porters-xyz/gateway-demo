@@ -1,4 +1,4 @@
-import { createTheme, rem } from "@mantine/core";
+import { createTheme, rem, Button } from "@mantine/core";
 
 export const theme = createTheme({
   white: "#F6EEE6",
@@ -77,5 +77,18 @@ export const theme = createTheme({
     sizes: {
       h1: { fontSize: rem(36) },
     },
+  },
+  components: {
+    Button: Button.extend({
+      defaultProps: {
+        color: "carrot",
+        size: "md",
+        style: {
+          fontFamily: "Crimson Text, sans-serif",
+          fontWeight: 700,
+          fontSize: rem(20),
+        },
+      },
+    }),
   },
 });

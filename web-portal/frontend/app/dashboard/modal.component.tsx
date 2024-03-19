@@ -1,5 +1,5 @@
 "use client";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   Modal,
   Button,
@@ -12,18 +12,20 @@ import {
 import { IconCopy, IconClipboardCheck } from "@tabler/icons-react";
 import { useSIWE } from "connectkit";
 import { useCreateAppMutation } from "./hooks";
+
 export default function NewAppModal() {
   const searchParams = useSearchParams();
   const shouldOpen = searchParams.get("new") === "app";
   const secretKey = searchParams.get("key");
   const { data, isReady } = useSIWE();
   const createApp = useCreateAppMutation(data?.address);
+  const router = useRouter();
   // TOOD: figure when to return the api key
 
   return (
     <Modal
       opened={shouldOpen}
-      onClose={() => console.log("close modal")}
+      onClose={() => router.replace("/dashboard")}
       title="Create New App"
       centered
     >

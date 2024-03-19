@@ -30,20 +30,8 @@ export default function User() {
     <Stack>
       <Suspense fallback={<div>Loading...</div>} />
       <NewAppModal />
-      <Flex
-        justify={"space-between"}
-        align={"center"}
-        style={{ marginBottom: 20 }}
-      >
-        <Title order={5}>logged in as: {data?.address}</Title>
-        <Flex gap="md">
-          <Link href="?new=app">
-            <Button color="carrot.1">New App</Button>
-          </Link>
-          <LogoutButton />
-        </Flex>
-      </Flex>
-      <Tabs
+
+      {/* <Tabs
         value={""}
         onChange={(value) => router.push(`#${value}`)}
         color="umbra.1"
@@ -54,22 +42,22 @@ export default function User() {
               {tab}
             </Tabs.Tab>
           ))}
-        </Tabs.List>
-        <Stack>
-          <Flex justify={"space-between"}>
-            <Title order={3}>My Apps</Title>
-            <Text
-              size="sm"
-              fw={500}
-              c="dimmed"
-              style={{ display: "flex", alignItems: "center" }}
-            >
-              View all <IconChevronRight size={16} />
-            </Text>
-          </Flex>
-          {apps && <AppList list={apps} />}
-        </Stack>
-      </Tabs>
+        </Tabs.List> */}
+      <Stack>
+        <Flex justify={"space-between"}>
+          <Title order={3}>My Apps</Title>
+          <Text
+            size="sm"
+            fw={500}
+            c="dimmed"
+            style={{ display: "flex", alignItems: "center" }}
+          >
+            View all <IconChevronRight size={16} />
+          </Text>
+        </Flex>
+        {apps && <AppList list={apps} />}
+      </Stack>
+      {/* </Tabs> */}
     </Stack>
   );
 }

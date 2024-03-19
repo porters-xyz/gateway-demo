@@ -1,5 +1,5 @@
 import React from "react";
-import { Stack, Table } from "@mantine/core";
+import { Table } from "@mantine/core";
 import { IApp } from "@frontend/utils/types";
 
 const AppList: React.FC<{ list: Array<IApp> }> = ({ list }) => {

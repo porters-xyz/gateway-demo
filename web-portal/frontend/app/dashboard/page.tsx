@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { useUserApps } from "./hooks";
 import _ from "lodash";
 import { IconChevronRight } from "@tabler/icons-react";
+import Insights from "./insights";
 
 // const tabs = ["Insights", "My Apps", "Usage"];
 
@@ -29,6 +30,7 @@ export default function User() {
       <Suspense fallback={<div>Loading...</div>} />
       <NewAppModal />
 
+      <Insights />
       <Stack>
         <Flex justify={"space-between"}>
           <Title order={3}>My Apps</Title>

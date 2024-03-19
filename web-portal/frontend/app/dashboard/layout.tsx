@@ -103,7 +103,7 @@ export default function DashboardLayout({
         />
         <Flex justify={"space-between"} align={"center"} h="100%" px={"2%"}>
           <Title order={2}>
-            Welcome, {(data?.address as string).substring(0, 10)}
+            Welcome, {String(data?.address).substring(0, 10)}
           </Title>
           <Flex gap="md">
             <Link href="?new=app">

@@ -1,20 +1,18 @@
 "use client";
-import AppList from "./applist.component";
+import AppList from "./applist";
 import NewAppModal from "./modal.component";
 import { Suspense } from "react";
-import { Flex, Button, Title, Stack, Text, Tabs } from "@mantine/core";
-import Link from "next/link";
-import LogoutButton from "./logout";
+import { Flex, Title, Stack, Text } from "@mantine/core";
 import { useSIWE } from "connectkit";
 import { useRouter } from "next/navigation";
 import { useUserApps } from "./hooks";
 import _ from "lodash";
 import { IconChevronRight } from "@tabler/icons-react";
 
-const tabs = ["Insights", "My Apps", "Usage"];
+// const tabs = ["Insights", "My Apps", "Usage"];
 
 export default function User() {
-  const { data, isReady, isSignedIn } = useSIWE();
+  const { data, isSignedIn } = useSIWE();
 
   const router = useRouter();
 
@@ -31,18 +29,6 @@ export default function User() {
       <Suspense fallback={<div>Loading...</div>} />
       <NewAppModal />
 
-      {/* <Tabs
-        value={""}
-        onChange={(value) => router.push(`#${value}`)}
-        color="umbra.1"
-      >
-        <Tabs.List maw={"600px"} style={{ borderRadius: 8 }}>
-          {tabs.map((tab) => (
-            <Tabs.Tab key={tab} value={tab.replace(" ", "")}>
-              {tab}
-            </Tabs.Tab>
-          ))}
-        </Tabs.List> */}
       <Stack>
         <Flex justify={"space-between"}>
           <Title order={3}>My Apps</Title>
@@ -57,7 +43,6 @@ export default function User() {
         </Flex>
         {apps && <AppList list={apps} />}
       </Stack>
-      {/* </Tabs> */}
     </Stack>
   );
 }

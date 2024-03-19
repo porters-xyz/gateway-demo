@@ -71,8 +71,9 @@ export const theme = createTheme({
     xl: "5px 5px 3px rgba(0, 0, 0, .25)",
   },
 
+  fontFamily: "Karla, sans-serif",
   headings: {
-    fontFamily: "Roboto, sans-serif",
+    fontFamily: "Crimson Text, sans-serif",
     sizes: {
       h1: { fontSize: rem(36) },
     },

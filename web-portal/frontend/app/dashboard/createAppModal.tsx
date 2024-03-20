@@ -11,7 +11,7 @@ export default function CreateAppModal() {
   const secretKey = searchParams.get("key");
   const { data, isReady } = useSIWE();
 
-  const { values } = useForm({
+  const { values, getInputProps } = useForm({
     initialValues: {
       name: "",
       description: "",
@@ -27,32 +27,35 @@ export default function CreateAppModal() {
   });
 
   const createApp = useCreateAppMutation(data?.address, values);
-  const router = useRouter();
-  // TOOD: figure when to return the api key
 
   return (
     <Modal
       opened={shouldOpen}
-      onClose={() => router.replace("/dashboard")}
+      onClose={() => console.log("gonna close")}
       title="Create a new application."
       centered
     >
       {isReady && !secretKey && (
-        <form onSubmit={() => createApp.mutateAsync()}>
+        <form>
           <TextInput
             label="Choose a name for your application"
             placeholder="My application"
             inputWrapperOrder={["label", "error", "input", "description"]}
+            {...getInputProps("name")}
             withAsterisk
           />
           <Textarea
             label="Provide a short description (Optional)"
             placeholder="What are you working on?"
             inputWrapperOrder={["label", "error", "input", "description"]}
-            withAsterisk
+            {...getInputProps("description")}
           />
 
-          <Button type="submit" fullWidth style={{ marginTop: 32 }}>
+          <Button
+            onClick={() => createApp.mutate()}
+            fullWidth
+            style={{ marginTop: 32 }}
+          >
             Create New App
           </Button>
         </form>

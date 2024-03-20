@@ -117,7 +117,6 @@ model RelayLedger {
     amount          Int
     product         Products        @relation(fields: [productId], references: [id])
     productId       String
-    keyId           String // fed from redis(redis-pg sync service // tbd (@plor: should this be gone?)
     transactionType TransactionType
     createdAt       DateTime        @default(now())
 }

@@ -32,22 +32,7 @@ async function main() {
           isEditable: true,
           isMultiple: true,
           validationType: "regex",
-          validationValue: "*",
-        },
-        {
-          name: "Allowed Contracts",
-          isEditable: true,
-          isMultiple: true,
-          validationType: "function",
-          validationValue:
-            "values.map((value) => value.isNull || /^0x[a-fA-F0-9]{40}$/.test(value))",
-        },
-        {
-          name: "Allowed Methods",
-          isEditable: true,
-          isMultiple: true,
-          validationType: "function",
-          validationValue: "Array.isArray(value)",
+          validationValue: "*", // <-- @note: this is a placeholder, since I couldnt find a regex for this
         },
       ],
     });

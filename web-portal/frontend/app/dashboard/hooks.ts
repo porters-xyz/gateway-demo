@@ -16,10 +16,15 @@ export const useUserApps = (userAddress: string) => {
   });
 };
 
-export const useCreateAppMutation = (userAddress: string) => {
+export const useCreateAppMutation = (
+  userAddress: string,
+  values: { name: string; description?: string },
+) => {
+  const { name, description } = values;
   const createAppMutation = async () => {
     const response = await fetch(`/api/apps/${userAddress}`, {
       method: "POST",
+      body: JSON.stringify({ name, description }),
     });
     if (!response.ok) {
       throw new Error("Failed to create app");

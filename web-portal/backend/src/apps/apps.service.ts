@@ -48,13 +48,19 @@ export class AppsService {
     return apps;
   }
 
-  async createApp(userAddress: string) {
+  async createApp(
+    userAddress: string,
+    name: string,
+    description: string | null | undefined,
+  ) {
     const tenants = await this.getTenantsByUser(userAddress);
 
     if (!tenants) return;
     const newApp = await this.prisma.client.app.create({
       data: {
         tenantId: tenants[0].id,
+        name,
+        description,
       },
     });
 

@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Post, UseGuards, Body } from '@nestjs/common';
 import { AppsService } from './apps.service';
 import { AuthGuard } from '../guards/auth.guard';
 
@@ -9,13 +9,16 @@ export class AppsController {
 
   @Get(':userAddress')
   async getUserApps(@Param('userAddress') userAddress: string) {
-    // @note: This action fetches apps by tenant;
+    // @note: This action fetches apps by userAddress;
     return this.appsService.getAppsByUser(userAddress);
   }
 
-  @Post(':userAddress')
-  async createApp(@Param('userAddress') userAddress: string) {
-    // @note: This action creates app for tenant by enterpriseId;
-    return this.appsService.createApp(userAddress);
+  async createApp(
+    @Param('userAddress') userAddress: string,
+    @Body() body: { name: string; description?: string },
+  ) {
+    // @note: This action creates app for given userAddress;
+    const { name, description } = body;
+    return this.appsService.createApp(userAddress, name, description);
   }
 }

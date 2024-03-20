@@ -13,7 +13,7 @@ contract MockAggregator is AggregatorV3Interface {
     }
 
     RoundData public roundData;
-    uint8 public decimals = 18;
+    uint8 public decimals = 8;
     string public description = "mock";
     uint256 public version = 1;
 

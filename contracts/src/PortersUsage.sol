@@ -6,11 +6,13 @@ import {ERC20Pausable} from "@openzeppelin/contracts/token/ERC20/extensions/ERC2
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {AggregatorV3Interface} from "chainlink/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
-
-using SafeERC20 for IERC20;
+import {FixedPointMathLib} from "solmate/src/utils/FixedPointMathLib.sol";
 
 // TODO think about upgradability
 contract PortersUsage is ERC20Pausable, Ownable {
+
+    using SafeERC20 for IERC20;
+    using FixedPointMathLib for uint256;
 
     event Applied(bytes32 indexed _identifier, uint256 _amount);
     event PriceSet(uint256 _oldPrice, uint256 _newPrice);
@@ -25,11 +27,7 @@ contract PortersUsage is ERC20Pausable, Ownable {
 
     // TODO mint new tokens based on payable amount
     function mint() external payable {
-        require(price > 0, "price not set");
-        require(address(dataFeed) != address(0), "price feed not set");
-        // TODO calculate amount
-        (,int256 _answer,,,) = dataFeed.latestRoundData();
-        uint256 _amount = uint256(_answer) * msg.value / price; // or divide by?
+        uint256 _amount = _calculateMintAmount(msg.value);
         _mint(_msgSender(), _amount);
     }
 
@@ -67,6 +65,7 @@ contract PortersUsage is ERC20Pausable, Ownable {
     }
 
     function sweep(address payable _to) onlyOwner external {
+        require(_to != address(0), "cannot use zero address");
         (bool sent,) = _to.call{value: address(this).balance}("");
         require(sent, "sweep failed");
     }
@@ -77,5 +76,16 @@ contract PortersUsage is ERC20Pausable, Ownable {
         IERC20 token = IERC20(_erc20);
         uint256 _amount = token.balanceOf(address(this));
         token.safeTransfer(_to, _amount);
+    }
+
+    // HELPERS //
+
+    function _calculateMintAmount(uint256 _amtPaid) private view returns (uint256) {
+        require(price > 0, "price not set");
+        require(address(dataFeed) != address(0), "price feed not set");
+        (,int256 _answer,,,) = dataFeed.latestRoundData();
+        require(_answer > 0, "invalid price");
+        uint256 _amount = _amtPaid * (10 ** dataFeed.decimals()) / uint256(_answer); // or divide by?
+        return _amount;
     }
 }

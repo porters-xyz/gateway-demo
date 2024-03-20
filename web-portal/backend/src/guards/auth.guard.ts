@@ -1,10 +1,4 @@
-import {
-  CanActivate,
-  ExecutionContext,
-  HttpException,
-  HttpStatus,
-  Injectable,
-} from '@nestjs/common';
+import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { unsealData } from 'iron-session';
 import { ISession, SESSION_OPTIONS } from '../siwe/siwe.service';
 

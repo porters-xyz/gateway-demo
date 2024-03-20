@@ -81,7 +81,7 @@ export class TenantService {
           select: {
             id: true,
             _count: true,
-            enabled: true,
+            active: true,
             deletedAt: true,
             createdAt: true,
             updatedAt: true,

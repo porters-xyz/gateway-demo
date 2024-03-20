@@ -18,7 +18,7 @@ import {
   getDefaultConfig,
 } from "connectkit";
 
-const config = createConfig(
+export const config = createConfig(
   getDefaultConfig({
     appName: APP_NAME,
     transports: {

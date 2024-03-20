@@ -8,12 +8,13 @@ import {
   Title,
   Flex,
   TextInput,
+  Textarea,
 } from "@mantine/core";
 import { IconCopy, IconClipboardCheck } from "@tabler/icons-react";
 import { useSIWE } from "connectkit";
 import { useCreateAppMutation } from "./hooks";
 
-export default function NewAppModal() {
+export default function CreateAppModal() {
   const searchParams = useSearchParams();
   const shouldOpen = searchParams.get("new") === "app";
   const secretKey = searchParams.get("key");
@@ -26,15 +27,20 @@ export default function NewAppModal() {
     <Modal
       opened={shouldOpen}
       onClose={() => router.replace("/dashboard")}
-      title="Create New App"
+      title="Create a new application."
       centered
     >
       {isReady && !secretKey && (
         <form onSubmit={() => createApp.mutateAsync()}>
           <TextInput
-            label="App Name"
-            placeholder="Name for your app"
-            description="Name your app"
+            label="Choose a name for your application"
+            placeholder="My application"
+            inputWrapperOrder={["label", "error", "input", "description"]}
+            withAsterisk
+          />
+          <Textarea
+            label="Provide a short description (Optional)"
+            placeholder="What are you working on?"
             inputWrapperOrder={["label", "error", "input", "description"]}
             withAsterisk
           />
@@ -46,7 +52,7 @@ export default function NewAppModal() {
       )}
       {/* @note: following code doesn't work right now as we migrated to api key
       as one of the app rules */}
-      {secretKey && (
+      {/* {secretKey && (
         <Stack>
           <Title order={4}>
             Your api key was generated successfully, please protect it by
@@ -68,7 +74,7 @@ export default function NewAppModal() {
             )}
           </CopyButton>
         </Stack>
-      )}
+      )} */}
     </Modal>
   );
 }

@@ -1,6 +1,5 @@
 "use client";
 import AppList from "./applist";
-import NewAppModal from "./modal.component";
 import { Suspense } from "react";
 import { Flex, Title, Stack, Text } from "@mantine/core";
 import { useSIWE } from "connectkit";
@@ -9,6 +8,7 @@ import { useUserApps } from "./hooks";
 import _ from "lodash";
 
 import Insights from "./insights";
+import CreateAppModal from "./createAppModal";
 
 // const tabs = ["Insights", "My Apps", "Usage"];
 
@@ -28,7 +28,7 @@ export default function User() {
   return (
     <Stack>
       <Suspense fallback={<div>Loading...</div>} />
-      <NewAppModal />
+      <CreateAppModal />
 
       <Insights />
 

@@ -6,7 +6,7 @@ import {ERC20Pausable} from "@openzeppelin/contracts/token/ERC20/extensions/ERC2
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {AggregatorV3Interface} from "chainlink/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
-import {FixedPointMathLib} from "solmate/src/utils/FixedPointMathLib.sol";
+import {FixedPointMathLib} from "solmate/utils/FixedPointMathLib.sol";
 
 // TODO think about upgradability
 contract PortersUsage is ERC20Pausable, Ownable {
@@ -19,6 +19,7 @@ contract PortersUsage is ERC20Pausable, Ownable {
     event DataFeedSet(address _oldDataFeed, address _newDataFeed);
 
     uint256 internal price = 0;
+    uint256 internal MINT_LIMIT = 1e50; // larger numbers make calcs weird 
     AggregatorV3Interface internal dataFeed;
 
     constructor() ERC20("PORTERS Gateway", "PORTR") Ownable(_msgSender()) {
@@ -27,6 +28,8 @@ contract PortersUsage is ERC20Pausable, Ownable {
 
     // TODO mint new tokens based on payable amount
     function mint() external payable {
+        require(msg.value > 0, "no payment");
+        require(msg.value < MINT_LIMIT, "mint too high");
         uint256 _amount = _calculateMintAmount(msg.value);
         _mint(_msgSender(), _amount);
     }
@@ -83,9 +86,11 @@ contract PortersUsage is ERC20Pausable, Ownable {
     function _calculateMintAmount(uint256 _amtPaid) private view returns (uint256) {
         require(price > 0, "price not set");
         require(address(dataFeed) != address(0), "price feed not set");
+
         (,int256 _answer,,,) = dataFeed.latestRoundData();
         require(_answer > 0, "invalid price");
-        uint256 _amount = _amtPaid * (10 ** dataFeed.decimals()) / uint256(_answer); // or divide by?
+        
+        uint256 _amount = _amtPaid.mulDivUp(uint256(_answer), 10 ** dataFeed.decimals()).divWadUp(price);
         return _amount;
     }
 }

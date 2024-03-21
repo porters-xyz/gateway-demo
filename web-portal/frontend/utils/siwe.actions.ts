@@ -1,8 +1,7 @@
 "use client";
 import { SiweMessage } from "siwe";
 import Cookies from "js-cookie";
-import { disconnect } from "@wagmi/core";
-import { config } from "./Web3Provider";
+// import { config } from "./Web3Provider";
 export const getNonce = async () => {
   const res = await fetch("/api/siwe", { method: "PUT" });
   if (!res.ok) throw new Error("Failed to fetch SIWE nonce");
@@ -54,7 +53,6 @@ export const getSession = async () => {
 };
 
 export const signOut = async () => {
-  await disconnect(config);
   Cookies.remove("session");
   const res = await fetch("/api/siwe", {
     method: "DELETE",

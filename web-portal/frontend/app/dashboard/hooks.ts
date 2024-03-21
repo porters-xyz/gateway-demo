@@ -1,4 +1,5 @@
-import { useQuery, useMutation, QueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 
 export const useUserApps = (userAddress: string) => {
   const fetchApps = async () => {
@@ -16,10 +17,23 @@ export const useUserApps = (userAddress: string) => {
   });
 };
 
-export const useCreateAppMutation = (userAddress: string) => {
+export const useCreateAppMutation = (
+  address: string,
+  values: {
+    name: string;
+    description?: string;
+  },
+) => {
+  const { name, description } = values;
+  const router = useRouter();
+  const queryClient = useQueryClient();
   const createAppMutation = async () => {
-    const response = await fetch(`/api/apps/${userAddress}`, {
+    const response = await fetch(`/api/apps/${address}`, {
       method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ name, description }),
     });
     if (!response.ok) {
       throw new Error("Failed to create app");
@@ -30,7 +44,8 @@ export const useCreateAppMutation = (userAddress: string) => {
   return useMutation({
     mutationFn: createAppMutation,
     onSuccess: () => {
-      // refresh router to show secret key later
+      router.push("/dashboard");
+      queryClient.invalidateQueries(); // TODO <--- revisit this
       console.log("New App Created");
     },
   });

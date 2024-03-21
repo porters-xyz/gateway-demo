@@ -53,3 +53,6 @@ out
 *.DS_Store
 ./web-portal/.DS_Store
 docs/pnpm-lock.yaml
+
+# IGNORE BUN LOCKB FILES
+**/bun.lockb

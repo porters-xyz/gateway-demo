@@ -1,6 +1,11 @@
-import { Controller, Get, Param, Post, UseGuards, Body } from '@nestjs/common';
+import { Controller, Get, Param, UseGuards, Body, Post } from '@nestjs/common';
 import { AppsService } from './apps.service';
 import { AuthGuard } from '../guards/auth.guard';
+// TODO: create a centralised interface file?
+interface CreateAppDto {
+  name: string;
+  description?: string;
+}
 
 @Controller('apps')
 @UseGuards(AuthGuard)
@@ -13,12 +18,13 @@ export class AppsController {
     return this.appsService.getAppsByUser(userAddress);
   }
 
+  @Post(':userAddress')
   async createApp(
     @Param('userAddress') userAddress: string,
-    @Body() body: { name: string; description?: string },
+    @Body() createAppDto: CreateAppDto,
   ) {
     // @note: This action creates app for given userAddress;
-    const { name, description } = body;
+    const { name, description } = createAppDto;
     return this.appsService.createApp(userAddress, name, description);
   }
 }

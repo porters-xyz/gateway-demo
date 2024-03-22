@@ -66,7 +66,7 @@ export class AppsService {
 
     if (!newApp) {
       return new HttpException(
-        `Could not create app for this tenant`,
+        `Could not create app`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -82,7 +82,7 @@ export class AppsService {
 
     if (!updatedApp) {
       return new HttpException(
-        `Could not update app for this tenant`,
+        `Could not update app`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -97,7 +97,7 @@ export class AppsService {
 
     if (!deletedApp) {
       return new HttpException(
-        `Could not delete app for this tenant`,
+        `Could not delete app`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -113,7 +113,7 @@ export class AppsService {
     });
     if (!newAppRule) {
       return new HttpException(
-        `Could not create app rule for this tenant`,
+        `Could not create app rule for this app`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -128,7 +128,7 @@ export class AppsService {
 
     if (!updatedAppRule) {
       return new HttpException(
-        `Could not update app rule for this tenant`,
+        `Could not update app rule for this app`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -143,7 +143,7 @@ export class AppsService {
 
     if (!deletedAppRule) {
       return new HttpException(
-        `Could not delete app rule for this tenant`,
+        `Could not delete app rule for this app`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

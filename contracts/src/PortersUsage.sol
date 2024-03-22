@@ -23,19 +23,24 @@ contract PortersUsage is ERC20Pausable, Ownable {
     AggregatorV3Interface internal dataFeed;
 
     constructor() ERC20("PORTERS Gateway", "PORTR") Ownable(_msgSender()) {
-        this;
     }
 
     // TODO mint new tokens based on payable amount
-    function mint() external payable {
+    function mint() whenNotPaused external payable {
         require(msg.value > 0, "no payment");
         require(msg.value < MINT_LIMIT, "mint too high");
-        uint256 _amount = _calculateMintAmount(msg.value);
+        require(price > 0, "price not set");
+        require(address(dataFeed) != address(0), "price feed not set");
+
+        (,int256 _answer,,,) = dataFeed.latestRoundData();
+        require(_answer > 0, "invalid price");
+        
+        uint256 _amount = msg.value.mulDivUp(uint256(_answer), 10 ** dataFeed.decimals()).divWadUp(price);
         _mint(_msgSender(), _amount);
     }
 
     // TODO burn tokens and emit special event
-    function applyToAccount(bytes32 _identifier, uint256 _amount) external {
+    function applyToAccount(bytes32 _identifier, uint256 _amount) whenNotPaused external {
         _burn(_msgSender(), _amount);
         emit Applied(_identifier, _amount);
     }
@@ -79,18 +84,5 @@ contract PortersUsage is ERC20Pausable, Ownable {
         IERC20 token = IERC20(_erc20);
         uint256 _amount = token.balanceOf(address(this));
         token.safeTransfer(_to, _amount);
-    }
-
-    // HELPERS //
-
-    function _calculateMintAmount(uint256 _amtPaid) private view returns (uint256) {
-        require(price > 0, "price not set");
-        require(address(dataFeed) != address(0), "price feed not set");
-
-        (,int256 _answer,,,) = dataFeed.latestRoundData();
-        require(_answer > 0, "invalid price");
-        
-        uint256 _amount = _amtPaid.mulDivUp(uint256(_answer), 10 ** dataFeed.decimals()).divWadUp(price);
-        return _amount;
     }
 }

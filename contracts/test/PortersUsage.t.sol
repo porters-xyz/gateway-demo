@@ -19,6 +19,7 @@ contract PortersUsageTest is Test {
 
     address public admin = makeAddr("admin");
     address public nonadmin = makeAddr("nonadmin");
+    address public mockAddr;
 
     function setUp() public {
         vm.deal(nonadmin, 1 ether);
@@ -26,18 +27,15 @@ contract PortersUsageTest is Test {
         vm.startPrank(admin);
         usage = new PortersUsage();
         MockAggregator mockAgg = new MockAggregator();
-        usage.setPriceAndFeed(address(mockAgg), 2 ether); // 2 USD
+        mockAddr = address(mockAgg);
+        usage.setPriceAndFeed(mockAddr, 2 ether); // 2 USD
         vm.stopPrank();
     }
 
     function test_Mint() public {
         vm.prank(nonadmin);
-        bool success = _mint(0.001 ether);
-        if (!success) {
-            revert("mint failed");
-        }
+        _mint(0.001 ether);
         uint256 bal = usage.balanceOf(nonadmin);
-        console.log("minted bal %d", bal);
         assertEq(bal, 1_809_900_000_000_000_000); // ~2 tokens
     }
 
@@ -60,8 +58,9 @@ contract PortersUsageTest is Test {
         usage.pause();
         vm.prank(nonadmin);
         vm.expectRevert(EnforcedPause.selector); // paused
-        bool success = _mint(0.01 ether);
-        assertTrue(!success, "should not mint");
+        _mint(0.01 ether);
+        uint256 bal = usage.balanceOf(nonadmin);
+        assertEq(0, bal, "should not mint");
     }
 
     function test_Unpause() public {
@@ -77,28 +76,64 @@ contract PortersUsageTest is Test {
         console.log("paused: %s", usage.paused());
 
         vm.prank(nonadmin);
-        bool success = _mint(0.01 ether);
-        assertTrue(success, "should succeed in minting");
+        _mint(0.01 ether);
+        uint256 bal = usage.balanceOf(nonadmin);
+        assertGt(bal, 0, "should succeed in minting");
     }
 
     function test_AdminMint() public {
-        assertTrue(false, "test not written");
+        vm.prank(admin);
+        usage.adminMint(admin, 10 ether);
+        uint256 bal = usage.balanceOf(admin);
+        assertEq(10 ether, bal, "should have minted 10 tokens");
+    }
+    
+    function test_AdminMintOnlyOwner() public {
+        vm.prank(nonadmin);
+        vm.expectRevert();
+        usage.adminMint(nonadmin, 10 ether);
+        uint256 bal = usage.balanceOf(nonadmin);
+        assertEq(0, bal, "should not be able to adminMint");
     }
 
     function test_SetPrice() public {
-        assertTrue(false, "test not written");
+        vm.prank(admin);
+        vm.expectEmit(true, true, false, true);
+        emit PriceSet(2 ether, 3 ether);
+        usage.setPrice(3 ether);
     }
     
     function test_SetPriceAndFeed() public {
-        assertTrue(false, "test not written");
+        vm.prank(admin);
+        vm.expectEmit(true, true, false, true);
+        emit PriceSet(2 ether, 3 ether);
+        vm.expectEmit(false, false, false, false);
+        emit DataFeedSet(address(0), address(0));
+        usage.setPriceAndFeed(mockAddr, 3 ether);
     }
 
     function test_Sweep() public {
-        assertTrue(false, "test not written");
+        vm.prank(nonadmin);
+        _mint(0.1 ether);
+        vm.prank(admin);
+        usage.sweep(payable(admin));
+        assertGt(admin.balance, 1.09 ether, "should have swept funds");
     }
 
     function test_SweepToken() public {
-        assertTrue(false, "test not written");
+        vm.startPrank(nonadmin);
+        _mint(0.1 ether);
+        uint256 logbal = usage.balanceOf(nonadmin);
+        console.log("balance from mint: %d", logbal);
+        usage.transfer(address(usage), 1 ether);
+        logbal = usage.balanceOf(address(usage));
+        console.log("balance in contract: %d", logbal);
+        vm.stopPrank();
+        vm.prank(admin);
+        usage.sweepToken(address(usage), admin);
+        uint256 bal = usage.balanceOf(admin);
+        console.log("balance after sweep: %d", bal);
+        assertEq(bal, 1 ether, "should have swept minted tokens");
     }
 
     // FUZZ TESTS
@@ -107,12 +142,10 @@ contract PortersUsageTest is Test {
         uint256 deal = x < 1000000 ? 1000000 : x;
         vm.deal(nonadmin, deal);
         vm.prank(nonadmin);
-        bool success = _mint(x);
+        _mint(x);
         if (x > 0 && x < 1e50) {
-            assertTrue(success, "should mint with any value");
             assertGt(usage.balanceOf(nonadmin), 0, "should be positive balance");
         } else {
-            assertTrue(!success, "should not succeed");
             assertEq(0, usage.balanceOf(nonadmin), "should have zero balance");
         }
     }
@@ -137,10 +170,11 @@ contract PortersUsageTest is Test {
 
     // UTILITY
 
-    function _mint(uint256 payableAmt) private returns (bool) {
-        (bool success,) = address(usage).call{value: payableAmt}(
+    function _mint(uint256 payableAmt) private {
+        (bool success, bytes memory data) = address(usage).call{value: payableAmt}(
             abi.encodeWithSignature("mint()")
         );
-        return success;
+        success;
+        data;
     }
 }

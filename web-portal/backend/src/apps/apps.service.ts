@@ -73,4 +73,51 @@ export class AppsService {
 
     return newApp;
   }
+
+  async updateApp(appId: string, updateAppDto: any) {
+    const updatedApp = await this.prisma.client.app.update({
+      where: { id: appId },
+      data: updateAppDto,
+    });
+
+    if (!updatedApp) {
+      return new HttpException(
+        `Could not update app for this tenant`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+
+    return updatedApp;
+  }
+  async createAppRule(appId: string, createAppRuleDto: any) {
+    const newAppRule = await this.prisma.client.appRule.create({
+      data: {
+        appId,
+        ...createAppRuleDto,
+      },
+    });
+    if (!newAppRule) {
+      return new HttpException(
+        `Could not create app rule for this tenant`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+    return newAppRule;
+  }
+
+  async updateAppRule(appId: string, ruleId: string, updateAppRuleDto: any) {
+    const updatedAppRule = await this.prisma.client.appRule.update({
+      where: { id: ruleId },
+      data: updateAppRuleDto,
+    });
+
+    if (!updatedAppRule) {
+      return new HttpException(
+        `Could not update app rule for this tenant`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+
+    return updatedAppRule;
+  }
 }

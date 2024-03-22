@@ -11,10 +11,18 @@ contract PortersUsageTest is Test {
 
     using FixedPointMathLib for uint256;
 
+    event Applied(bytes32 indexed _identifier, uint256 _amount);
+    event PriceSet(uint256 _oldPrice, uint256 _newPrice);
+    event DataFeedSet(address _oldDataFeed, address _newDataFeed);
+    error EnforcedPause();
+    error ExpectedPause();
+
     address public admin = makeAddr("admin");
     address public nonadmin = makeAddr("nonadmin");
 
     function setUp() public {
+        vm.deal(nonadmin, 1 ether);
+        vm.deal(admin, 1 ether);
         vm.startPrank(admin);
         usage = new PortersUsage();
         MockAggregator mockAgg = new MockAggregator();
@@ -23,7 +31,6 @@ contract PortersUsageTest is Test {
     }
 
     function test_Mint() public {
-        vm.deal(nonadmin, 1 ether);
         vm.prank(nonadmin);
         bool success = _mint(0.001 ether);
         if (!success) {
@@ -35,18 +42,43 @@ contract PortersUsageTest is Test {
     }
 
     function test_ApplyToAccount() public {
-        vm.deal(nonadmin, 1 ether);
-        bool success = _mint(0.01 ether);
-        usage.applyToAccount(bytes32("test"), 1 ether); // apply 1 token 
-        assertTrue(false, "test not written");
+        vm.prank(nonadmin);
+        _mint(0.01 ether);
+        uint256 bal1 = usage.balanceOf(nonadmin);
+
+        vm.prank(nonadmin);
+        vm.expectEmit(true, true, false, false);
+        emit Applied(bytes32("test"), 1 ether);
+        usage.applyToAccount(bytes32("test"), 1 ether); // apply 1 token
+
+        uint256 bal2 = usage.balanceOf(nonadmin);
+        assertEq(bal2, bal1 - 1 ether, "should burn applied amount");
     }
 
     function test_Pause() public {
-        assertTrue(false, "test not written");
+        vm.prank(admin);
+        usage.pause();
+        vm.prank(nonadmin);
+        vm.expectRevert(EnforcedPause.selector); // paused
+        bool success = _mint(0.01 ether);
+        assertTrue(!success, "should not mint");
     }
 
     function test_Unpause() public {
-        assertTrue(false, "test not written");
+        vm.prank(admin);
+        usage.pause();
+        vm.prank(nonadmin);
+        vm.expectRevert(EnforcedPause.selector); // paused
+        _mint(0.01 ether);
+
+        vm.prank(admin);
+        usage.unpause();
+
+        console.log("paused: %s", usage.paused());
+
+        vm.prank(nonadmin);
+        bool success = _mint(0.01 ether);
+        assertTrue(success, "should succeed in minting");
     }
 
     function test_AdminMint() public {

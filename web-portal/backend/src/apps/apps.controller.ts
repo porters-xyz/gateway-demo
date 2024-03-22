@@ -10,6 +10,7 @@ import {
 import { AppsService } from './apps.service';
 import { AuthGuard } from '../guards/auth.guard';
 import { Put } from '@nestjs/common';
+import { Delete } from '@nestjs/common';
 // TODO: create a centralised interface file?
 interface CreateAppDto {
   name: string;
@@ -37,9 +38,15 @@ export class AppsController {
     return this.appsService.createApp(userAddress, name, description);
   }
 
+  @Delete(':appId')
+  async deleteApp(@Param('appId') appId: string) {
+    // @note: This action deletes app for given appId;
+    return this.appsService.deleteApp(appId);
+  }
+
   @Patch(':appId')
   async updateApp(@Param('appId') appId: string, @Body() updateAppDto: any) {
-    // @note: This action updates app for given userAddress and appId;
+    // @note: This action updates app for given appId;
     return this.appsService.updateApp(appId, updateAppDto);
   }
 
@@ -58,7 +65,16 @@ export class AppsController {
     @Param('ruleId') ruleId: string,
     @Body() updateAppRuleDto: any,
   ) {
-    // @note: This action updates app rule for given userAddress, appId and ruleId;
+    // @note: This action updates app rule for given appId and ruleId;
     return this.appsService.updateAppRule(appId, ruleId, updateAppRuleDto);
+  }
+
+  @Delete(':appId/rule/:ruleId')
+  async deleteAppRule(
+    @Param('appId') appId: string,
+    @Param('ruleId') ruleId: string,
+  ) {
+    // @note: This action deletes app rule for given appId and ruleId;
+    return this.appsService.deleteAppRule(appId, ruleId);
   }
 }

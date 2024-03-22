@@ -89,6 +89,21 @@ export class AppsService {
 
     return updatedApp;
   }
+
+  async deleteApp(appId: string) {
+    const deletedApp = await this.prisma.client.app.delete({
+      where: { id: appId },
+    });
+
+    if (!deletedApp) {
+      return new HttpException(
+        `Could not delete app for this tenant`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+    return deletedApp;
+  }
+
   async createAppRule(appId: string, createAppRuleDto: any) {
     const newAppRule = await this.prisma.client.appRule.create({
       data: {
@@ -107,7 +122,7 @@ export class AppsService {
 
   async updateAppRule(appId: string, ruleId: string, updateAppRuleDto: any) {
     const updatedAppRule = await this.prisma.client.appRule.update({
-      where: { id: ruleId },
+      where: { id: ruleId, appId },
       data: updateAppRuleDto,
     });
 
@@ -119,5 +134,19 @@ export class AppsService {
     }
 
     return updatedAppRule;
+  }
+
+  async deleteAppRule(appId: string, ruleId: string) {
+    const deletedAppRule = await this.prisma.client.appRule.delete({
+      where: { id: ruleId, appId },
+    });
+
+    if (!deletedAppRule) {
+      return new HttpException(
+        `Could not delete app rule for this tenant`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+    return deletedAppRule;
   }
 }

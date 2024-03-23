@@ -9,7 +9,6 @@ import {
 } from '@nestjs/common';
 import { AppsService } from './apps.service';
 import { AuthGuard } from '../guards/auth.guard';
-import { Put } from '@nestjs/common';
 import { Delete } from '@nestjs/common';
 // TODO: create a centralised interface file?
 interface CreateAppDto {
@@ -50,7 +49,7 @@ export class AppsController {
     return this.appsService.updateApp(appId, updateAppDto);
   }
 
-  @Put(':appId/rule')
+  @Post(':appId/rule')
   async createAppRule(
     @Param('appId') appId: string,
     @Body() createAppRuleDto: any,

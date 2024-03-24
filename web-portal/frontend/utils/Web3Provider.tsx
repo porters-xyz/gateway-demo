@@ -32,10 +32,10 @@ export const config = createConfig(
       [mainnet.id]: fallback([http(process.env.NEXT_PUBLIC_RPC_ENDPOINT)]),
     },
     walletConnectProjectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID!,
+    ssr: true,
     storage: createStorage({
       storage: cookieStorage,
     }),
-    ssr: true,
   }),
 );
 const queryClient = new QueryClient();

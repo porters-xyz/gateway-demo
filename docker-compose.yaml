@@ -67,6 +67,16 @@ services:
     volumes:
       - porters-redis:/data
 
+  kit:
+    build: gateway-kit/.
+    volumes:
+      - ./gateway-kit/.env:/app/.env
+    ports:
+      - "8080:8080"
+    env_file:
+      - ./gateway-kit/.env
+    networks:
+      - gateway
 volumes:
   porters-postgres:
   porters-redis:

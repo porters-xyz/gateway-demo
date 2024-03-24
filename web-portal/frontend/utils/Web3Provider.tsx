@@ -1,7 +1,14 @@
 "use client";
 import { APP_NAME } from "@frontend/utils/consts";
 import { FC, PropsWithChildren } from "react";
-import { WagmiProvider, createConfig, http, fallback } from "wagmi";
+import {
+  WagmiProvider,
+  createConfig,
+  http,
+  fallback,
+  cookieStorage,
+  createStorage,
+} from "wagmi";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { mainnet } from "wagmi/chains";
 import {
@@ -25,6 +32,10 @@ export const config = createConfig(
       [mainnet.id]: fallback([http(process.env.NEXT_PUBLIC_RPC_ENDPOINT)]),
     },
     walletConnectProjectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID!,
+    storage: createStorage({
+      storage: cookieStorage,
+    }),
+    ssr: true,
   }),
 );
 const queryClient = new QueryClient();

@@ -66,11 +66,87 @@ export class AppsService {
 
     if (!newApp) {
       return new HttpException(
-        `Could not create app for this tenant`,
+        `Could not create app`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
 
     return newApp;
+  }
+
+  async updateApp(appId: string, updateAppDto: any) {
+    const updatedApp = await this.prisma.client.app.update({
+      where: { id: appId },
+      data: updateAppDto,
+    });
+
+    if (!updatedApp) {
+      return new HttpException(
+        `Could not update app`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+
+    return updatedApp;
+  }
+
+  async deleteApp(appId: string) {
+    const deletedApp = await this.prisma.client.app.delete({
+      where: { id: appId },
+    });
+
+    if (!deletedApp) {
+      return new HttpException(
+        `Could not delete app`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+    return deletedApp;
+  }
+
+  async createAppRule(appId: string, createAppRuleDto: any) {
+    const newAppRule = await this.prisma.client.appRule.create({
+      data: {
+        appId,
+        ...createAppRuleDto,
+      },
+    });
+    if (!newAppRule) {
+      return new HttpException(
+        `Could not create app rule for this app`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+    return newAppRule;
+  }
+
+  async updateAppRule(appId: string, ruleId: string, updateAppRuleDto: any) {
+    const updatedAppRule = await this.prisma.client.appRule.update({
+      where: { id: ruleId, appId },
+      data: updateAppRuleDto,
+    });
+
+    if (!updatedAppRule) {
+      return new HttpException(
+        `Could not update app rule for this app`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+
+    return updatedAppRule;
+  }
+
+  async deleteAppRule(appId: string, ruleId: string) {
+    const deletedAppRule = await this.prisma.client.appRule.delete({
+      where: { id: ruleId, appId },
+    });
+
+    if (!deletedAppRule) {
+      return new HttpException(
+        `Could not delete app rule for this app`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+    return deletedAppRule;
   }
 }

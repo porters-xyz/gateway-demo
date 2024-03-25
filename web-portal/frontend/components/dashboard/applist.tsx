@@ -2,8 +2,11 @@ import React from "react";
 import { Stack, Table, Flex, Title, Text } from "@mantine/core";
 import { IApp } from "@frontend/utils/types";
 import { IconChevronRight } from "@tabler/icons-react";
+import { usePathname } from "next/navigation";
 
 const AppList: React.FC<{ list: Array<IApp> }> = ({ list }) => {
+  const path = usePathname();
+  const showAll = path === "/apps";
   const rows = list.map((app: IApp) => (
     <Table.Tr key={app.name}>
       <Table.Th>{app.name ?? "Un-named App"}</Table.Th>
@@ -17,14 +20,16 @@ const AppList: React.FC<{ list: Array<IApp> }> = ({ list }) => {
     <Stack>
       <Flex justify={"space-between"}>
         <Title order={3}>My Apps</Title>
-        <Text
-          size="sm"
-          fw={500}
-          c="dimmed"
-          style={{ display: "flex", alignItems: "center" }}
-        >
-          View all <IconChevronRight size={16} />
-        </Text>
+        {!showAll && (
+          <Text
+            size="sm"
+            fw={500}
+            c="dimmed"
+            style={{ display: "flex", alignItems: "center" }}
+          >
+            View all <IconChevronRight size={16} />
+          </Text>
+        )}
       </Flex>
       <Table
         horizontalSpacing="xl"

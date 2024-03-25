@@ -1,4 +1,17 @@
 import { createTheme, rem, Button } from "@mantine/core";
+import { Crimson_Text, Karla } from "next/font/google";
+export const crimson = Crimson_Text({
+  subsets: ["latin"],
+  display: "swap",
+  weight: ["400", "600", "700"],
+});
+
+export const karla = Karla({
+  display: "swap",
+  fallback: ["serif"],
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+});
 
 export const theme = createTheme({
   white: "#F6EEE6",
@@ -71,9 +84,10 @@ export const theme = createTheme({
     xl: "5px 5px 3px rgba(0, 0, 0, .25)",
   },
 
-  fontFamily: "Karla, sans-serif",
+  fontFamily: karla.style.fontFamily,
   headings: {
-    fontFamily: "Crimson Text, sans-serif",
+    fontFamily: crimson.style.fontFamily,
+    fontWeight: "500",
     sizes: {
       h1: { fontSize: rem(36) },
     },
@@ -84,7 +98,7 @@ export const theme = createTheme({
         color: "carrot",
         size: "md",
         style: {
-          fontFamily: "Crimson Text, sans-serif",
+          fontFamily: crimson.style.fontFamily,
           fontWeight: 700,
           fontSize: rem(20),
         },

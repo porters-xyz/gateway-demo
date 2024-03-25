@@ -1,4 +1,3 @@
-"use client";
 import {
   AppShell,
   Burger,
@@ -21,7 +20,7 @@ import {
 } from "@tabler/icons-react";
 import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
-import LogoutButton from "./logout";
+import LogoutButton from "@frontend/components/dashboard/logout";
 import { useSession } from "@frontend/utils/hooks";
 const topTabs = [
   {

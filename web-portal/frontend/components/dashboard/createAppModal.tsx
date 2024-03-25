@@ -1,9 +1,8 @@
 "use client";
 import { useSearchParams } from "next/navigation";
 import { Modal, Button, TextInput, Textarea } from "@mantine/core";
-import { useCreateAppMutation } from "./hooks";
 import { useForm } from "@mantine/form";
-import { useSession } from "@frontend/utils/hooks";
+import { useSession, useCreateAppMutation } from "@frontend/utils/hooks";
 
 export default function CreateAppModal() {
   const searchParams = useSearchParams();

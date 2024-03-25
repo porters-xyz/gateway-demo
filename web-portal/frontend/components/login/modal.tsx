@@ -1,4 +1,3 @@
-"use client";
 import {
   Modal,
   Button,
@@ -9,7 +8,7 @@ import {
   TextInput,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
-import useRecoverTenant from "./hooks";
+import { useRecoverTenant } from "@frontend/utils/hooks";
 import { IconCopy, IconClipboardCheck } from "@tabler/icons-react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useState } from "react";

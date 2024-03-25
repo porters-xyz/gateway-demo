@@ -17,7 +17,7 @@ export default function Login() {
   const router = useRouter();
 
   if (session?.address) {
-    router.replace("/dashboard");
+    router.push("/dashboard");
   }
 
   return (

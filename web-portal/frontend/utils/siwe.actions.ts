@@ -2,10 +2,7 @@
 import { SiweMessage } from "siwe";
 import Cookies from "js-cookie";
 import { createSIWEConfig } from "@web3modal/siwe";
-import type {
-  SIWECreateMessageArgs,
-  SIWEVerifyMessageArgs,
-} from "@web3modal/siwe";
+import { revalidatePath } from "next/cache";
 
 export const getNonce = async () => {
   const res = await fetch("/api/siwe", { method: "PUT" });
@@ -51,9 +48,7 @@ export const verifyMessage = async ({
 export const getSession = async () => {
   const res = await fetch("/api/siwe");
   if (!res.ok) console.log("Failed to fetch SIWE session");
-
   const userSession = await res.json();
-
   return userSession;
 };
 
@@ -62,7 +57,6 @@ export const signOut = async () => {
   const res = await fetch("/api/siwe", {
     method: "DELETE",
   });
-
   if (res.ok) return true;
   return false;
 };

@@ -10,8 +10,6 @@ import Web3Provider, { config, projectId } from "@frontend/utils/Web3Provider";
 // import { metadata } from "@frontend/utils/consts";
 import { theme } from "@frontend/utils/theme";
 import { createWeb3Modal } from "@web3modal/wagmi/react";
-import { useSession } from "@frontend/utils/hooks";
-import { useRouter } from "next/navigation";
 
 createWeb3Modal({
   siweConfig,

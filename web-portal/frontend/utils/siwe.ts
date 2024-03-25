@@ -1,4 +1,3 @@
-"use client";
 import { SiweMessage } from "siwe";
 import Cookies from "js-cookie";
 import { createSIWEConfig } from "@web3modal/siwe";
@@ -49,6 +48,9 @@ export const getSession = async () => {
   const res = await fetch("/api/siwe");
   if (!res.ok) console.log("Failed to fetch SIWE session");
   const userSession = await res.json();
+  if (userSession?.address && window.location.pathname === "/login") {
+    setTimeout(() => (window.location.href = "/dashboard"), 250);
+  }
   return userSession;
 };
 
@@ -57,6 +59,9 @@ export const signOut = async () => {
   const res = await fetch("/api/siwe", {
     method: "DELETE",
   });
+  if (!Cookies.get("session")) {
+    window.location.href = "/login";
+  }
   if (res.ok) return true;
   return false;
 };

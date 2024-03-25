@@ -1,7 +1,9 @@
 import { Stack, Flex, Title, SegmentedControl, Card } from "@mantine/core";
-import React, { useState } from "react";
-import classes from "./insight.module.css";
+import React from "react";
+import classes from "@frontend/styles/insight.module.css";
 import { AreaChart } from "@mantine/charts";
+import { useRouter, useSearchParams } from "next/navigation";
+
 const timeOptions = ["24h", "7d", "30d", "All"];
 
 export const data = [
@@ -77,8 +79,9 @@ const RingCard: React.FC<{ title: string }> = ({ title }) => {
 };
 
 const Insights: React.FC = () => {
-  const [value, setValue] = useState(timeOptions[0]);
-
+  // const [value, setValue] = useState(timeOptions[0]);
+  const params = useSearchParams();
+  const router = useRouter();
   return (
     <Stack>
       <Flex justify={"space-between"}>
@@ -87,8 +90,8 @@ const Insights: React.FC = () => {
           bg="#fff"
           color="umbra.1"
           withItemsBorders={false}
-          value={value}
-          onChange={setValue}
+          value={params.get("t") || timeOptions[0]}
+          onChange={(value) => router.push("?t=" + value)}
           data={timeOptions.map((value) => ({ value, label: value }))}
         />
       </Flex>

@@ -1,15 +1,15 @@
 "use client";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Modal, Button, TextInput, Textarea } from "@mantine/core";
-import { useSIWE } from "connectkit";
 import { useCreateAppMutation } from "./hooks";
 import { useForm } from "@mantine/form";
+import { useSession } from "@frontend/utils/hooks";
 
 export default function CreateAppModal() {
   const searchParams = useSearchParams();
   const shouldOpen = searchParams.get("new") === "app";
   const secretKey = searchParams.get("key");
-  const { data, isReady } = useSIWE();
+  const { data: session } = useSession();
 
   const { values, getInputProps } = useForm({
     initialValues: {
@@ -26,7 +26,7 @@ export default function CreateAppModal() {
     },
   });
 
-  const createApp = useCreateAppMutation(data?.address, values);
+  const createApp = useCreateAppMutation(String(session?.address), values);
 
   return (
     <Modal
@@ -35,7 +35,7 @@ export default function CreateAppModal() {
       title="Create a new application."
       centered
     >
-      {isReady && !secretKey && (
+      {!!session?.address && !secretKey && (
         <form>
           <TextInput
             label="Choose a name for your application"

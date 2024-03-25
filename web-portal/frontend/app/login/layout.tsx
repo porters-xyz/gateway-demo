@@ -1,4 +1,4 @@
-import { Box, Container, BackgroundImage } from "@mantine/core";
+import { Box, BackgroundImage } from "@mantine/core";
 import background from "@frontend/public/background.png";
 export default function LoginLayout({
   children,

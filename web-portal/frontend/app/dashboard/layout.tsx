@@ -12,7 +12,6 @@ import {
 import Link from "next/link";
 import { useDisclosure } from "@mantine/hooks";
 import logo from "@frontend/public/logo.png";
-import { useSIWE } from "connectkit";
 import {
   IconBook,
   IconApps,
@@ -23,7 +22,7 @@ import {
 import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
 import LogoutButton from "./logout";
-
+import { useSession } from "@frontend/utils/hooks";
 const topTabs = [
   {
     link: "/dashboard",
@@ -63,8 +62,7 @@ export default function DashboardLayout({
   const [opened, { toggle }] = useDisclosure();
   const path = usePathname();
   const router = useRouter();
-  const { data, isReady, isSignedIn } = useSIWE();
-
+  const { data: session } = useSession();
   const linksTop = topTabs.map(({ link, label, icon }) => (
     <Box
       key={link}
@@ -128,7 +126,7 @@ export default function DashboardLayout({
         />
         <Flex justify={"space-between"} align={"center"} h="100%" px={"2%"}>
           <Title order={2}>
-            Welcome, {String(data?.address).substring(0, 10)}
+            Welcome, {String(session?.address).substring(0, 10)}
           </Title>
           <Flex gap="md">
             <Link href="?new=app">

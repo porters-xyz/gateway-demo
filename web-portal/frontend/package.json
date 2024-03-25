@@ -19,10 +19,10 @@
     "@mantine/nprogress": "^7.4.2",
     "@mantine/spotlight": "^7.4.2",
     "@tabler/icons-react": "^2.47.0",
-    "@tanstack/react-query": "^5.28.4",
+    "@tanstack/react-query": "^5.28.6",
     "@types/js-cookie": "^3.0.6",
-    "add": "^2.0.6",
-    "connectkit": "^1.7.2",
+    "@web3modal/siwe": "^4.1.1",
+    "@web3modal/wagmi": "^4.1.1",
     "dayjs": "^1.11.10",
     "encoding": "^0.1.13",
     "iron-session": "^8.0.1",
@@ -34,8 +34,8 @@
     "recharts": "2",
     "sharp": "^0.33.2",
     "siwe": "^2.1.4",
-    "viem": "^2.8.10",
-    "wagmi": "^2.5.7"
+    "viem": "^2.8.18",
+    "wagmi": "^2.5.12"
   },
   "devDependencies": {
     "@types/lodash": "^4.17.0",

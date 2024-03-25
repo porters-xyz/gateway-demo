@@ -1,7 +1,12 @@
 "use client";
 import { SiweMessage } from "siwe";
 import Cookies from "js-cookie";
-// import { config } from "./Web3Provider";
+import { createSIWEConfig } from "@web3modal/siwe";
+import type {
+  SIWECreateMessageArgs,
+  SIWEVerifyMessageArgs,
+} from "@web3modal/siwe";
+
 export const getNonce = async () => {
   const res = await fetch("/api/siwe", { method: "PUT" });
   if (!res.ok) throw new Error("Failed to fetch SIWE nonce");
@@ -61,3 +66,11 @@ export const signOut = async () => {
   if (res.ok) return true;
   return false;
 };
+
+export const siweConfig = createSIWEConfig({
+  createMessage,
+  getNonce,
+  getSession,
+  verifyMessage,
+  signOut,
+});

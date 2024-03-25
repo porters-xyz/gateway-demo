@@ -1,26 +1,22 @@
 "use client";
-import { Container, Title } from "@mantine/core";
+import { Button, Container, Title } from "@mantine/core";
 import { RecoverTenantModal } from "./modal.component";
-import { ConnectKitButton, useSIWE } from "connectkit";
 import Image from "next/image";
+import { useWeb3Modal } from "@web3modal/wagmi/react";
 import logo from "@frontend/public/logo.png";
-import background from "@frontend/public/background.png";
 import Link from "next/link";
 import WelcomeShape from "./welcomeShape.component";
 import { useRouter } from "next/navigation";
+import { useDisconnect } from "wagmi";
+import { useSession } from "@frontend/utils/hooks";
 
 export default function Login() {
-  const { isSignedIn, isReady } = useSIWE({
-    onSignIn: () => {
-      router.replace("/dashboard");
-    },
-    onSignOut: () => {
-      router.replace("/login");
-    },
-  });
+  const { open } = useWeb3Modal();
+  const { data: session } = useSession();
+  const { disconnect } = useDisconnect();
   const router = useRouter();
 
-  if (isReady && isSignedIn) {
+  if (session?.address) {
     router.replace("/dashboard");
   }
 
@@ -41,7 +37,13 @@ export default function Login() {
         <Title order={2} style={{ color: "white", textAlign: "center" }}>
           Welcome to Porters. Let’s get started!
         </Title>
-        <ConnectKitButton />
+        <Button
+          onClick={() => {
+            !session?.address ? open() : disconnect();
+          }}
+        >
+          {session?.address ? "Disconnect" : "Connect Wallet"}
+        </Button>
         <Link
           href={"?recover=true"}
           style={{ color: "#FFA44B", textDecorationColor: "#FFA44B" }}

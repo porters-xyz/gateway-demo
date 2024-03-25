@@ -4,11 +4,20 @@
 // All packages except `@mantine/hooks` require styles imports
 
 import "@mantine/core/styles.css";
-
+import { siweConfig } from "@frontend/utils/siwe.actions";
 import { ColorSchemeScript, MantineProvider } from "@mantine/core";
-import Web3Provider from "@frontend/utils/Web3Provider";
-import { metadata } from "@frontend/utils/consts";
+import Web3Provider, { config, projectId } from "@frontend/utils/Web3Provider";
+// import { metadata } from "@frontend/utils/consts";
 import { theme } from "@frontend/utils/theme";
+import { createWeb3Modal } from "@web3modal/wagmi/react";
+
+createWeb3Modal({
+  siweConfig,
+  wagmiConfig: config,
+  projectId,
+  enableAnalytics: false,
+  enableOnramp: false,
+});
 
 export default function RootLayout({
   children,
@@ -18,16 +27,6 @@ export default function RootLayout({
   return (
     <html lang="en">
       <link rel="icon" href="/favicon.ico" sizes="any" />
-      <link rel="preconnect" href="https://fonts.googleapis.com" />
-      <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-      <link
-        href="https://fonts.googleapis.com/css2?family=Karla:ital,wght@0,200..800;1,200..800&display=swap"
-        rel="stylesheet"
-      />
-      <link
-        href="https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&family=Karla:ital,wght@0,200..800;1,200..800&display=swap"
-        rel="stylesheet"
-      />
 
       <head>
         <ColorSchemeScript />

@@ -1,5 +1,5 @@
 "use client";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { Modal, Button, TextInput, Textarea } from "@mantine/core";
 import { useCreateAppMutation } from "./hooks";
 import { useForm } from "@mantine/form";

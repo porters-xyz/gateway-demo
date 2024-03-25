@@ -8,5 +8,7 @@ export const useSession = () => {
     queryKey: ["session"],
     queryFn: getSession,
     enabled: !!address && isConnected,
+    refetchInterval: 1000 * 60 * 2,
+    refetchOnMount: true,
   });
 };

@@ -68,13 +68,13 @@ services:
       - porters-redis:/data
 
   kit:
-    build: gateway-kit/.
+    image: ghcr.io/pokt-network/pocket-gateway-server:0.0.1
     volumes:
-      - ./gateway-kit/.env:/app/.env
+      - ./.env:/app/.env
     ports:
       - "8080:8080"
     env_file:
-      - ./gateway-kit/.env
+      - ./.env
     networks:
       - gateway
 volumes:

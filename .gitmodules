@@ -1,3 +1,0 @@
-[submodule "gateway-kit"]
-	path = gateway-kit
-	url = git@github.com:porters-xyz/gateway-server.git

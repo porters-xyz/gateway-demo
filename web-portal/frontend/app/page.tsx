@@ -1,4 +1,4 @@
-import { HeroSection } from "@frontend/components/home / 01-Hero";
+import { HeroSection } from "@frontend/components/home/01-Hero";
 import { Stack } from "@mantine/core";
 
 export default function Home() {

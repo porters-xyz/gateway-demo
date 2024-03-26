@@ -2,13 +2,14 @@ import React from "react";
 import { Stack, Table, Flex, Title, Text } from "@mantine/core";
 import { IApp } from "@frontend/utils/types";
 import { IconChevronRight } from "@tabler/icons-react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 const AppList: React.FC<{ list: Array<IApp> }> = ({ list }) => {
   const path = usePathname();
+  const router = useRouter();
   const showAll = path === "/apps";
   const rows = list.map((app: IApp) => (
-    <Table.Tr key={app.name}>
+    <Table.Tr key={app.name} onClick={() => router.replace("apps/" + app.id)}>
       <Table.Th>{app.name ?? "Un-named App"}</Table.Th>
       <Table.Td>{app.id}</Table.Td>
       <Table.Td>{app.active ? "Yes" : "No"}</Table.Td>

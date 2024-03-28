@@ -5,7 +5,7 @@ import { IconChevronRight } from "@tabler/icons-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useAtomValue } from "jotai";
 import { appsAtom } from "@frontend/utils/atoms";
-import Link from "next/link";
+import StyledLink from "./styledlink";
 
 const AppList: React.FC = () => {
   const list = useAtomValue(appsAtom) as IApp[];
@@ -34,19 +34,9 @@ const AppList: React.FC = () => {
       <Flex justify={"space-between"} align={"center"}>
         <Title order={3}>My Apps</Title>
         {!showAll && (
-          <Text size="sm" fw={500} c="dimmed">
-            <Link
-              href="/apps"
-              style={{
-                display: "flex",
-                textDecoration: "none",
-                alignItems: "center",
-                color: "grey",
-              }}
-            >
-              View all <IconChevronRight size={16} />
-            </Link>
-          </Text>
+          <StyledLink link={"/apps"}>
+            View all <IconChevronRight size={16} />
+          </StyledLink>
         )}
       </Flex>
       <Table

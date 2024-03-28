@@ -1,0 +1,8 @@
+.tab {
+    outline: none;
+    background-color: transparent;
+}
+
+.tab:hover {
+    background-color: transparent;
+}

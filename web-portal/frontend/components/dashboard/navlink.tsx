@@ -15,6 +15,7 @@ const NavLink = ({
   const router = useRouter();
   const path = usePathname();
   const { hovered, ref } = useHover();
+
   return (
     <Box
       ref={ref}
@@ -29,7 +30,11 @@ const NavLink = ({
         borderRadius: 4,
         cursor: "pointer",
         backgroundColor:
-          path === link ? "#00000030" : hovered ? "#00000015" : "transparent",
+          path === link || (link === "/apps" && path.startsWith("/apps"))
+            ? "#00000030"
+            : hovered
+              ? "#00000015"
+              : "transparent",
       }}
       onClick={() => router.replace(link)}
     >

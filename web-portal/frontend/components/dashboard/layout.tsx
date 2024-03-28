@@ -17,10 +17,9 @@ import {
   IconApps,
   IconHome,
   IconAdjustmentsAlt,
-  IconHeadset,
   IconSwitch,
-  IconBrandPaypay,
   IconReceipt,
+  IconBrandDiscord,
 } from "@tabler/icons-react";
 import { useEffect } from "react";
 import Image from "next/image";
@@ -121,7 +120,7 @@ export default function DashboardLayout({
               link="/docs"
             />
             <NavLink
-              icon={<IconHeadset size={16} style={{ marginRight: 8 }} />}
+              icon={<IconBrandDiscord size={16} style={{ marginRight: 8 }} />}
               label="Discord"
               link="/discord"
             />

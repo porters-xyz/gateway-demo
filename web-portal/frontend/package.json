@@ -26,6 +26,7 @@
     "dayjs": "^1.11.10",
     "encoding": "^0.1.13",
     "iron-session": "^8.0.1",
+    "jotai": "^2.7.1",
     "js-cookie": "^3.0.5",
     "lodash": "^4.17.21",
     "next": "14.1",

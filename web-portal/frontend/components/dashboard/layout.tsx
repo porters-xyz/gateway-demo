@@ -11,9 +11,7 @@ import {
 import Link from "next/link";
 import { useDisclosure } from "@mantine/hooks";
 import logo from "@frontend/public/logo.png";
-import { useRef } from "react";
 import NavLink from "./navlink";
-import { useHover } from "usehooks-ts";
 import {
   IconBook,
   IconApps,
@@ -21,10 +19,12 @@ import {
   IconAdjustmentsAlt,
   IconHeadset,
 } from "@tabler/icons-react";
-
+import { useEffect } from "react";
 import Image from "next/image";
 import LogoutButton from "@frontend/components/dashboard/logout";
-import { useSession } from "@frontend/utils/hooks";
+import { useSession, useUserApps } from "@frontend/utils/hooks";
+import { useAtom, useSetAtom } from "jotai";
+import { appsAtom, sessionAtom } from "@frontend/utils/atoms";
 
 export default function DashboardLayout({
   children,
@@ -32,7 +32,22 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const [opened, { toggle }] = useDisclosure();
-  const { data: session } = useSession();
+  const { data: sessionValue } = useSession();
+  const [session, setSession] = useAtom(sessionAtom);
+
+  const setApps = useSetAtom(appsAtom);
+  const { data: appsData } = useUserApps(sessionValue?.address);
+  useEffect(() => {
+    if (sessionValue?.address) {
+      setSession(sessionValue);
+    }
+  }, [sessionValue]);
+
+  useEffect(() => {
+    if (appsData) {
+      setApps(appsData);
+    }
+  }, [appsData]);
 
   return (
     <AppShell

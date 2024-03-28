@@ -3,12 +3,12 @@ import { Stack } from "@mantine/core";
 import { useUserApps } from "@frontend/utils/hooks";
 import _ from "lodash";
 import DashboardLayout from "@frontend/components/dashboard/layout";
-import Insights from "@frontend/components/dashboard/insights";
 import CreateAppModal from "@frontend/components/dashboard/createAppModal";
-import { useSession } from "@frontend/utils/hooks";
+import { sessionAtom } from "@frontend/utils/atoms";
+import { useAtomValue } from "jotai";
 
 export default function User() {
-  const { data: session } = useSession();
+  const session = useAtomValue(sessionAtom);
 
   const { data: apps } = useUserApps(String(session?.address));
 

@@ -2,9 +2,11 @@ import { defaultWagmiConfig } from "@web3modal/wagmi/react/config";
 import { cookieStorage, createStorage } from "wagmi";
 import { mainnet, sepolia } from "wagmi/chains";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-
+import { Provider as JotaiProvider, useSetAtom } from "jotai";
 import { State, WagmiProvider } from "wagmi";
 import { ReactNode } from "react";
+import { useSession } from "./hooks";
+import { sessionAtom } from "./atoms";
 
 export const projectId = String(
   process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID,
@@ -18,7 +20,7 @@ const metadata = {
   name: "Porters RPC Gateway",
   description: "Porters RPC Gateway",
   url: String(NEXT_PUBLIC_APP_URL),
-  icons: ["https://porters.io/favicon.ico"],
+  icons: ["https://staging.porters.xyz/favicon.ico"],
 };
 
 // Create wagmiConfig
@@ -44,7 +46,9 @@ export default function Web3Provider({
 }) {
   return (
     <WagmiProvider config={config} initialState={initialState}>
-      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+      <QueryClientProvider client={queryClient}>
+        <JotaiProvider>{children}</JotaiProvider>
+      </QueryClientProvider>
     </WagmiProvider>
   );
 }

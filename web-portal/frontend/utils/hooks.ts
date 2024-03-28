@@ -2,6 +2,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getSession } from "./siwe";
 import { useAccount } from "wagmi";
 import { usePathname, useRouter } from "next/navigation";
+import { useAtomValue } from "jotai";
+import { sessionAtom } from "./atoms";
 
 export const useSession = () => {
   const { address, isConnected } = useAccount();

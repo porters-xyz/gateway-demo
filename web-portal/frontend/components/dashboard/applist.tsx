@@ -3,8 +3,11 @@ import { Stack, Table, Flex, Title, Text } from "@mantine/core";
 import { IApp } from "@frontend/utils/types";
 import { IconChevronRight } from "@tabler/icons-react";
 import { usePathname, useRouter } from "next/navigation";
+import { useAtomValue } from "jotai";
+import { appsAtom } from "@frontend/utils/atoms";
 
-const AppList: React.FC<{ list: Array<IApp> }> = ({ list }) => {
+const AppList: React.FC = () => {
+  const list = useAtomValue(appsAtom) as IApp[];
   const path = usePathname();
   const router = useRouter();
   const showAll = path === "/apps";
@@ -16,6 +19,10 @@ const AppList: React.FC<{ list: Array<IApp> }> = ({ list }) => {
       <Table.Td>{app.createdAt}</Table.Td>
     </Table.Tr>
   ));
+
+  if (list.length === 0) {
+    return <Stack>Loading..</Stack>;
+  }
 
   return (
     <Stack>

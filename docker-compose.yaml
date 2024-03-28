@@ -67,6 +67,16 @@ services:
     volumes:
       - porters-redis:/data
 
+  kit:
+    image: ghcr.io/pokt-network/pocket-gateway-server:0.1.0-BETA
+    volumes:
+      - ./.env:/app/.env
+    ports:
+      - "8080:8080"
+    env_file:
+      - ./.env
+    networks:
+      - gateway
 volumes:
   porters-postgres:
   porters-redis:

@@ -2,7 +2,7 @@ import {
   AppShell,
   Burger,
   Group,
-  Box,
+  Container,
   Flex,
   Title,
   Button,
@@ -18,6 +18,9 @@ import {
   IconHome,
   IconAdjustmentsAlt,
   IconHeadset,
+  IconSwitch,
+  IconBrandPaypay,
+  IconReceipt,
 } from "@tabler/icons-react";
 import { useEffect } from "react";
 import Image from "next/image";
@@ -100,6 +103,16 @@ export default function DashboardLayout({
               label="Settings"
               link="/settings"
             />
+            <NavLink
+              icon={<IconSwitch size={16} style={{ marginRight: 8 }} />}
+              label="Swap or Redeem"
+              link="/swap"
+            />
+            <NavLink
+              icon={<IconReceipt size={16} style={{ marginRight: 8 }} />}
+              label="Billing"
+              link="/billing"
+            />
           </Group>
           <Group style={{ gap: 2 }}>
             <NavLink
@@ -116,7 +129,9 @@ export default function DashboardLayout({
         </Stack>
       </AppShell.Navbar>
 
-      <AppShell.Main>{children}</AppShell.Main>
+      <AppShell.Main>
+        <Container size={"xl"}>{children}</Container>
+      </AppShell.Main>
     </AppShell>
   );
 }

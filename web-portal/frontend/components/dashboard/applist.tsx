@@ -5,6 +5,7 @@ import { IconChevronRight } from "@tabler/icons-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useAtomValue } from "jotai";
 import { appsAtom } from "@frontend/utils/atoms";
+import Link from "next/link";
 
 const AppList: React.FC = () => {
   const list = useAtomValue(appsAtom) as IApp[];
@@ -12,7 +13,11 @@ const AppList: React.FC = () => {
   const router = useRouter();
   const showAll = path === "/apps";
   const rows = list.map((app: IApp) => (
-    <Table.Tr key={app.name} onClick={() => router.replace("apps/" + app.id)}>
+    <Table.Tr
+      key={app.name}
+      onClick={() => router.replace("apps/" + app.id)}
+      style={{ cursor: "pointer" }}
+    >
       <Table.Th>{app.name ?? "Un-named App"}</Table.Th>
       <Table.Td>{app.id}</Table.Td>
       <Table.Td>{app.active ? "Yes" : "No"}</Table.Td>
@@ -26,16 +31,21 @@ const AppList: React.FC = () => {
 
   return (
     <Stack>
-      <Flex justify={"space-between"}>
+      <Flex justify={"space-between"} align={"center"}>
         <Title order={3}>My Apps</Title>
         {!showAll && (
-          <Text
-            size="sm"
-            fw={500}
-            c="dimmed"
-            style={{ display: "flex", alignItems: "center" }}
-          >
-            View all <IconChevronRight size={16} />
+          <Text size="sm" fw={500} c="dimmed">
+            <Link
+              href="/apps"
+              style={{
+                display: "flex",
+                textDecoration: "none",
+                alignItems: "center",
+                color: "grey",
+              }}
+            >
+              View all <IconChevronRight size={16} />
+            </Link>
           </Text>
         )}
       </Flex>

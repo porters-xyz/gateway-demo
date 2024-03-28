@@ -90,13 +90,13 @@ const Insights: React.FC = () => {
           bg="#fff"
           color="umbra.1"
           withItemsBorders={false}
-          value={params.get("t") || timeOptions[0]}
+          value={params?.get("t") || timeOptions[0]}
           onChange={(value) => router.push("?t=" + value)}
           data={timeOptions.map((value) => ({ value, label: value }))}
         />
       </Flex>
       <Flex gap={8}>
-        <Card shadow="none" padding="lg" radius="md" bg="#fff" w={400}>
+        <Card shadow="none" padding="lg" radius="md" bg="#fff" w={600}>
           <Title order={3} fw={500}>
             Usage
           </Title>

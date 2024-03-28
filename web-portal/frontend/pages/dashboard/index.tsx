@@ -8,7 +8,7 @@ import CreateAppModal from "@frontend/components/dashboard/createAppModal";
 export default function Dashboard() {
   return (
     <DashboardLayout>
-      <Stack>
+      <Stack gap={32}>
         <CreateAppModal />
         <Insights />
         <AppList />

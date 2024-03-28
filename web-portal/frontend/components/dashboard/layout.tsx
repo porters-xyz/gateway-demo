@@ -11,6 +11,9 @@ import {
 import Link from "next/link";
 import { useDisclosure } from "@mantine/hooks";
 import logo from "@frontend/public/logo.png";
+import { useRef } from "react";
+import NavLink from "./navlink";
+import { useHover } from "usehooks-ts";
 import {
   IconBook,
   IconApps,
@@ -18,40 +21,10 @@ import {
   IconAdjustmentsAlt,
   IconHeadset,
 } from "@tabler/icons-react";
-import { usePathname, useRouter } from "next/navigation";
+
 import Image from "next/image";
 import LogoutButton from "@frontend/components/dashboard/logout";
 import { useSession } from "@frontend/utils/hooks";
-const topTabs = [
-  {
-    link: "/dashboard",
-    label: "Dashboard",
-    icon: <IconHome size={16} style={{ marginRight: 8 }} />,
-  },
-  {
-    link: "/apps",
-    label: "My Apps",
-    icon: <IconApps size={16} style={{ marginRight: 8 }} />,
-  },
-  {
-    link: "/settings",
-    label: "Settings",
-    icon: <IconAdjustmentsAlt size={16} style={{ marginRight: 8 }} />,
-  },
-];
-
-const bottomTabs = [
-  {
-    link: "/docs",
-    label: "Docs",
-    icon: <IconBook size={16} style={{ marginRight: 8 }} />,
-  },
-  {
-    link: "/support",
-    label: "Support",
-    icon: <IconHeadset size={16} style={{ marginRight: 8 }} />,
-  },
-];
 
 export default function DashboardLayout({
   children,
@@ -59,50 +32,7 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const [opened, { toggle }] = useDisclosure();
-  const path = usePathname();
-  const router = useRouter();
   const { data: session } = useSession();
-  const linksTop = topTabs.map(({ link, label, icon }) => (
-    <Box
-      key={link}
-      style={{
-        display: "flex",
-        justifyContent: "flex-start",
-        alignItems: "center",
-        textDecoration: "none",
-        color: "white",
-        width: "100%",
-        padding: 5,
-        borderRadius: 4,
-        backgroundColor: path === link ? "#00000030" : "none",
-      }}
-      onClick={() => router.replace(link)}
-    >
-      {icon}
-      {label}
-    </Box>
-  ));
-
-  const linksBottom = bottomTabs.map(({ link, label, icon }) => (
-    <Box
-      key={link}
-      style={{
-        display: "flex",
-        justifyContent: "flex-start",
-        alignItems: "center",
-        textDecoration: "none",
-        color: "white",
-        width: "100%",
-        padding: 5,
-        borderRadius: 4,
-        backgroundColor: path === link ? "#00000030" : "none",
-      }}
-      onClick={() => router.replace(link)}
-    >
-      {icon}
-      {label}
-    </Box>
-  ));
 
   return (
     <AppShell
@@ -139,8 +69,35 @@ export default function DashboardLayout({
       <AppShell.Navbar p="md" bg="umbra.1" style={{ color: "white" }} px={"2%"}>
         <Image src={logo.src} alt="hello" width="160" height="58" />
         <Stack justify="space-between" h={"100%"}>
-          <Group style={{ marginTop: 32, gap: 2 }}>{linksTop}</Group>
-          <Group style={{ marginTop: 32, gap: 2 }}>{linksBottom}</Group>
+          <Group style={{ marginTop: 32, gap: 2 }}>
+            <NavLink
+              icon={<IconHome size={16} style={{ marginRight: 8 }} />}
+              label="Dashboard"
+              link="/dashboard"
+            />
+            <NavLink
+              icon={<IconApps size={16} style={{ marginRight: 8 }} />}
+              label="My Apps"
+              link="/apps"
+            />
+            <NavLink
+              icon={<IconAdjustmentsAlt size={16} style={{ marginRight: 8 }} />}
+              label="Settings"
+              link="/settings"
+            />
+          </Group>
+          <Group style={{ gap: 2 }}>
+            <NavLink
+              icon={<IconBook size={16} style={{ marginRight: 8 }} />}
+              label="Docs"
+              link="/docs"
+            />
+            <NavLink
+              icon={<IconHeadset size={16} style={{ marginRight: 8 }} />}
+              label="Discord"
+              link="/discord"
+            />
+          </Group>
         </Stack>
       </AppShell.Navbar>
 

@@ -1,23 +1,24 @@
 import React from "react";
 import { Stack, Table, Input } from "@mantine/core";
-import { IApp } from "@frontend/utils/types";
+import { IEndpoint } from "@frontend/utils/types";
 import { useAtomValue } from "jotai";
-import { appsAtom } from "@frontend/utils/atoms";
-
+import { endpointsAtom } from "@frontend/utils/atoms";
+import _ from "lodash";
+import { useParams } from "next/navigation";
 const EndpointList: React.FC = () => {
-  const list = useAtomValue(appsAtom) as IApp[];
-  const rows = list.map((app: IApp) => (
-    <Table.Tr key={app.name} style={{ cursor: "pointer" }}>
-      <Table.Th>{app.name ?? "Un-named App"}</Table.Th>
-      <Table.Td>{app.id}</Table.Td>
+  const list = useAtomValue(endpointsAtom) as IEndpoint[];
+  const appId = _.get(useParams(), "app");
+  const rows = list.map((endpoint: IEndpoint) => (
+    <Table.Tr key={endpoint.id} style={{ cursor: "pointer" }}>
+      <Table.Th>{_.toUpper(_.replace(endpoint.name, /-/g, " "))}</Table.Th>
       <Table.Td>
         <Input
-          value={app.active ? "Yes" : "No"}
+          value={`https://${endpoint.name}.rpc.porters.xyz/${appId}`}
           readOnly
           style={{ cursor: "pointer" }}
         />
       </Table.Td>
-      <Table.Td>{app.createdAt}</Table.Td>
+      <Table.Td>{Boolean(endpoint.active) ? "Enabled" : "No"}</Table.Td>
     </Table.Tr>
   ));
 
@@ -35,9 +36,8 @@ const EndpointList: React.FC = () => {
         <Table.Thead c="dimmed">
           <Table.Tr>
             <Table.Th style={{ fontWeight: "normal" }}>Network</Table.Th>
-            <Table.Th style={{ fontWeight: "normal" }}>Slug</Table.Th>
             <Table.Th style={{ fontWeight: "normal" }}>Your Endpoint</Table.Th>
-            <Table.Th style={{ fontWeight: "normal" }}>Copy</Table.Th>
+            <Table.Th style={{ fontWeight: "normal" }}>Enabled?</Table.Th>
           </Table.Tr>
         </Table.Thead>
         <Table.Tbody>{rows}</Table.Tbody>

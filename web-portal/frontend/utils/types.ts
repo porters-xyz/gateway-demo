@@ -25,3 +25,14 @@ export interface ISession {
   createdAt?: string;
   orgs?: IOrg[] | null;
 }
+
+export interface IEndpoint {
+  id: string;
+  name: string;
+  weight?: number;
+  params?: string;
+  active?: boolean;
+  deletedAt?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}

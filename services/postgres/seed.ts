@@ -8,6 +8,7 @@ async function main() {
       data: [
         {
           name: "Allowed Origins",
+          description: "Allows you to limit app urls that can make requests",
           isEditable: true,
           isMultiple: true,
           validationType: "regex",
@@ -15,6 +16,8 @@ async function main() {
         },
         {
           name: "Approved Chains",
+          description:
+            "Allows you to limit chains that can be access via this App",
           isEditable: true,
           isMultiple: true,
           validationType: "function",
@@ -22,6 +25,8 @@ async function main() {
         },
         {
           name: "Secret Key",
+          description:
+            "Allows you to add extra layer of security to avoid misusage by others",
           isEditable: false,
           isMultiple: false,
           validationType: "function",
@@ -29,6 +34,8 @@ async function main() {
         },
         {
           name: "Allowed UserAgents",
+          description:
+            "Allows you to limit type of clients that can use this app",
           isEditable: true,
           isMultiple: true,
           validationType: "regex",

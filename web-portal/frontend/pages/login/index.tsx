@@ -1,20 +1,28 @@
-"use client";
 import background from "@frontend/public/background.png";
 import { Button, Container, Title, Box, BackgroundImage } from "@mantine/core";
-import { RecoverTenantModal } from "@frontend/components/login/modal";
 import Image from "next/image";
 import { useWeb3Modal } from "@web3modal/wagmi/react";
 import logo from "@frontend/public/logo.png";
 import Link from "next/link";
 import WelcomeShape from "@frontend/components/login/welcomeshape";
-import { useDisconnect } from "wagmi";
+import { useAccount, useDisconnect } from "wagmi";
 import { useAtomValue } from "jotai";
 import { sessionAtom } from "@frontend/utils/atoms";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export default function Login() {
   const { open } = useWeb3Modal();
+  const router = useRouter();
   const session = useAtomValue(sessionAtom);
+  const { isConnecting } = useAccount();
   const { disconnect } = useDisconnect();
+
+  useEffect(() => {
+    if (session?.address) {
+      router.replace("/dashboard");
+    }
+  }, [session?.address, router]);
 
   return (
     <Box style={{ backgroundColor: "#3C2B27" }}>
@@ -40,16 +48,12 @@ export default function Login() {
                 Boolean(!session?.address) ? open() : disconnect();
               }}
             >
-              {Boolean(session?.address) ? "Disconnect" : "Connect Wallet"}
+              {isConnecting
+                ? "Connecting"
+                : Boolean(session?.address)
+                  ? "Disconnect"
+                  : "Connect Wallet"}
             </Button>
-            <Link
-              href={"?recover=true"}
-              style={{ color: "#FFA44B", textDecorationColor: "#FFA44B" }}
-            >
-              Recover
-            </Link>
-
-            <RecoverTenantModal />
           </WelcomeShape>
         </Container>
       </BackgroundImage>

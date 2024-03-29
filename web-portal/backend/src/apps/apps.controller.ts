@@ -52,7 +52,11 @@ export class AppsController {
   @Post(':appId/rule')
   async createAppRule(
     @Param('appId') appId: string,
-    @Body() createAppRuleDto: any,
+    @Body()
+    createAppRuleDto: {
+      ruleId: string;
+      data: string[];
+    },
   ) {
     // @note: This action creates app rule given appId;
     return this.appsService.createAppRule(appId, createAppRuleDto);
@@ -62,7 +66,7 @@ export class AppsController {
   async updateAppRule(
     @Param('appId') appId: string,
     @Param('ruleId') ruleId: string,
-    @Body() updateAppRuleDto: any,
+    @Body() updateAppRuleDto: string[],
   ) {
     // @note: This action updates app rule for given appId and ruleId;
     return this.appsService.updateAppRule(appId, ruleId, updateAppRuleDto);
@@ -75,5 +79,14 @@ export class AppsController {
   ) {
     // @note: This action deletes app rule for given appId and ruleId;
     return this.appsService.deleteAppRule(appId, ruleId);
+  }
+
+  @Patch(':appId/rules')
+  async batchUpdateAppRules(
+    @Param('appId') appId: string,
+    @Body() updateRulesDto: { ruleId: string; data: string[] }[],
+  ) {
+    // @note: This action updates app rules in bulk for given appId;
+    return this.appsService.batchUpdateAppRules(appId, updateRulesDto);
   }
 }

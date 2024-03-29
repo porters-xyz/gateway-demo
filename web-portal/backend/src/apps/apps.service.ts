@@ -1,6 +1,6 @@
 import { Injectable, Inject, HttpException, HttpStatus } from '@nestjs/common';
 import { CustomPrismaService } from 'nestjs-prisma';
-import { PrismaClient } from '@/.generated/client';
+import { AppRule, PrismaClient } from '@/.generated/client';
 import { UserService } from '../user/user.service';
 @Injectable()
 export class AppsService {
@@ -148,5 +148,57 @@ export class AppsService {
       );
     }
     return deletedAppRule;
+  }
+
+  async batchUpdateAppRules(
+    appId: string,
+    updateAppRuleDto: { ruleId: string; data: string[] }[],
+  ) {
+    // only support one ruleId at this time
+    const { ruleId, data: updateData } = updateAppRuleDto[0];
+
+    const existingAppRules = await this.prisma.client.appRule.findMany({
+      where: { appId, ruleId },
+    });
+
+    // Filter out new rules that are not in existingAppRules
+    const newAppRules = updateData.filter(
+      (updateRule) =>
+        !existingAppRules.some(
+          (existingRule: AppRule) => existingRule.value === updateRule,
+        ),
+    );
+
+    // Filter out existing rules that are not in updateData
+    const deleteAppRules = existingAppRules.filter(
+      (existingRule: AppRule) =>
+        !updateData.some(
+          (updateRule: string) => existingRule.value === updateRule,
+        ),
+    );
+
+    const ruleIdsToDelete = deleteAppRules.map((rule) => rule.id);
+
+    const ruleDataToCreate = newAppRules.map((newRule) => ({
+      appId,
+      ruleId,
+      value: newRule,
+    }));
+
+    await this.prisma.client.appRule.deleteMany({
+      where: {
+        appId: appId,
+        ruleId: ruleId,
+        id: {
+          in: ruleIdsToDelete,
+        },
+      },
+    });
+
+    const updatedAppRules = await this.prisma.client.appRule.createMany({
+      data: ruleDataToCreate,
+    });
+
+    return updatedAppRules;
   }
 }

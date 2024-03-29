@@ -1,12 +1,5 @@
 import React from "react";
-import {
-  Stack,
-  Table,
-  Input,
-  CopyButton,
-  Button,
-  Tooltip,
-} from "@mantine/core";
+import { Stack, Table, Input, CopyButton, Tooltip } from "@mantine/core";
 import { IEndpoint } from "@frontend/utils/types";
 import { useAtomValue } from "jotai";
 import { endpointsAtom } from "@frontend/utils/atoms";
@@ -44,13 +37,15 @@ const EndpointList: React.FC = () => {
   }
 
   return (
-    <Stack mt={20}>
+    <Stack>
       <Table
         horizontalSpacing="xl"
         verticalSpacing="md"
         style={{ background: "#FEFCFA", borderRadius: 5 }}
+        highlightOnHover
+        highlightOnHoverColor="#00000004"
       >
-        <Table.Thead c="dimmed">
+        <Table.Thead c="umbra.1">
           <Table.Tr>
             <Table.Th style={{ fontWeight: "normal" }}>Network</Table.Th>
             <Table.Th style={{ fontWeight: "normal" }}>Your Endpoint</Table.Th>

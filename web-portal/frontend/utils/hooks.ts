@@ -2,14 +2,12 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getSession } from "./siwe";
 import { useAccount } from "wagmi";
 import { usePathname, useRouter } from "next/navigation";
-import { useAtomValue } from "jotai";
-import { sessionAtom } from "./atoms";
 
 export const useSession = () => {
   const { address, isConnected } = useAccount();
   const router = useRouter();
   const path = usePathname();
-  const { data, isLoading, isFetched, isError } = useQuery({
+  const { data, isLoading, isFetched } = useQuery({
     queryKey: ["session"],
     queryFn: getSession,
     enabled: !!address && isConnected,
@@ -21,28 +19,47 @@ export const useSession = () => {
     router.push("/dashboard");
   }
 
-  if (!data?.address && isError && !isLoading && isFetched) {
+  if (!data?.address && !isLoading && isFetched) {
     router.push("/login");
   }
 
   return { data, isLoading, isFetched };
 };
 
-export const useRecoverTenant = (key: string, submit: boolean) => {
-  const fetchTenant = async () => {
-    const response = await fetch(`/api/tenant?key=${key}`);
+export const useEndpoints = () => {
+  const { address } = useAccount();
+  const fetchEndpoints = async () => {
+    const response = await fetch(`/api/utils/endpoints`);
     if (!response.ok) {
-      return console.error("Failed to validate tenant");
+      throw new Error("Failed to fetch endpoints");
     }
     return response.json();
   };
 
   return useQuery({
-    queryKey: ["tenant"],
-    queryFn: fetchTenant,
-    enabled: submit,
+    queryKey: ["endpoints"],
+    queryFn: fetchEndpoints,
+    enabled: Boolean(address),
   });
 };
+
+export const useRuleTypes = () => {
+  const { address } = useAccount();
+  const fetchRuleTypes = async () => {
+    const response = await fetch(`/api/utils/ruletypes`);
+    if (!response.ok) {
+      throw new Error("Failed to fetch ruletypes");
+    }
+    return response.json();
+  };
+
+  return useQuery({
+    queryKey: ["ruletypes"],
+    queryFn: fetchRuleTypes,
+    enabled: Boolean(address),
+  });
+};
+
 export const useUserApps = (userAddress: string) => {
   const fetchApps = async () => {
     const response = await fetch(`/api/apps/${userAddress}`);
@@ -56,23 +73,6 @@ export const useUserApps = (userAddress: string) => {
     queryKey: ["user", userAddress, "apps"],
     queryFn: fetchApps,
     enabled: Boolean(userAddress),
-  });
-};
-
-export const useEndpoints = () => {
-  const { address } = useAccount();
-  const fetchApps = async () => {
-    const response = await fetch(`/api/utils/endpoints`);
-    if (!response.ok) {
-      throw new Error("Failed to fetch endpoints");
-    }
-    return response.json();
-  };
-
-  return useQuery({
-    queryKey: ["endpoints"],
-    queryFn: fetchApps,
-    enabled: Boolean(address),
   });
 };
 
@@ -106,6 +106,32 @@ export const useCreateAppMutation = (
       router.push("/dashboard");
       queryClient.invalidateQueries(); // TODO <--- revisit this
       console.log("New App Created");
+    },
+  });
+};
+
+export const useUpdateRuleMutation = (appId: string, ruleName: string) => {
+  const queryClient = useQueryClient();
+
+  const updateRuleMutation = async (data?: Array<string>) => {
+    const response = await fetch(`/api/apps/${appId}/rules`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify([{ ruleId: ruleName, data }]),
+    });
+    if (!response.ok) {
+      throw new Error("Failed to update app rule");
+    }
+    return response.json();
+  };
+
+  return useMutation({
+    mutationFn: updateRuleMutation,
+    onSuccess: () => {
+      queryClient.invalidateQueries(); // TODO <--- revisit this
+      console.log(ruleName + "Updated");
     },
   });
 };

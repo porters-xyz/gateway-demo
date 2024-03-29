@@ -6,12 +6,13 @@ export interface IApp {
   active: boolean;
   createdAt: string;
   updatedAt: string;
+  deletedAt?: string;
 }
 
 export interface IOrg {
   id: string;
   active: boolean;
-  deletedAt: string | null;
+  deletedAt?: string;
   createdAt: string;
   updatedAt: string;
   enterpriseId: string;
@@ -23,6 +24,7 @@ export interface ISession {
   id?: string;
   active?: boolean;
   createdAt?: string;
+  deletedAt?: string;
   orgs?: IOrg[] | null;
 }
 
@@ -35,4 +37,30 @@ export interface IEndpoint {
   deletedAt?: string;
   createdAt?: string;
   updatedAt?: string;
+}
+
+export interface IRuleType {
+  id?: string;
+  name?: string;
+  description?: string;
+  isEditable?: boolean;
+  isMultiple?: boolean;
+  validationType?: string;
+  validationValue?: string;
+}
+
+export interface IAppRule {
+  id?: string;
+  appId?: string;
+  ruleId?: string;
+  value?: string;
+  active?: boolean;
+  deletedAt?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface IRuleUpdate {
+  ruleId: string;
+  data: string[];
 }

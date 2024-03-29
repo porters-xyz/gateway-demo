@@ -24,9 +24,20 @@ import {
 import { useEffect } from "react";
 import Image from "next/image";
 import LogoutButton from "@frontend/components/dashboard/logout";
-import { useSession, useUserApps, useEndpoints } from "@frontend/utils/hooks";
+import {
+  useSession,
+  useUserApps,
+  useEndpoints,
+  useRuleTypes,
+} from "@frontend/utils/hooks";
 import { useAtom, useSetAtom } from "jotai";
-import { appsAtom, endpointsAtom, sessionAtom } from "@frontend/utils/atoms";
+import {
+  appsAtom,
+  endpointsAtom,
+  ruleTypesAtom,
+  sessionAtom,
+} from "@frontend/utils/atoms";
+import { useAccount, useAccountEffect } from "wagmi";
 
 export default function DashboardLayout({
   children,
@@ -36,27 +47,47 @@ export default function DashboardLayout({
   const [opened, { toggle }] = useDisclosure();
   const { data: sessionValue } = useSession();
   const { data: endpoints } = useEndpoints();
+  const { data: ruletypes } = useRuleTypes();
+
   const [session, setSession] = useAtom(sessionAtom);
+  const { address } = useAccount();
   const setEndpointAtom = useSetAtom(endpointsAtom);
   const setApps = useSetAtom(appsAtom);
+  const setRuleTypes = useSetAtom(ruleTypesAtom);
   const { data: appsData } = useUserApps(sessionValue?.address);
+
   useEffect(() => {
     if (sessionValue?.address) {
       setSession(sessionValue);
     }
-  }, [sessionValue]);
 
-  useEffect(() => {
     if (appsData) {
       setApps(appsData);
     }
-  }, [appsData]);
-
-  useEffect(() => {
     if (endpoints) {
       setEndpointAtom(endpoints);
     }
-  }, [endpoints]);
+    if (ruletypes) {
+      setRuleTypes(ruletypes);
+    }
+  }, [
+    sessionValue,
+    appsData,
+    endpoints,
+    setApps,
+    setSession,
+    setEndpointAtom,
+    ruletypes,
+    setRuleTypes,
+    address,
+  ]);
+
+  useAccountEffect({
+    onDisconnect() {
+      console.log("disconnecting");
+      setSession(null);
+    },
+  });
 
   return (
     <AppShell
@@ -91,7 +122,9 @@ export default function DashboardLayout({
       </AppShell.Header>
 
       <AppShell.Navbar p="md" bg="umbra.1" style={{ color: "white" }} px={"2%"}>
-        <Image src={logo.src} alt="hello" width="160" height="58" />
+        <Link href="/dashboard">
+          <Image src={logo.src} alt="hello" width="160" height="58" />
+        </Link>
         <Stack justify="space-between" h={"100%"}>
           <Group style={{ marginTop: 32, gap: 2 }}>
             <NavLink

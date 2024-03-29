@@ -1,5 +1,12 @@
 import React from "react";
-import { Stack, Table, Input } from "@mantine/core";
+import {
+  Stack,
+  Table,
+  Input,
+  CopyButton,
+  Button,
+  Tooltip,
+} from "@mantine/core";
 import { IEndpoint } from "@frontend/utils/types";
 import { useAtomValue } from "jotai";
 import { endpointsAtom } from "@frontend/utils/atoms";
@@ -12,11 +19,21 @@ const EndpointList: React.FC = () => {
     <Table.Tr key={endpoint.id} style={{ cursor: "pointer" }}>
       <Table.Th>{_.toUpper(_.replace(endpoint.name, /-/g, " "))}</Table.Th>
       <Table.Td>
-        <Input
-          value={`https://${endpoint.name}.rpc.porters.xyz/${appId}`}
-          readOnly
-          style={{ cursor: "pointer" }}
-        />
+        <CopyButton value={`https://${endpoint.name}.rpc.porters.xyz/${appId}`}>
+          {({ copied, copy }) => (
+            <Tooltip
+              label={copied ? "Copied Endpoint" : "Copy Endpoint"}
+              bg={copied ? "orange" : "black"}
+            >
+              <Input
+                value={`https://${endpoint.name}.rpc.porters.xyz/${appId}`}
+                readOnly
+                style={{ cursor: "pointer" }}
+                onClick={copy}
+              />
+            </Tooltip>
+          )}
+        </CopyButton>
       </Table.Td>
       <Table.Td>{Boolean(endpoint.active) ? "Enabled" : "No"}</Table.Td>
     </Table.Tr>

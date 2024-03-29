@@ -29,12 +29,11 @@ const NavLink = ({
         padding: 5,
         borderRadius: 4,
         cursor: "pointer",
-        backgroundColor:
-          path === link || (link === "/apps" && path.startsWith("/apps"))
-            ? "#00000030"
-            : hovered
-              ? "#00000015"
-              : "transparent",
+        backgroundColor: path.startsWith(link)
+          ? "#00000030"
+          : hovered
+            ? "#00000015"
+            : "transparent",
       }}
       onClick={() => router.replace(link)}
     >

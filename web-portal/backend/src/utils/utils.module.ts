@@ -4,6 +4,6 @@ import { UtilsService } from './utils.service';
 
 @Module({
   controllers: [UtilsController],
-  providers: [UtilsService]
+  providers: [UtilsService],
 })
 export class UtilsModule {}

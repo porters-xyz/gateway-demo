@@ -7,3 +7,32 @@ export interface IApp {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface IOrg {
+  id: string;
+  active: boolean;
+  deletedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  enterpriseId: string;
+}
+
+export interface ISession {
+  chainId?: number;
+  address?: string;
+  id?: string;
+  active?: boolean;
+  createdAt?: string;
+  orgs?: IOrg[] | null;
+}
+
+export interface IEndpoint {
+  id: string;
+  name: string;
+  weight?: number;
+  params?: string;
+  active?: boolean;
+  deletedAt?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}

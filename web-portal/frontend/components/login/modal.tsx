@@ -56,7 +56,7 @@ export function NewTenantModal() {
 
 export function RecoverTenantModal() {
   const searchParams = useSearchParams();
-  const showRecover = searchParams.get("recover") === "true";
+  const showRecover = searchParams?.get("recover") === "true";
   const router = useRouter();
 
   const { values, getInputProps } = useForm({

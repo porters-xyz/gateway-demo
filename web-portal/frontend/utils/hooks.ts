@@ -2,6 +2,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getSession } from "./siwe";
 import { useAccount } from "wagmi";
 import { usePathname, useRouter } from "next/navigation";
+import { useAtomValue } from "jotai";
+import { sessionAtom } from "./atoms";
 
 export const useSession = () => {
   const { address, isConnected } = useAccount();
@@ -54,6 +56,23 @@ export const useUserApps = (userAddress: string) => {
     queryKey: ["user", userAddress, "apps"],
     queryFn: fetchApps,
     enabled: Boolean(userAddress),
+  });
+};
+
+export const useEndpoints = () => {
+  const { address } = useAccount();
+  const fetchApps = async () => {
+    const response = await fetch(`/api/utils/endpoints`);
+    if (!response.ok) {
+      throw new Error("Failed to fetch endpoints");
+    }
+    return response.json();
+  };
+
+  return useQuery({
+    queryKey: ["endpoints"],
+    queryFn: fetchApps,
+    enabled: Boolean(address),
   });
 };
 

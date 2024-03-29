@@ -6,8 +6,8 @@ import { useSession, useCreateAppMutation } from "@frontend/utils/hooks";
 
 export default function CreateAppModal() {
   const searchParams = useSearchParams();
-  const shouldOpen = searchParams.get("new") === "app";
-  const secretKey = searchParams.get("key");
+  const shouldOpen = searchParams?.get("new") === "app";
+  const secretKey = searchParams?.get("key");
   const { data: session } = useSession();
 
   const { values, getInputProps } = useForm({

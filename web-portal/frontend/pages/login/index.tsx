@@ -8,11 +8,12 @@ import logo from "@frontend/public/logo.png";
 import Link from "next/link";
 import WelcomeShape from "@frontend/components/login/welcomeshape";
 import { useDisconnect } from "wagmi";
-import { useSession } from "@frontend/utils/hooks";
+import { useAtomValue } from "jotai";
+import { sessionAtom } from "@frontend/utils/atoms";
 
 export default function Login() {
   const { open } = useWeb3Modal();
-  const { data: session } = useSession();
+  const session = useAtomValue(sessionAtom);
   const { disconnect } = useDisconnect();
 
   return (

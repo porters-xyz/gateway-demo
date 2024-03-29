@@ -9,6 +9,7 @@ import { SiweModule } from './siwe/siwe.module';
 import { UserModule } from './user/user.module';
 import { AppsModule } from './apps/apps.module';
 import { OrgModule } from './org/org.module';
+import { UtilsModule } from './utils/utils.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { OrgModule } from './org/org.module';
     UserModule,
     AppsModule,
     OrgModule,
+    UtilsModule,
   ],
   providers: [AppService],
   controllers: [AppController],

@@ -7,7 +7,7 @@ import { UtilsService } from './utils.service';
 export class UtilsController {
   constructor(private readonly utilsService: UtilsService) {}
 
-  @Get()
+  @Get('endpoints')
   async getChains() {
     // @note: This action checks validity of provided key
     const validation = await this.utilsService.getChains();

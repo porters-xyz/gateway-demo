@@ -59,6 +59,23 @@ export const useUserApps = (userAddress: string) => {
   });
 };
 
+export const useEndpoints = () => {
+  const { address } = useAccount();
+  const fetchApps = async () => {
+    const response = await fetch(`/api/utils/endpoints`);
+    if (!response.ok) {
+      throw new Error("Failed to fetch endpoints");
+    }
+    return response.json();
+  };
+
+  return useQuery({
+    queryKey: ["endpoints"],
+    queryFn: fetchApps,
+    enabled: Boolean(address),
+  });
+};
+
 export const useCreateAppMutation = (
   address: string,
   values: {

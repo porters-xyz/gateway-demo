@@ -24,9 +24,9 @@ import {
 import { useEffect } from "react";
 import Image from "next/image";
 import LogoutButton from "@frontend/components/dashboard/logout";
-import { useSession, useUserApps } from "@frontend/utils/hooks";
+import { useSession, useUserApps, useEndpoints } from "@frontend/utils/hooks";
 import { useAtom, useSetAtom } from "jotai";
-import { appsAtom, sessionAtom } from "@frontend/utils/atoms";
+import { appsAtom, endpointsAtoms, sessionAtom } from "@frontend/utils/atoms";
 
 export default function DashboardLayout({
   children,
@@ -35,8 +35,9 @@ export default function DashboardLayout({
 }) {
   const [opened, { toggle }] = useDisclosure();
   const { data: sessionValue } = useSession();
+  const { data: endpoints } = useEndpoints();
   const [session, setSession] = useAtom(sessionAtom);
-
+  const setEndpointAtom = useSetAtom(endpointsAtoms);
   const setApps = useSetAtom(appsAtom);
   const { data: appsData } = useUserApps(sessionValue?.address);
   useEffect(() => {
@@ -50,6 +51,12 @@ export default function DashboardLayout({
       setApps(appsData);
     }
   }, [appsData]);
+
+  useEffect(() => {
+    if (endpoints) {
+      setEndpointAtom(endpoints);
+    }
+  }, [endpoints]);
 
   return (
     <AppShell

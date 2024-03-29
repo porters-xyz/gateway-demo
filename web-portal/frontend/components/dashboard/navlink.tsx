@@ -29,7 +29,7 @@ const NavLink = ({
         padding: 5,
         borderRadius: 4,
         cursor: "pointer",
-        backgroundColor: path.startsWith(link)
+        backgroundColor: path?.startsWith(link)
           ? "#00000030"
           : hovered
             ? "#00000015"

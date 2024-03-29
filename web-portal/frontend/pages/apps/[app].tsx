@@ -18,7 +18,7 @@ const items = [
 export default function App() {
   const appId = _.get(useParams(), "app");
   const apps: Array<IApp> = useAtomValue(appsAtom);
-  const app: IApp = _.find(apps, { id: appId });
+  const app = _.find(apps, { id: appId }) as IApp;
 
   const breadCrumbItems = _.map(
     [

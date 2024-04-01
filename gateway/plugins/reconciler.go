@@ -3,17 +3,18 @@ package plugins
 import (
     "time"
 
-    "porters/proxy"
+    "porters/common"
 )
 
 // TODO Add to the job queue to run every hour? or on shutdown
 
 type Reconciler struct {
     runEvery time.Duration
+    ticker *time.Ticker
 }
 
 type reconcileTask struct {
-
+    common.Runnable
 }
 
 func (r *Reconciler) Name() string {
@@ -25,13 +26,14 @@ func (r *Reconciler) Key() string {
 }
 
 func (r *Reconciler) Load() {
-    //task := proxy.Task{
-    //    timer: time.NewTimer(r.runEvery)
-    //}
+    r.ticker = time.NewTicker(r.runEvery)
+    go r.spawnTasks()
 }
 
-func (r *Reconciler) spawnTasks {
-    time.Ticker
+func (r *Reconciler) spawnTasks() {
+    for range r.ticker.C {
+        // TODO go through redis and add to job queue
+    }
 }
 
 func (t *reconcileTask) Run() {

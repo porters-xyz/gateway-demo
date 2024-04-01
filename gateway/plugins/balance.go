@@ -114,4 +114,3 @@ func (c *balancecache) Lookup(ctx context.Context) error {
     }
     return nil
 }
-

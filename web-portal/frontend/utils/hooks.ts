@@ -130,8 +130,8 @@ export const useUpdateRuleMutation = (appId: string, ruleName: string) => {
   return useMutation({
     mutationFn: updateRuleMutation,
     onSuccess: () => {
-      queryClient.invalidateQueries(); // TODO <--- revisit this
-      console.log(ruleName + "Updated");
+      queryClient.invalidateQueries({ queryKey: ["user"] }); // TODO <--- revisit this
+      console.log(ruleName + " Updated");
     },
   });
 };

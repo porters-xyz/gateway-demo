@@ -2,6 +2,7 @@ import { Injectable, Inject, HttpException, HttpStatus } from '@nestjs/common';
 import { CustomPrismaService } from 'nestjs-prisma';
 import { AppRule, PrismaClient } from '@/.generated/client';
 import { UserService } from '../user/user.service';
+
 @Injectable()
 export class AppsService {
   constructor(
@@ -157,6 +158,24 @@ export class AppsService {
     // only support one ruleId at this time
     const { ruleId, data: updateData } = updateAppRuleDto[0];
 
+    const ruleType = await this.prisma.client.ruleType.findFirstOrThrow({
+      where: { id: ruleId },
+    });
+
+    if (!ruleType) {
+      throw new HttpException(
+        'Attempted to update invalid rule type',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    if (ruleType.id !== ruleId) {
+      throw new HttpException(
+        'Rule type does not match ruleId',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
     const existingAppRules = await this.prisma.client.appRule.findMany({
       where: { appId, ruleId },
     });
@@ -184,6 +203,20 @@ export class AppsService {
       ruleId,
       value: newRule,
     }));
+
+    if (ruleType.validationType === 'regex') {
+      console.log('called regex');
+      const regexExp = new RegExp(ruleType.validationValue);
+      ruleDataToCreate.forEach((rule) => {
+        const matchResult = regexExp.test(rule.value);
+        if (!matchResult) {
+          throw new HttpException(
+            `Regex match failed for value: ${rule.value}`,
+            HttpStatus.BAD_REQUEST,
+          );
+        }
+      });
+    }
 
     await this.prisma.client.appRule.deleteMany({
       where: {

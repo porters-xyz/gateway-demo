@@ -205,7 +205,6 @@ export class AppsService {
     }));
 
     if (ruleType.validationType === 'regex') {
-      console.log('called regex');
       const regexExp = new RegExp(ruleType.validationValue);
       ruleDataToCreate.forEach((rule) => {
         const matchResult = regexExp.test(rule.value);

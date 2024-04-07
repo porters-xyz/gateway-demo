@@ -15,6 +15,11 @@ services:
     volumes:
       - porters-postgres:/var/lib/postgresql/data
 
+  schema:
+    build:
+      context: ./services/postgres
+    image: porters-schema
+
   frontend:
     env_file:
       - .env
@@ -31,8 +36,9 @@ services:
 
   backend:
     build:
-      context: .
+      context: ./web-portal/backend
     depends_on:
+      - schema
       - postgres
     expose:
       - 4000
@@ -77,6 +83,16 @@ services:
       - ./.env
     networks:
       - gateway
+
+  docs:
+    build:
+      context: ./docs
+    expose:
+      - 3005
+    ports:
+      - "3005:3005"
+    networks:
+      - docs
 volumes:
   porters-postgres:
   porters-redis:
@@ -85,3 +101,5 @@ networks:
   portal:
     driver: bridge
   gateway:
+  docs:
+    driver: bridge

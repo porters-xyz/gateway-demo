@@ -32,14 +32,7 @@ export class UtilsService {
     const ruleTypes = await this.prisma.client.ruleType.findMany({
       where: {
         deletedAt: null,
-        NOT: [
-          {
-            id: 'secret-key',
-          },
-          {
-            name: 'secret-key',
-          },
-        ],
+
       },
       select: {
         id: true,

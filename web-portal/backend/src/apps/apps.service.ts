@@ -1,7 +1,8 @@
 import { Injectable, Inject, HttpException, HttpStatus } from '@nestjs/common';
 import { CustomPrismaService } from 'nestjs-prisma';
-import { PrismaClient } from '@/.generated/client';
+import { AppRule, PrismaClient } from '@/.generated/client';
 import { UserService } from '../user/user.service';
+
 @Injectable()
 export class AppsService {
   constructor(
@@ -148,5 +149,88 @@ export class AppsService {
       );
     }
     return deletedAppRule;
+  }
+
+  async batchUpdateAppRules(
+    appId: string,
+    updateAppRuleDto: { ruleId: string; data: string[] }[],
+  ) {
+    // only support one ruleId at this time
+    const { ruleId, data: updateData } = updateAppRuleDto[0];
+
+    const ruleType = await this.prisma.client.ruleType.findFirstOrThrow({
+      where: { id: ruleId },
+    });
+
+    if (!ruleType) {
+      throw new HttpException(
+        'Attempted to update invalid rule type',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    if (ruleType.id !== ruleId) {
+      throw new HttpException(
+        'Rule type does not match ruleId',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const existingAppRules = await this.prisma.client.appRule.findMany({
+      where: { appId, ruleId },
+    });
+
+    // Filter out new rules that are not in existingAppRules
+    const newAppRules = updateData.filter(
+      (updateRule) =>
+        !existingAppRules.some(
+          (existingRule: AppRule) => existingRule.value === updateRule,
+        ),
+    );
+
+    // Filter out existing rules that are not in updateData
+    const deleteAppRules = existingAppRules.filter(
+      (existingRule: AppRule) =>
+        !updateData.some(
+          (updateRule: string) => existingRule.value === updateRule,
+        ),
+    );
+
+    const ruleIdsToDelete = deleteAppRules.map((rule) => rule.id);
+
+    const ruleDataToCreate = newAppRules.map((newRule) => ({
+      appId,
+      ruleId,
+      value: newRule,
+    }));
+
+    if (ruleType.validationType === 'regex') {
+      const regexExp = new RegExp(ruleType.validationValue);
+      ruleDataToCreate.forEach((rule) => {
+        const matchResult = regexExp.test(rule.value);
+        if (!matchResult) {
+          throw new HttpException(
+            `Regex match failed for value: ${rule.value}`,
+            HttpStatus.BAD_REQUEST,
+          );
+        }
+      });
+    }
+
+    await this.prisma.client.appRule.deleteMany({
+      where: {
+        appId: appId,
+        ruleId: ruleId,
+        id: {
+          in: ruleIdsToDelete,
+        },
+      },
+    });
+
+    const updatedAppRules = await this.prisma.client.appRule.createMany({
+      data: ruleDataToCreate,
+    });
+
+    return updatedAppRules;
   }
 }

@@ -13,7 +13,7 @@ migrate:
 dev-backend:
     cd ./web-portal/backend && pnpm install && pnpm start
 build-backend:
-    cd ./web-portal/frontend && pnpm install && pnpm build
+    cd ./web-portal/backend && pnpm install && pnpm build
 serve-backend:
     cd ./web-portal/backend && pnpm install && pnpm start:prod
 

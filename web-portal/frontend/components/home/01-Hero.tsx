@@ -53,7 +53,7 @@ export function HeroSection() {
       <Flex align="center" justify="space-between" gap={100}>
         <Box>
           <Title>Your Gateway to Web3</Title>
-          <Text c="dimmed" mt="md" maw={isMobile ? 400 : 500}>
+          <Text c="umbra" opacity={0.5} mt="md" maw={isMobile ? 400 : 500}>
             Accelerate your Web3 journey with our plug-and-play platform
             offering comprehensive analytics, Web3-native developer suite and
             hassle-free access to POKT’s Decentralised RPC Service – simplifying

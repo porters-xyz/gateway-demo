@@ -13,4 +13,10 @@ export class UtilsController {
     const validation = await this.utilsService.getChains();
     return validation;
   }
+
+  @Get('ruletypes')
+  async getRuleTypes() {
+    const ruleTypes = await this.utilsService.getRuleTypes();
+    return ruleTypes;
+  }
 }

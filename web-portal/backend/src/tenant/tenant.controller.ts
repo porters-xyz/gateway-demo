@@ -26,11 +26,4 @@ export class TenantController {
     // @note: This action returns a tenant by its id
     return this.tenantService.getTenantById(id);
   }
-
-  @Post(':id/credits')
-  async applyCredits(@Param('id') id: string, @Query('amount') amount: string) {
-    // TODO: Remove this endpoint as its temporary
-    // @note: 'This action applies free credits to a tenant'
-    return this.tenantService.addCredits(id, Number(amount));
-  }
 }

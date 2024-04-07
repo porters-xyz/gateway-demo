@@ -1,10 +1,11 @@
 import React from "react";
-import { Stack, Table, Flex, Title, Text } from "@mantine/core";
+import { Stack, Table, Flex, Title, Card, Button } from "@mantine/core";
 import { IApp } from "@frontend/utils/types";
 import { IconChevronRight } from "@tabler/icons-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useAtomValue } from "jotai";
 import { appsAtom } from "@frontend/utils/atoms";
+import Link from "next/link";
 import StyledLink from "./styledlink";
 
 const AppList: React.FC = () => {
@@ -25,37 +26,55 @@ const AppList: React.FC = () => {
     </Table.Tr>
   ));
 
-  if (list.length === 0) {
-    return <Stack>Loading..</Stack>;
+  if (list.length == 0) {
+    return (
+      <Stack>
+        <Flex justify={"space-between"} align={"center"}>
+          <Title order={3}>My Apps</Title>
+        </Flex>
+        <Stack align="center" justify="center" h="100%" py={100} bg="#fff">
+          <Title order={2} lh={1.2} style={{ textAlign: "center" }}>
+            Go ahead,
+            <br />
+            Create your first app!
+          </Title>
+          <Link href="?new=app" style={{ padding: 16 }}>
+            <Button>{"Create App"}</Button>
+          </Link>
+        </Stack>
+      </Stack>
+    );
+  } else {
+    return (
+      <Stack>
+        <Flex justify={"space-between"} align={"center"}>
+          <Title order={3}>My Apps</Title>
+          {!showAll && (
+            <StyledLink link={"/apps"}>
+              View all <IconChevronRight size={16} />
+            </StyledLink>
+          )}
+        </Flex>
+        <Table
+          highlightOnHover
+          highlightOnHoverColor="#00000004"
+          horizontalSpacing="xl"
+          verticalSpacing="md"
+          style={{ background: "#FEFCFA", borderRadius: 5 }}
+        >
+          <Table.Thead c="umbra.1">
+            <Table.Tr>
+              <Table.Th style={{ fontWeight: "normal" }}>App Name</Table.Th>
+              <Table.Th style={{ fontWeight: "normal" }}>App id</Table.Th>
+              <Table.Th style={{ fontWeight: "normal" }}>Active</Table.Th>
+              <Table.Th style={{ fontWeight: "normal" }}>Created At</Table.Th>
+            </Table.Tr>
+          </Table.Thead>
+          <Table.Tbody>{rows}</Table.Tbody>
+        </Table>
+      </Stack>
+    );
   }
-
-  return (
-    <Stack>
-      <Flex justify={"space-between"} align={"center"}>
-        <Title order={3}>My Apps</Title>
-        {!showAll && (
-          <StyledLink link={"/apps"}>
-            View all <IconChevronRight size={16} />
-          </StyledLink>
-        )}
-      </Flex>
-      <Table
-        horizontalSpacing="xl"
-        verticalSpacing="md"
-        style={{ background: "#FEFCFA", borderRadius: 5 }}
-      >
-        <Table.Thead c="dimmed">
-          <Table.Tr>
-            <Table.Th style={{ fontWeight: "normal" }}>App Name</Table.Th>
-            <Table.Th style={{ fontWeight: "normal" }}>App id</Table.Th>
-            <Table.Th style={{ fontWeight: "normal" }}>Active</Table.Th>
-            <Table.Th style={{ fontWeight: "normal" }}>Created At</Table.Th>
-          </Table.Tr>
-        </Table.Thead>
-        <Table.Tbody>{rows}</Table.Tbody>
-      </Table>
-    </Stack>
-  );
 };
 
 export default AppList;

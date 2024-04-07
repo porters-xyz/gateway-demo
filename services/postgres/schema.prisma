@@ -83,6 +83,7 @@ model AppRule {
 model RuleType {
     id              String    @id @unique @default(cuid())
     name            String
+    description     String
     isEditable      Boolean
     isMultiple      Boolean
     validationType  String

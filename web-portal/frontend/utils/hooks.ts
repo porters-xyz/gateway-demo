@@ -135,3 +135,19 @@ export const useUpdateRuleMutation = (appId: string, ruleName: string) => {
     },
   });
 };
+
+export const useBillingHistory = (id: string) => {
+  const fetchBillingHistory = async () => {
+    const response = await fetch(`/api/tenant/${id}/billing`);
+    if (!response.ok) {
+      throw new Error("Failed to fetch billing history");
+    }
+    return response.json();
+  };
+
+  return useQuery({
+    queryKey: ["billing", id],
+    queryFn: fetchBillingHistory,
+    enabled: Boolean(id),
+  });
+};

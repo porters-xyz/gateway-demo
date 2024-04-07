@@ -5,3 +5,4 @@ export const appsAtom = atom([]);
 export const endpointsAtom = atom<IEndpoint[]>([]);
 export const ruleTypesAtom = atom<IRuleType[]>([]);
 export const existingRuleValuesAtom = atom<string[]>([]);
+export const billingHistoryAtom = atom([]);

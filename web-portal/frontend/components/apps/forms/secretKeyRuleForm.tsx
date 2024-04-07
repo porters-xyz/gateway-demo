@@ -1,14 +1,11 @@
 import React from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { Button, PasswordInput } from "@mantine/core";
 
 export default function SecretKeyForm() {
   const searchParams = useSearchParams();
-  const router = useRouter();
 
-  if (isSuccess) {
-    router.replace("/apps/" + appId + "?i=rules");
-  }
+  // TODO- work on this
 
   return (
     <React.Fragment>

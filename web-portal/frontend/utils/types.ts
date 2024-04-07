@@ -28,6 +28,7 @@ export interface ISession {
   createdAt?: string;
   deletedAt?: string;
   orgs?: IOrg[] | null;
+  tenantId?: string;
 }
 
 export interface IEndpoint {

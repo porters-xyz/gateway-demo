@@ -1,12 +1,13 @@
 import _ from "lodash";
-import { useAtom } from "jotai";
-import { existingRuleValuesAtom } from "@frontend/utils/atoms";
-import { useForm, isNotEmpty } from "@mantine/form";
+import { useAtom, useAtomValue } from "jotai";
+import { existingRuleValuesAtom, ruleTypesAtom } from "@frontend/utils/atoms";
+import { useForm, matches } from "@mantine/form";
 import { Button, Flex, TextInput, Pill, Stack, Text } from "@mantine/core";
 import { IconPlus } from "@tabler/icons-react";
+import { IRuleType } from "@frontend/utils/types";
 
 import { useUpdateRuleMutation } from "@frontend/utils/hooks";
-import { useSearchParams, useParams } from "next/navigation";
+import { useSearchParams, useParams, useRouter } from "next/navigation";
 
 export default function AllowedUserAgentsForm() {
   const appId = useParams()?.app as string;
@@ -17,9 +18,16 @@ export default function AllowedUserAgentsForm() {
     rule,
   );
   const [value, setValue] = useAtom(existingRuleValuesAtom);
+  const ruleTypes = useAtomValue(ruleTypesAtom);
+  const router = useRouter();
+  const validationRule = _.get(
+    _.find(ruleTypes, (r: IRuleType) => r.name === rule),
+    "validationValue",
+  );
+  const ruleRegex = new RegExp(validationRule as string);
   const form = useForm({
     validate: {
-      url: isNotEmpty("Enter a valid string"),
+      userAgent: matches(ruleRegex, "Enter a valid url user agent string"),
     },
   });
 
@@ -28,6 +36,9 @@ export default function AllowedUserAgentsForm() {
 
   const formValidation = () => form.validate();
 
+  if (isSuccess) {
+    router.replace("/apps/" + appId + "?i=rules");
+  }
   const values = value.map((item) => (
     <Pill
       key={item}
@@ -50,24 +61,23 @@ export default function AllowedUserAgentsForm() {
         <TextInput
           label="Allowed UserAgents"
           placeholder="Enter a valid user agent"
-          type="url"
           inputWrapperOrder={["label", "input", "description"]}
           style={{ width: "100%" }}
-          {...form.getInputProps("url")}
+          {...form.getInputProps("userAgent")}
         />
         <Button
           h={36}
           onClick={() => {
             if (formValidation().hasErrors) return;
-            setValue((current: any) => [form.values.url, ...current]),
-              form.setFieldValue("url", "");
+            setValue((current: any) => [form.values.userAgent, ...current]),
+              form.setFieldValue("userAgent", "");
           }}
         >
           <IconPlus />
         </Button>
       </Flex>
       <Text c="red.6" size="xs">
-        {form.errors.url}
+        {form.errors.userAgent}
       </Text>
       <Flex wrap={"wrap"}>{values}</Flex>
 

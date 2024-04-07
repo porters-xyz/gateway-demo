@@ -7,7 +7,7 @@ export class UtilsService {
   constructor(
     @Inject('Postgres')
     private prisma: CustomPrismaService<PrismaClient>, // <-- Inject the PrismaClient
-  ) {}
+  ) { }
 
   async getChains() {
     const chains = this.prisma.client.products.findMany({
@@ -32,11 +32,21 @@ export class UtilsService {
     const ruleTypes = await this.prisma.client.ruleType.findMany({
       where: {
         deletedAt: null,
+        NOT: [
+          {
+            id: 'secret-key',
+          },
+          {
+            name: 'secret-key',
+          },
+        ],
       },
       select: {
         id: true,
         name: true,
         description: true,
+        validationType: true,
+        validationValue: true,
         isMultiple: true,
       },
     });

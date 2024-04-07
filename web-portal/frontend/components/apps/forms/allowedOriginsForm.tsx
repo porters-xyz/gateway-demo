@@ -4,24 +4,38 @@ import { useState } from "react";
 import { useForm, matches } from "@mantine/form";
 import { IconPlus } from "@tabler/icons-react";
 import { useUpdateRuleMutation } from "@frontend/utils/hooks";
-import { useParams, useSearchParams } from "next/navigation";
-import { useAtom } from "jotai";
-import { existingRuleValuesAtom } from "@frontend/utils/atoms";
+import {
+  useParams,
+  usePathname,
+  useRouter,
+  useSearchParams,
+} from "next/navigation";
+import { useAtom, useAtomValue } from "jotai";
+import { existingRuleValuesAtom, ruleTypesAtom } from "@frontend/utils/atoms";
+import { IRuleType } from "@frontend/utils/types";
 
 export default function AllowedOriginsForm() {
   const appId = useParams()?.app as string;
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const path = usePathname();
   const rule = searchParams?.get("rule") as string;
   const { mutateAsync, isPending, isSuccess } = useUpdateRuleMutation(
     appId,
     rule,
   );
   const [value, setValue] = useAtom(existingRuleValuesAtom);
+  const ruleTypes = useAtomValue(ruleTypesAtom);
+  const validationRule = _.get(
+    _.find(ruleTypes, (r: IRuleType) => r.name === rule),
+    "validationValue",
+  );
+  const ruleRegex = new RegExp(validationRule as string);
 
   const form = useForm({
     validate: {
       url: matches(
-        /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/,
+        ruleRegex,
         "Enter a valid url that starts with http or https",
       ),
     },
@@ -31,6 +45,10 @@ export default function AllowedOriginsForm() {
     setValue((current: any) => current.filter((v: any) => v !== val));
 
   const formValidation = () => form.validate();
+
+  if (isSuccess) {
+    router.replace("/apps/" + appId + "?i=rules");
+  }
 
   const values = value.map((item) => (
     <Pill

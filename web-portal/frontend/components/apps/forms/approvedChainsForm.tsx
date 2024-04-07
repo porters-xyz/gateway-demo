@@ -8,12 +8,13 @@ import { IEndpoint } from "@frontend/utils/types";
 import { SearchableMultiSelect } from "@frontend/components/common/SearchableMultiSelect";
 
 import { useUpdateRuleMutation } from "@frontend/utils/hooks";
-import { useSearchParams, useParams } from "next/navigation";
+import { useSearchParams, useParams, useRouter } from "next/navigation";
 
 export default function ApprovedChainForm() {
   const list = useAtomValue(endpointsAtom) as IEndpoint[];
   const items = _.map(list, "name");
 
+  const router = useRouter();
   const appId = useParams()?.app as string;
   const searchParams = useSearchParams();
   const rule = searchParams?.get("rule") as string;
@@ -22,7 +23,9 @@ export default function ApprovedChainForm() {
     rule,
   );
   const [value, setValue] = useAtom(existingRuleValuesAtom);
-
+  if (isSuccess) {
+    router.replace("/apps/" + appId + "?i=rules");
+  }
   return (
     <React.Fragment>
       <SearchableMultiSelect items={items} value={value} setValue={setValue} />

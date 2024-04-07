@@ -16,10 +16,10 @@ import {
   IconBook,
   IconApps,
   IconHome,
-  IconAdjustmentsAlt,
   IconSwitch,
   IconReceipt,
   IconBrandDiscord,
+  IconArrowUpRight,
 } from "@tabler/icons-react";
 import { useEffect } from "react";
 import Image from "next/image";
@@ -37,7 +37,8 @@ import {
   ruleTypesAtom,
   sessionAtom,
 } from "@frontend/utils/atoms";
-import { useAccount, useAccountEffect } from "wagmi";
+import { useAccount, useAccountEffect, useEnsName } from "wagmi";
+import { IconSettings } from "@tabler/icons-react";
 
 export default function DashboardLayout({
   children,
@@ -89,6 +90,10 @@ export default function DashboardLayout({
     },
   });
 
+  const { data: ensName } = useEnsName({
+    address: session?.address,
+  });
+
   return (
     <AppShell
       header={{ height: 80 }}
@@ -110,7 +115,7 @@ export default function DashboardLayout({
         />
         <Flex justify={"space-between"} align={"center"} h="100%" px={"2%"}>
           <Title order={2}>
-            Welcome, {String(session?.address).substring(0, 10)}
+            Welcome, {ensName ?? String(session?.address).substring(0, 10)}
           </Title>
           <Flex gap="md">
             <Link href="?new=app">
@@ -138,7 +143,7 @@ export default function DashboardLayout({
               link="/apps"
             />
             <NavLink
-              icon={<IconAdjustmentsAlt size={16} style={{ marginRight: 8 }} />}
+              icon={<IconSettings size={16} style={{ marginRight: 8 }} />}
               label="Settings"
               link="/settings"
             />
@@ -156,11 +161,17 @@ export default function DashboardLayout({
           <Group style={{ gap: 2 }}>
             <NavLink
               icon={<IconBook size={16} style={{ marginRight: 8 }} />}
+              rightIcon={
+                <IconArrowUpRight size={16} style={{ marginRight: 8 }} />
+              }
               label="Docs"
               link="/docs"
             />
             <NavLink
               icon={<IconBrandDiscord size={16} style={{ marginRight: 8 }} />}
+              rightIcon={
+                <IconArrowUpRight size={16} style={{ marginRight: 8 }} />
+              }
               label="Discord"
               link="/discord"
             />

@@ -1,5 +1,5 @@
 import React from "react";
-import { Box } from "@mantine/core";
+import { Box, Flex } from "@mantine/core";
 import { useRouter, usePathname } from "next/navigation";
 import { useHover } from "@mantine/hooks";
 
@@ -7,10 +7,12 @@ const NavLink = ({
   link,
   label,
   icon,
+  rightIcon,
 }: {
   link: string;
   label: string;
   icon: React.ReactNode;
+  rightIcon?: React.ReactNode;
 }) => {
   const router = useRouter();
   const path = usePathname();
@@ -37,8 +39,11 @@ const NavLink = ({
       }}
       onClick={() => router.replace(link)}
     >
-      {icon}
-      {label}
+      <Flex align="center" w={"100%"}>
+        {icon}
+        {label}
+      </Flex>
+      {hovered ? rightIcon : null}
     </Box>
   );
 };

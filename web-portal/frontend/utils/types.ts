@@ -1,3 +1,5 @@
+import { Address } from "viem";
+
 export interface IApp {
   id: string;
   name: string;
@@ -20,7 +22,7 @@ export interface IOrg {
 
 export interface ISession {
   chainId?: number;
-  address?: string;
+  address?: Address;
   id?: string;
   active?: boolean;
   createdAt?: string;

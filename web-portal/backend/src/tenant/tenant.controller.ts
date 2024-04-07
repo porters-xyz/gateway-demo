@@ -26,4 +26,10 @@ export class TenantController {
     // @note: This action returns a tenant by its id
     return this.tenantService.getTenantById(id);
   }
+
+  @Get(':id/billing')
+  async getTenantBillingHistory(@Param('id') id: string) {
+    // @note: This action returns billing history for a tenant
+    return this.tenantService.getTenantBillingHistory(id);
+  }
 }

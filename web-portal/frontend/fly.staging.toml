@@ -6,7 +6,8 @@
 app = 'porters-frontend-staging'
 primary_region = 'sea'
 
-[build]
+[build.args]
+  NEXT_PUBLIC_API_ENDPOINT = 'https://porters-backend-staging.fly.dev/'
 
 [http_service]
   internal_port = 3000
@@ -15,6 +16,9 @@ primary_region = 'sea'
   auto_start_machines = true
   min_machines_running = 0
   processes = ['app']
+
+[env]
+  NEXT_PUBLIC_API_ENDPOINT = 'https://porters-backend-staging.fly.dev/'
 
 [[vm]]
   memory = '1gb'

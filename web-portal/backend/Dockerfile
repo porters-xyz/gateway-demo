@@ -1,10 +1,9 @@
 # This file is used to specifically build portal backend image
-FROM node:21-alpine As build
+FROM porters-schema As build
 
 WORKDIR /usr/src/app
 
-COPY --chown=node:node ./services ./services
-COPY --chown=node:node ./web-portal/backend/  ./web-portal/backend/
+COPY --chown=node:node ./  ./web-portal/backend/
 
 
 RUN corepack enable pnpm && cd ./web-portal/backend && pnpm i && pnpm build

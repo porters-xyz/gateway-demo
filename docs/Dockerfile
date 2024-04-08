@@ -30,4 +30,4 @@ EXPOSE 3005
 ENV PORT 3005
 ENV HOSTNAME "0.0.0.0"
 
-CMD ["node", "server.js"]
+CMD ["npx", "next", "start"]

@@ -67,3 +67,12 @@ export interface IRuleUpdate {
   ruleId: string;
   data: string[];
 }
+
+export interface IBill {
+  id?: string;
+  amount?: number;
+  referenceId?: string;
+  tenantId?: string;
+  createdAt?: string;
+  transactionType?: string;
+}

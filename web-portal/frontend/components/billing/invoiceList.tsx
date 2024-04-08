@@ -1,30 +1,42 @@
 import React from "react";
 import { Stack, Table, Flex, Title, Card, Button } from "@mantine/core";
-import { IApp } from "@frontend/utils/types";
+import { IBill } from "@frontend/utils/types";
 import { usePathname, useRouter } from "next/navigation";
-import { useAtomValue } from "jotai";
-import { sessionAtom } from "@frontend/utils/atoms";
+
 import Link from "next/link";
+import { billingHistoryAtom, sessionAtom } from "@frontend/utils/atoms";
+import { useAtom, useAtomValue } from "jotai";
+import { useBillingHistory } from "@frontend/utils/hooks";
 
 const InvoiceList: React.FC = () => {
-  const list = useAtomValue(sessionAtom) as IApp[];
-  const path = usePathname();
   const router = useRouter();
-  const showAll = path === "/apps";
-  const rows = list.map((app: IApp) => (
+
+  const session = useAtomValue(sessionAtom);
+  const { data: billingHistoryData } = useBillingHistory(
+    session?.tenantId as string,
+  );
+  const [billingHistory, setBillingHistory] = useAtom(billingHistoryAtom);
+
+  if (billingHistoryData) {
+    setBillingHistory(billingHistoryData);
+  }
+
+  const rows = billingHistory.map((invoice: IBill) => (
     <Table.Tr
-      key={app.name}
-      onClick={() => router.push("?download=" + app.id)}
+      key={invoice.id}
+      onClick={() => router.push("?download=" + invoice.id)}
       style={{ cursor: "pointer" }}
     >
-      <Table.Th>{app.name ?? "Un-named App"}</Table.Th>
-      <Table.Td>{app.id}</Table.Td>
-      <Table.Td>{app.active ? "Yes" : "No"}</Table.Td>
-      <Table.Td>{app.createdAt}</Table.Td>
+      <Table.Td>{invoice.referenceId}</Table.Td>
+      <Table.Th c={invoice.transactionType === "DEBIT" ? "red" : "blue"}>
+        {invoice.transactionType}
+      </Table.Th>
+      <Table.Td>{invoice.amount}</Table.Td>
+      <Table.Td>{new Date(invoice.createdAt).toLocaleDateString()}</Table.Td>
     </Table.Tr>
   ));
 
-  if (list.length == 0) {
+  if (billingHistory.length == 0) {
     return (
       <Stack>
         <Flex justify={"space-between"} align={"center"}>

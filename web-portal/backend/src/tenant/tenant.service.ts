@@ -119,29 +119,15 @@ export class TenantService {
     return tenant;
   }
 
-  async addCredits(id: string, amount: number) {
-    const tenantExists = await this.getTenantById(id);
-    if (!tenantExists)
-      throw new HttpException(
-        'No tenant exists with such id!',
-        HttpStatus.NOT_FOUND,
-      );
-
-    const appliedCredits = await this.prisma.client.paymentLedger.create({
-      data: {
-        tenantId: id,
-        referenceId: randomBytes(8).toString('hex'),
-        transactionType: TransactionType.CREDIT,
-        amount: amount,
+  async getTenantBillingHistory(tenantId: string) {
+    const billingHistory = await this.prisma.client.paymentLedger.findMany({
+      where: {
+        tenantId,
       },
     });
 
-    if (!appliedCredits)
-      throw new HttpException(
-        'Unable to apply credits to tenant',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+    if (!billingHistory) return [];
 
-    return true;
+    return billingHistory;
   }
 }

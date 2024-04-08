@@ -23,7 +23,7 @@ export class UserService {
 
     if (!existingUser || existingUser?.orgs?.length === 0) {
       // @note: this will generate enterprise + tenant before creating a new user;
-      const { enterpriseId, secret } = await this.tenantService.create(); // <- show this secret for the first time user to backup
+      const { enterpriseId } = await this.tenantService.create(); // <- show this secret for the first time user to backup
 
       if (!enterpriseId) {
         throw new HttpException(
@@ -54,7 +54,9 @@ export class UserService {
           },
         });
         const { id, active, createdAt, orgs } = updateExistingUser;
-        return { id, active, createdAt, orgs };
+
+        const tenantId = await this.getTenantIdByEnterpriseId(enterpriseId);
+        return { id, active, createdAt, orgs, tenantId };
       }
       const newUser = await this.prisma.client.user.create({
         data: {
@@ -82,10 +84,30 @@ export class UserService {
 
       const { id, active, createdAt, orgs } = newUser;
 
-      return { id, active, createdAt, secret, orgs };
+      const tenantId = await this.getTenantIdByEnterpriseId(enterpriseId);
+
+      return { id, active, createdAt, orgs, tenantId };
     }
 
     const { id, active, createdAt, orgs } = existingUser;
-    return { id, active, createdAt, orgs };
+
+    const tenantId = await this.getTenantIdByEnterpriseId(orgs[0].enterpriseId);
+    return { id, active, createdAt, orgs, tenantId };
+  }
+
+  async getTenantIdByEnterpriseId(enterpriseId: string) {
+    const tenants = await this.prisma.client.tenant.findMany({
+      where: {
+        enterpriseId,
+      },
+    });
+
+    if (!tenants)
+      throw new HttpException(
+        'Unable to find tenant',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+
+    return tenants[0].id;
   }
 }

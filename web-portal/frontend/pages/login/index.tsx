@@ -3,7 +3,6 @@ import { Button, Container, Title, Box, BackgroundImage } from "@mantine/core";
 import Image from "next/image";
 import { useWeb3Modal } from "@web3modal/wagmi/react";
 import logo from "@frontend/public/logo.png";
-import Link from "next/link";
 import WelcomeShape from "@frontend/components/login/welcomeshape";
 import { useAccount, useDisconnect } from "wagmi";
 import { useAtomValue } from "jotai";

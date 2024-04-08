@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev --port=3005",
     "build": "next build",
-    "start": "next start --port=3005"
+    "start": "next start"
   },
   "dependencies": {
     "next": "^13.0.6",

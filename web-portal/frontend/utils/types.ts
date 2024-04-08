@@ -28,6 +28,7 @@ export interface ISession {
   createdAt?: string;
   deletedAt?: string;
   orgs?: IOrg[] | null;
+  tenantId?: string;
 }
 
 export interface IEndpoint {
@@ -65,4 +66,13 @@ export interface IAppRule {
 export interface IRuleUpdate {
   ruleId: string;
   data: string[];
+}
+
+export interface IBill {
+  id?: string;
+  amount?: number;
+  referenceId?: string;
+  tenantId?: string;
+  createdAt?: string;
+  transactionType?: string;
 }

@@ -151,3 +151,28 @@ export const useBillingHistory = (id: string) => {
     enabled: Boolean(id),
   });
 };
+
+export const useSecretKeyMutation = (appId: string) => {
+  const queryClient = useQueryClient();
+
+  const createSecretKeyMutation = async (action: string) => {
+    const response = await fetch(`/api/apps/${appId}/secret`, {
+      method: action === "generate" ? "PUT" : "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    if (!response.ok) {
+      throw new Error("Failed to update secret key");
+    }
+    return response.json();
+  };
+
+  return useMutation({
+    mutationFn: createSecretKeyMutation,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["user"] });
+      console.log("Secret Key Updated");
+    },
+  });
+};

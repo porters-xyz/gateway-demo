@@ -1,6 +1,6 @@
 import _ from "lodash";
 import { Button } from "@mantine/core";
-import React, { useState } from "react";
+import React from "react";
 
 import { endpointsAtom, existingRuleValuesAtom } from "@frontend/utils/atoms";
 import { useAtomValue, useAtom } from "jotai";

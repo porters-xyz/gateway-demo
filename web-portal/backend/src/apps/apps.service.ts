@@ -162,7 +162,11 @@ export class AppsService {
       where: { id: ruleId },
     });
 
-    if (!ruleType) {
+    if (
+      !ruleType ||
+      ruleType.id === 'secret-key' ||
+      ruleType.name === 'secret-key'
+    ) {
       throw new HttpException(
         'Attempted to update invalid rule type',
         HttpStatus.BAD_REQUEST,

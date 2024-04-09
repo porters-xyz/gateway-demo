@@ -32,7 +32,9 @@ const InvoiceList: React.FC = () => {
         {invoice.transactionType}
       </Table.Th>
       <Table.Td>{invoice.amount}</Table.Td>
-      <Table.Td>{new Date(invoice.createdAt).toLocaleDateString()}</Table.Td>
+      <Table.Td>
+        {new Date(invoice?.createdAt as string).toLocaleDateString()}
+      </Table.Td>
     </Table.Tr>
   ));
 

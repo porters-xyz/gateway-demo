@@ -5,6 +5,7 @@ import {
   UseGuards,
   Body,
   Post,
+  Put,
   Patch,
 } from '@nestjs/common';
 import { AppsService } from './apps.service';
@@ -89,5 +90,17 @@ export class AppsController {
   ) {
     // @note: This action updates app rules in bulk for given appId;
     return this.appsService.batchUpdateAppRules(appId, updateRulesDto);
+  }
+
+  @Put(':appId/secret/')
+  async updateAppSecret(@Param('appId') appId: string) {
+    // @note: This action updates app secret for given appId;
+    return this.appsService.updateSecretKeyRule(appId, 'generate');
+  }
+
+  @Delete(':appId/secret/')
+  async deleteAppSecret(@Param('appId') appId: string) {
+    // @note: This action deletes app secret for given appId;
+    return this.appsService.updateSecretKeyRule(appId, 'delete');
   }
 }

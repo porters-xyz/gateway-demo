@@ -2,6 +2,7 @@ import { Injectable, Inject, HttpException, HttpStatus } from '@nestjs/common';
 import { CustomPrismaService } from 'nestjs-prisma';
 import { AppRule, PrismaClient } from '@/.generated/client';
 import { UserService } from '../user/user.service';
+import { createHash, randomBytes } from 'crypto';
 
 @Injectable()
 export class AppsService {
@@ -236,5 +237,56 @@ export class AppsService {
     });
 
     return updatedAppRules;
+  }
+
+  async updateSecretKeyRule(appId: string, action: 'generate' | 'delete') {
+    const ruleType = await this.prisma.client.ruleType.findFirstOrThrow({
+      where: { id: 'secret-key' },
+    });
+
+    const secretIdExists = await this.prisma.client.appRule.findFirst({
+      where: { appId, ruleId: ruleType.id },
+    });
+
+    if (action === 'delete' && secretIdExists) {
+      const deleteSecretKey = await this.prisma.client.appRule.delete({
+        where: { id: secretIdExists.id },
+      });
+
+      if (deleteSecretKey) {
+        return true;
+      }
+    }
+
+    if (secretIdExists && action === 'generate') {
+      const secretKey = randomBytes(8).toString('hex');
+      const hashedKey = createHash('sha256').update(secretKey).digest('hex');
+
+      const updateSecretKey = await this.prisma.client.appRule.update({
+        where: { id: secretIdExists.id },
+        data: {
+          value: hashedKey,
+        },
+      });
+
+      if (updateSecretKey) {
+        return secretKey;
+      }
+    } else if (!secretIdExists && action === 'generate') {
+      const secretKey = randomBytes(8).toString('hex');
+      const hashedKey = createHash('sha256').update(secretKey).digest('hex');
+
+      const newSecretKey = await this.prisma.client.appRule.create({
+        data: {
+          appId,
+          ruleId: ruleType.id,
+          value: hashedKey,
+        },
+      });
+
+      if (newSecretKey) {
+        return secretKey;
+      }
+    }
   }
 }

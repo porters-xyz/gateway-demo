@@ -13,6 +13,17 @@ $ npx prisma generate
 
 $ npx prisma migrate dev
 
+On fly.io there is a healthcheck process that was interfering with migration, to
+work around this run
+
+```sql
+DROP ROLE flypgadmin;
+
+# and after migration 
+
+CREATE ROLE flypgadmin WITH SUPERUSER LOGIN;
+```
+
 ## Running the app
 
 ```bash

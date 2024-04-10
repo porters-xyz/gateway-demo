@@ -270,7 +270,7 @@ export class AppsService {
       });
 
       if (updateSecretKey) {
-        return secretKey;
+        return { key: secretKey };
       }
     } else if (!secretIdExists && action === 'generate') {
       const secretKey = randomBytes(8).toString('hex');

@@ -23,9 +23,7 @@ export default function ApprovedChainForm() {
     rule,
   );
   const [value, setValue] = useAtom(existingRuleValuesAtom);
-  if (isSuccess) {
-    router.replace("/apps/" + appId + "?i=rules");
-  }
+
   return (
     <React.Fragment>
       <SearchableMultiSelect items={items} value={value} setValue={setValue} />

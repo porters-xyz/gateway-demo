@@ -112,7 +112,7 @@ export const useCreateAppMutation = (
 
 export const useUpdateRuleMutation = (appId: string, ruleName: string) => {
   const queryClient = useQueryClient();
-
+  const router = useRouter();
   const updateRuleMutation = async (data?: Array<string>) => {
     const response = await fetch(`/api/apps/${appId}/rules`, {
       method: "PATCH",
@@ -130,7 +130,8 @@ export const useUpdateRuleMutation = (appId: string, ruleName: string) => {
   return useMutation({
     mutationFn: updateRuleMutation,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["user"] }); // TODO <--- revisit this
+      queryClient.invalidateQueries({ queryKey: ["user"] });
+      router.replace("/apps/" + appId + "?i=rules");
       console.log(ruleName + " Updated");
     },
   });
@@ -154,7 +155,8 @@ export const useBillingHistory = (id: string) => {
 
 export const useSecretKeyMutation = (appId: string) => {
   const queryClient = useQueryClient();
-
+  const { address: userAddress } = useAccount();
+  const router = useRouter();
   const createSecretKeyMutation = async (action: string) => {
     const response = await fetch(`/api/apps/${appId}/secret`, {
       method: action == "generate" ? "PUT" : "DELETE",
@@ -166,13 +168,23 @@ export const useSecretKeyMutation = (appId: string) => {
     if (!response.ok) {
       throw new Error("Failed to update secret key");
     }
+
     return response.json();
   };
 
   return useMutation({
     mutationFn: createSecretKeyMutation,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["user"] });
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({
+        queryKey: ["user", userAddress, "apps"],
+      });
+
+      const { key } = data;
+      if (key) {
+        router.replace(
+          "/apps/" + appId + "?i=rules&rule=secret-key&key=" + key,
+        );
+      }
       console.log("Secret Key Updated");
     },
   });

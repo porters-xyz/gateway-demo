@@ -1,6 +1,6 @@
 import { Injectable, Inject, HttpException, HttpStatus } from '@nestjs/common';
 import { CustomPrismaService } from 'nestjs-prisma';
-import { PrismaClient, TransactionType } from '@/.generated/client';
+import { PrismaClient } from '@/.generated/client';
 import { createHash, randomBytes } from 'crypto';
 
 @Injectable()

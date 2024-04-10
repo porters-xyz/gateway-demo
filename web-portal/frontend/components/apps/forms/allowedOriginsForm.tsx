@@ -1,6 +1,5 @@
 import { Button, Flex, TextInput, Pill, Stack, Text } from "@mantine/core";
 import _ from "lodash";
-import { useState } from "react";
 import { useForm, matches } from "@mantine/form";
 import { IconPlus } from "@tabler/icons-react";
 import { useUpdateRuleMutation } from "@frontend/utils/hooks";
@@ -45,10 +44,6 @@ export default function AllowedOriginsForm() {
     setValue((current: any) => current.filter((v: any) => v !== val));
 
   const formValidation = () => form.validate();
-
-  if (isSuccess) {
-    router.replace("/apps/" + appId + "?i=rules");
-  }
 
   const values = value.map((item) => (
     <Pill

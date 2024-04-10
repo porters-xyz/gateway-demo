@@ -36,9 +36,6 @@ export default function AllowedUserAgentsForm() {
 
   const formValidation = () => form.validate();
 
-  if (isSuccess) {
-    router.replace("/apps/" + appId + "?i=rules");
-  }
   const values = value.map((item) => (
     <Pill
       key={item}

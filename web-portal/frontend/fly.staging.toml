@@ -7,20 +7,22 @@ app = 'porters-frontend-staging'
 primary_region = 'sea'
 
 [build.args]
-  NEXT_PUBLIC_API_ENDPOINT = 'https://porters-backend-staging.fly.dev/'
+API_ENDPOINT = 'https://porters-backend-staging.fly.dev/'
 
 [http_service]
-  internal_port = 3000
-  force_https = true
-  auto_stop_machines = true
-  auto_start_machines = true
-  min_machines_running = 0
-  processes = ['app']
+internal_port = 3000
+force_https = true
+auto_stop_machines = true
+auto_start_machines = true
+min_machines_running = 0
+processes = ['app']
 
 [env]
-  NEXT_PUBLIC_API_ENDPOINT = 'https://porters-backend-staging.fly.dev/'
+# NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID = 'wallet-connect-project-id'
+# NEXT_PUBLIC_RPC_ENDPOINT = 'rpc-endpoint'
+# NEXT_PUBLIC_APP_URL = 'https://staging.porters.xyz'
 
 [[vm]]
-  memory = '1gb'
-  cpu_kind = 'shared'
-  cpus = 1
+memory = '1gb'
+cpu_kind = 'shared'
+cpus = 1

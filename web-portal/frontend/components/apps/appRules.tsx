@@ -68,7 +68,7 @@ const AppRules: React.FC<{ rule: Partial<IRuleType> }> = ({ rule }) => {
           }}
         />
       </Flex>
-      {values?.length > 0 && (
+      {values?.length > 0 && rule.name != "secret-key" && (
         <Flex wrap={"wrap"} my={8}>
           {values}
         </Flex>

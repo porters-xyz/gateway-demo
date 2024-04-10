@@ -254,7 +254,7 @@ export class AppsService {
       });
 
       if (deleteSecretKey) {
-        return true;
+        return { delete: true };
       }
     }
 
@@ -285,7 +285,7 @@ export class AppsService {
       });
 
       if (newSecretKey) {
-        return secretKey;
+        return { key: secretKey };
       }
     }
   }

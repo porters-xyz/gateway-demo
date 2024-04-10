@@ -157,11 +157,12 @@ export const useSecretKeyMutation = (appId: string) => {
 
   const createSecretKeyMutation = async (action: string) => {
     const response = await fetch(`/api/apps/${appId}/secret`, {
-      method: action === "generate" ? "PUT" : "DELETE",
+      method: action == "generate" ? "PUT" : "DELETE",
       headers: {
         "Content-Type": "application/json",
       },
     });
+
     if (!response.ok) {
       throw new Error("Failed to update secret key");
     }

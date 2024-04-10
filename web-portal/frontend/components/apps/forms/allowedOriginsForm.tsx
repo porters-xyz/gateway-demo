@@ -1,6 +1,5 @@
 import { Button, Flex, TextInput, Pill, Stack, Text } from "@mantine/core";
 import _ from "lodash";
-import { useState } from "react";
 import { useForm, matches } from "@mantine/form";
 import { IconPlus } from "@tabler/icons-react";
 import { useUpdateRuleMutation } from "@frontend/utils/hooks";

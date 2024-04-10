@@ -18,9 +18,9 @@ contract PortersUsage is ERC20Pausable, Ownable {
     event PriceSet(uint256 _oldPrice, uint256 _newPrice);
     event DataFeedSet(address _oldDataFeed, address _newDataFeed);
 
-    uint256 internal price = 0;
+    uint256 public price = 0;
+    address public dataFeed;
     uint256 internal MINT_LIMIT = 1e50; // larger numbers make calcs weird 
-    AggregatorV3Interface internal dataFeed;
 
     constructor() ERC20("PORTERS Gateway", "PORTR") Ownable(_msgSender()) {
     }
@@ -30,12 +30,13 @@ contract PortersUsage is ERC20Pausable, Ownable {
         require(msg.value > 0, "no payment");
         require(msg.value < MINT_LIMIT, "mint too high");
         require(price > 0, "price not set");
-        require(address(dataFeed) != address(0), "price feed not set");
+        require(dataFeed != address(0), "price feed not set");
 
-        (,int256 _answer,,,) = dataFeed.latestRoundData();
+        AggregatorV3Interface aggregator = AggregatorV3Interface(dataFeed);
+        (,int256 _answer,,,) = aggregator.latestRoundData();
         require(_answer > 0, "invalid price");
         
-        uint256 _amount = msg.value.mulDivUp(uint256(_answer), 10 ** dataFeed.decimals()).divWadUp(price);
+        uint256 _amount = msg.value.mulDivUp(uint256(_answer), 10 ** aggregator.decimals()).divWadUp(price);
         _mint(_msgSender(), _amount);
     }
 
@@ -68,8 +69,8 @@ contract PortersUsage is ERC20Pausable, Ownable {
     function setPriceAndFeed(address _feed, uint256 _price) onlyOwner external {
         emit PriceSet(price, _price);
         price = _price;
-        emit DataFeedSet(address(dataFeed), address(_feed));
-        dataFeed = AggregatorV3Interface(_feed);
+        emit DataFeedSet(dataFeed, _feed);
+        dataFeed = _feed;
     }
 
     function sweep(address payable _to) onlyOwner external {

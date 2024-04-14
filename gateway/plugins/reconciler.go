@@ -1,9 +1,11 @@
 package plugins
 
 import (
+    "context"
     "time"
 
     "porters/common"
+    "porters/db"
 )
 
 // TODO Add to the job queue to run every hour? or on shutdown
@@ -15,6 +17,7 @@ type Reconciler struct {
 
 type reconcileTask struct {
     common.Runnable
+    relaytx *db.Relaytx
 }
 
 func (r *Reconciler) Name() string {
@@ -31,8 +34,22 @@ func (r *Reconciler) Load() {
 }
 
 func (r *Reconciler) spawnTasks() {
+    queue := common.GetTaskQueue()
+    ctx := context.Background()
     for range r.ticker.C {
         // TODO go through redis and add to job queue
+        // TODO figure out where per-chain usage stored
+        iter := db.ScanKeys(ctx, "PRODUCT")
+        for iter.Next(ctx) {
+            //strval := iter.Val() // use for building relaytx
+            rtx := &db.Relaytx{
+                
+            }
+            task := &reconcileTask{
+                relaytx: rtx,
+            }
+            queue.Tasks <- task
+        }
     }
 }
 

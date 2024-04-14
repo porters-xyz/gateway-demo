@@ -4,6 +4,7 @@ import (
     "log"
     "os"
 
+    "porters/common"
     "porters/plugins"
     "porters/proxy"
 )
@@ -14,6 +15,10 @@ func main() {
 
     arg := os.Args[1]
     if arg == "gateway" {
+
+        // Start job queue
+        common.GetTaskQueue().SetupWorkers()
+
         // currently registering plugins via main
         proxy.Register(&plugins.Counter{})
         proxy.Register(&plugins.ApiKeyAuth{"X-API"})

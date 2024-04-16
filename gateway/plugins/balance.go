@@ -36,10 +36,7 @@ func (b *BalanceTracker) Load() {
     log.Println("Loading", b.Name())
 }
 
-// TODO check request against available relays
-// TODO set headers if needing to block
-// TODO update context to reflect
-// TODO script this to avoid multi-hops
+// TODO optim: script this to avoid multi-hops
 func (b *BalanceTracker) HandleRequest(req *http.Request) {
     ctx := req.Context()
     path := mux.Vars(req)[proxy.APP_PATH]
@@ -114,4 +111,3 @@ func (c *balancecache) Lookup(ctx context.Context) error {
     }
     return nil
 }
-

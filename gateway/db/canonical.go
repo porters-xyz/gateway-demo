@@ -99,13 +99,34 @@ func (t *Tenant) canonicalBalance(ctx context.Context) error {
 
 func (a *App) fetch(ctx context.Context) error {
     db := getCanonicalDB()
-    row := db.QueryRowContext(ctx, `SELECT id, "tenantId" FROM "App" WHERE id = $1 AND "deletedAt" IS NULL`, a.Id)
-    err := row.Scan(&a.Id, &a.Tenant.Id)
+    row := db.QueryRowContext(ctx, `SELECT id, active, "tenantId" FROM "App" WHERE id = $1 AND "deletedAt" IS NULL`, a.Id)
+    err := row.Scan(&a.Id, &a.Active, &a.Tenant.Id)
     if err != nil {
         return err
     }
-    a.Active = true // TODO this needs to be in DB, hardcoding for now
     return nil
+}
+
+func (a *App) fetchRules(ctx context.Context) ([]Apprule, error) {
+    rules := make([]Apprule, 0)
+    db := getCanonicalDB()
+    // TODO join with rule types
+    rows, err := db.QueryContext(ctx, `SELECT id, value, active FROM "AppRule" WHERE "appId" = $1 AND "deletedAt" IS NULL`, a.Id)
+    if err != nil {
+        return nil, err
+    }
+    defer rows.Close()
+
+    for rows.Next() {
+        apprule := Apprule{}
+        err := rows.Scan(&apprule.Id, &apprule.Value, &apprule.Active)
+        if err != nil {
+            return nil, err
+        }
+        apprule.App = *a
+        rules = append(rules, apprule)
+    }
+    return rules, nil
 }
 
 // TODO this doesn't exist in database yet, returns unimplemented for now
@@ -132,10 +153,27 @@ func (rtx *Relaytx) fetch(ctx context.Context) error {
         return err
     }
     return nil
-
 }
 
 func (rtx *Relaytx) write(ctx context.Context) error {
-    // TODO write DEBITS to postgres
-    return nil
+    // TODO write CREDITS to postgres
+    db := getCanonicalDB()
+    uuid := ' ' // TODO get UUID
+    res, err := db.ExecContext(ctx, `INSERT INTO "RelayLedger"
+        ("id", "tenantId", "referenceId", "amount", "chainId", "transactionType")
+        VALUES
+        ($1, $2, $3, $4, $5, 'CREDIT')`, uuid, rtx.Tenant.Id, rtx.Reference, rtx.Amount, rtx.Product.Id) 
+    if err != nil {
+        return err
+    } else {
+        rows, err := res.RowsAffected()
+        if err != nil {
+            return err
+        }
+        if rows != 1 {
+            return errors.New("unable to insert to RelayLedger")
+        } else {
+            return nil
+        }
+    }
 }

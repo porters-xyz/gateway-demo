@@ -17,6 +17,10 @@ const (
     PRODUCT       = "PRODUCT"
 )
 
+type model interface {
+    Key() string
+}
+
 type fetchable interface {
     fetch(ctx context.Context) error // populate pointer with values
 }
@@ -62,6 +66,8 @@ type Ruletype struct {
 }
 
 // tied to tenant, this isn't cached directly
+// CREDIT increases balance of allowed relays
+// DEBIT decreases balance (uses)
 type Paymenttx struct {
     Id string
     Reference string
@@ -72,6 +78,8 @@ type Paymenttx struct {
 }
 
 // This gets written back to postgres
+// CREDIT increases number of used relays (uses)
+// DEBIT decreases used relays to reconcile with payments
 type Relaytx struct {
     Id string
     Reference string

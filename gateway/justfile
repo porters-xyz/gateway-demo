@@ -16,4 +16,9 @@ docker-build:
 docker-run: docker-build
     docker run -d -p 9999:9999 porters
 
+# I was typing `just status` a lot so put this here
+# maybe overload with something else
+status:
+    git status
+
 alias b := build

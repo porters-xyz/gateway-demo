@@ -1,13 +1,36 @@
 import DashboardLayout from "@frontend/components/dashboard/layout";
 import { Stack, Tabs, rem } from "@mantine/core";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { crimson } from "@frontend/utils/theme";
 import Swap from "@frontend/components/swap/Swap";
 import Redeem from "@frontend/components/swap/Redeem";
 import classes from "@frontend/styles/tabs.module.css";
+import { IToken } from "@frontend/utils/types";
+import { useSetAtom } from "jotai";
+import { tokenDataAtom } from "@frontend/utils/atoms";
+import { useChainId } from "wagmi";
+import _ from "lodash";
 
-export default function SwapOrRedeem() {
+export default function SwapOrRedeem({
+  data,
+  defaultToken,
+}: {
+  data: IToken[];
+  defaultToken: IToken;
+}) {
   const [value, setValue] = useState("swap");
+  const chainId = useChainId();
+
+  const setTokenData = useSetAtom(tokenDataAtom);
+
+  useEffect(() => {
+    setTokenData(
+      _.uniqBy(
+        _.filter(data, (token) => token.chainId === chainId),
+        "address",
+      ),
+    );
+  });
 
   return (
     <DashboardLayout>
@@ -15,7 +38,6 @@ export default function SwapOrRedeem() {
         style={{
           alignItems: "center",
           justifyContent: "center",
-          fontFamily: crimson.style.fontFamily,
           fontWeight: 700,
           fontSize: rem(20),
         }}
@@ -33,12 +55,32 @@ export default function SwapOrRedeem() {
           onChange={() => setValue(value === "swap" ? "redeem" : "swap")}
         >
           <Tabs.List grow>
-            <Tabs.Tab value="swap">Swap</Tabs.Tab>
-            <Tabs.Tab value="redeem">Redeem</Tabs.Tab>
+            <Tabs.Tab
+              value="swap"
+              styles={{
+                tabLabel: {
+                  fontSize: 20,
+                  fontFamily: crimson.style.fontFamily,
+                },
+              }}
+            >
+              Swap
+            </Tabs.Tab>
+            <Tabs.Tab
+              value="redeem"
+              styles={{
+                tabLabel: {
+                  fontSize: 20,
+                  fontFamily: crimson.style.fontFamily,
+                },
+              }}
+            >
+              Redeem
+            </Tabs.Tab>
           </Tabs.List>
 
-          <Tabs.Panel value="swap">
-            <Swap />
+          <Tabs.Panel value="swap" pt={20}>
+            <Swap defaultToken={defaultToken} />
           </Tabs.Panel>
           <Tabs.Panel value="redeem">
             <Redeem />
@@ -47,4 +89,18 @@ export default function SwapOrRedeem() {
       </Stack>
     </DashboardLayout>
   );
+}
+
+export async function getServerSideProps() {
+  const res = await fetch("https://static.optimism.io/optimism.tokenlist.json");
+  const data = await res.json();
+
+  const { tokens } = data;
+  const defaultToken = _.filter(tokens, { name: "Ether" })[0];
+  return {
+    props: {
+      data: tokens satisfies IToken[],
+      defaultToken: defaultToken satisfies IToken,
+    },
+  };
 }

@@ -9,10 +9,10 @@ import (
     "net/http"
     "net/http/httputil"
     "os"
-    "time"
 
     "github.com/gorilla/mux"
 
+    "porters/common"
     "porters/db"
 )
 
@@ -60,7 +60,7 @@ func Start() {
 
 func Stop() {
     // 5 second shutdown
-    ctx, cancel := context.WithTimeout(context.Background(), 5 * time.Second)
+    ctx, cancel := context.WithTimeout(context.Background(), common.SHUTDOWN_DELAY)
     defer cancel()
 
     err := server.Shutdown(ctx)

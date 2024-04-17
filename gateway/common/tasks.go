@@ -71,8 +71,8 @@ func (q *TaskQueue) CloseQueue() {
             if len(q.Tasks) == 0 {
                 return
             }
-        case <-time.After(5 * time.Second):
-            log.Println("workers not finished after 5 seconds, lost")
+        case <-time.After(SHUTDOWN_DELAY):
+            log.Println("workers not finished, work may be lost")
             return
         }
     }

@@ -5,6 +5,7 @@ import (
     "os"
     "strconv"
     "sync"
+    "time"
 )
 
 // TODO make it "pluggable" so different types of tasks can operate off queue
@@ -62,6 +63,19 @@ func (q *TaskQueue) SetupWorkers() {
 // use this for graceful shutdown
 func (q *TaskQueue) CloseQueue() {
     close(q.Tasks)
+
+    ticker := time.NewTicker(100 * time.Millisecond)
+    for {
+        select {
+        case <-ticker.C:
+            if len(q.Tasks) == 0 {
+                return
+            }
+        case <-time.After(5 * time.Second):
+            log.Println("workers not finished after 5 seconds, lost")
+            return
+        }
+    }
 }
 
 func worker(q *TaskQueue) {

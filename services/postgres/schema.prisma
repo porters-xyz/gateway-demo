@@ -1,135 +1,136 @@
 datasource db {
-    provider = "postgresql"
-    url      = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = "postgresql://postgres:AZhRAs18Pr7dT2a@localhost:9999"
 }
 
 generator client {
-    provider      = "prisma-client-js"
-    output        = "../../web-portal/backend/.generated/client"
-    binaryTargets = ["native"]
+  provider      = "prisma-client-js"
+  output        = "../../web-portal/backend/.generated/client"
+  binaryTargets = ["native"]
 }
 
 model Org {
-    id           String     @id @unique @default(cuid())
-    users        User[]
-    active       Boolean    @default(true)
-    deletedAt    DateTime?
-    createdAt    DateTime   @default(now())
-    updatedAt    DateTime   @updatedAt
-    enterprise   Enterprise @relation(fields: [enterpriseId], references: [id])
-    enterpriseId String
+  id           String     @id @unique @default(cuid())
+  users        User[]
+  active       Boolean    @default(true)
+  deletedAt    DateTime?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  enterprise   Enterprise @relation(fields: [enterpriseId], references: [id])
+  enterpriseId String
 }
 
 model Enterprise {
-    id        String    @id @unique @default(cuid())
-    orgs      Org[]
-    tenants   Tenant[]
-    deletedAt DateTime?
-    active    Boolean   @default(true)
-    createdAt DateTime  @default(now())
-    updatedAt DateTime  @updatedAt
+  id        String    @id @unique @default(cuid())
+  orgs      Org[]
+  tenants   Tenant[]
+  deletedAt DateTime?
+  active    Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 }
 
 model Tenant {
-    id            String          @id @unique @default(cuid())
-    active        Boolean         @default(true)
-    paymentLedger PaymentLedger[]
-    relayLedger   RelayLedger[]
-    Enterprise    Enterprise      @relation(fields: [enterpriseId], references: [id])
-    enterpriseId  String
-    secretKey     String          @unique
-    apps          App[]
-    deletedAt     DateTime?
-    createdAt     DateTime        @default(now())
-    updatedAt     DateTime        @updatedAt
+  id            String          @id @unique @default(cuid())
+  active        Boolean         @default(true)
+  paymentLedger PaymentLedger[]
+  relayLedger   RelayLedger[]
+  Enterprise    Enterprise      @relation(fields: [enterpriseId], references: [id])
+  enterpriseId  String
+  secretKey     String          @unique
+  apps          App[]
+  deletedAt     DateTime?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
 }
 
 model User {
-    id         String    @id @unique @default(cuid())
-    orgs       Org[]
-    ethAddress String    @unique
-    active     Boolean   @default(true)
-    deletedAt  DateTime?
-    createdAt  DateTime  @default(now())
-    updatedAt  DateTime  @updatedAt
+  id         String    @id @unique @default(cuid())
+  orgs       Org[]
+  ethAddress String    @unique
+  active     Boolean   @default(true)
+  deletedAt  DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
 }
 
 model App {
-    id          String    @id() @unique @default(cuid())
-    name        String
-    description String?
-    appRules    AppRule[]
-    active      Boolean   @default(true)
-    deletedAt   DateTime?
-    createdAt   DateTime  @default(now())
-    updatedAt   DateTime  @updatedAt
-    Tenant      Tenant    @relation(fields: [tenantId], references: [id])
-    tenantId    String
+  id          String    @id() @unique @default(cuid())
+  name        String
+  description String?
+  appRules    AppRule[]
+  active      Boolean   @default(true)
+  deletedAt   DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  Tenant      Tenant    @relation(fields: [tenantId], references: [id])
+  tenantId    String
 }
 
 model AppRule {
-    id        String    @id @unique @default(cuid())
-    app       App       @relation(fields: [appId], references: [id])
-    appId     String
-    rule      RuleType  @relation(fields: [ruleId], references: [id])
-    ruleId    String
-    value     String
-    active    Boolean   @default(true)
-    deletedAt DateTime?
-    createdAt DateTime  @default(now())
-    updatedAt DateTime  @updatedAt
+  id        String    @id @unique @default(cuid())
+  app       App       @relation(fields: [appId], references: [id])
+  appId     String
+  rule      RuleType  @relation(fields: [ruleId], references: [id])
+  ruleId    String
+  value     String
+  active    Boolean   @default(true)
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 }
 
 model RuleType {
-    id              String    @id @unique @default(cuid())
-    name            String
-    description     String
-    isEditable      Boolean
-    isMultiple      Boolean
-    validationType  String
-    validationValue String
-    active          Boolean   @default(true)
-    deletedAt       DateTime?
-    createdAt       DateTime  @default(now())
-    updatedAt       DateTime  @updatedAt
-    AppRule         AppRule[]
+  id              String    @id @unique @default(cuid())
+  name            String
+  description     String
+  isEditable      Boolean
+  isMultiple      Boolean
+  validationType  String
+  validationValue String
+  active          Boolean   @default(true)
+  deletedAt       DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  AppRule         AppRule[]
 }
 
 model PaymentLedger {
-    id              String          @id @unique @default(cuid())
-    tenant          Tenant          @relation(fields: [tenantId], references: [id])
-    tenantId        String
-    referenceId     String
-    amount          Int
-    transactionType TransactionType
-    createdAt       DateTime        @default(now())
+  id              String          @id @unique @default(cuid())
+  tenant          Tenant          @relation(fields: [tenantId], references: [id])
+  tenantId        String
+  referenceId     String
+  amount          Int
+  transactionType TransactionType
+  createdAt       DateTime        @default(now())
 }
 
 enum TransactionType {
-    CREDIT
-    DEBIT
+  CREDIT
+  DEBIT
 }
 
 model RelayLedger {
-    id              String          @id @unique @default(cuid())
-    tenant          Tenant          @relation(fields: [tenantId], references: [id])
-    tenantId        String
-    referenceId     String
-    amount          Int
-    product         Products        @relation(fields: [productId], references: [id])
-    productId       String
-    transactionType TransactionType
-    createdAt       DateTime        @default(now())
+  id              String          @id @unique @default(cuid())
+  tenant          Tenant          @relation(fields: [tenantId], references: [id])
+  tenantId        String
+  referenceId     String
+  amount          Int
+  product         Products        @relation(fields: [productId], references: [id])
+  productId       String
+  transactionType TransactionType
+  createdAt       DateTime        @default(now())
 }
 
 model Products {
-    id          String        @id @unique @default(cuid())
-    name        String
-    weight      Float
-    params      String
-    active      Boolean       @default(true)
-    deletedAt   DateTime?
-    createdAt   DateTime      @default(now())
-    updatedAt   DateTime      @updatedAt
-    RelayLedger RelayLedger[]
+  id          String        @id @unique @default(cuid())
+  poktId      String?
+  name        String
+  weight      Float
+  params      String
+  active      Boolean       @default(true)
+  deletedAt   DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  RelayLedger RelayLedger[]
 }

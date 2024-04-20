@@ -43,8 +43,7 @@ async function main() {
             "Allows you to limit type of clients that can use this app",
           isEditable: true,
           validationType: "regex",
-          validationValue:
-            "(?=.{21,})(Mozilla\\/\\d+\\.\\d+|Chrome\\/\\d+\\.\\d+|Safari\\/\\d+\\.\\d+|Opera\\/\\d+\\.\\d+|Firefox\\/\\d+\\.\\d+)",
+          validationValue: ".*", // <-- to be revisited when implementing v2 in future
           isMultiple: true,
         },
       ],

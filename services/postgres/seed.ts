@@ -46,6 +46,16 @@ async function main() {
           validationValue: ".*", // <-- to be revisited when implementing v2 in future
           isMultiple: true,
         },
+        {
+          id: "rate-limits",
+          name: "rate-limits",
+          description:
+            "Allows you to limit number of requests for this app based on period",
+          isEditable: true,
+          validationType: "regex",
+          validationValue: "^d+/Pd+Yd+Md+Wd+Dd+Hd+Md+S$",
+          isMultiple: true,
+        },
       ],
     });
 

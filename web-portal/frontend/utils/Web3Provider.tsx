@@ -3,14 +3,10 @@ import { cookieStorage, createStorage } from "wagmi";
 import {
   arbitrum,
   base,
-  blast,
   mainnet,
-  mode,
   optimism,
   polygon,
   sepolia,
-  zkSync,
-  scroll,
 } from "wagmi/chains";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Provider as JotaiProvider, useSetAtom } from "jotai";
@@ -33,18 +29,15 @@ const metadata = {
 };
 
 // Create wagmiConfig
-const chains = [
+export const chains = [
   mainnet,
   sepolia,
   optimism,
   base,
-  mode,
-  blast,
   arbitrum,
   polygon,
-  zkSync,
-  scroll,
 ] as const;
+
 export const config = defaultWagmiConfig({
   chains,
   projectId,

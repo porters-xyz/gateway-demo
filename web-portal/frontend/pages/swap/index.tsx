@@ -19,17 +19,10 @@ export default function SwapOrRedeem({
   defaultToken: IToken;
 }) {
   const [value, setValue] = useState("swap");
-  const chainId = useChainId();
-
   const setTokenData = useSetAtom(tokenDataAtom);
 
   useEffect(() => {
-    setTokenData(
-      _.uniqBy(
-        _.filter(data, (token) => token.chainId === chainId),
-        "address",
-      ),
-    );
+    setTokenData(data);
   });
 
   return (

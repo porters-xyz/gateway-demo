@@ -8,7 +8,7 @@ import { tokenDataAtom } from "@frontend/utils/atoms";
 import { IToken } from "@frontend/utils/types";
 import { SearchableSelectModal } from "./SearchableSelectModal";
 import { useAccount, useBalance, useChainId } from "wagmi";
-import { zeroAddress } from "viem";
+import { formatGwei, zeroAddress } from "viem";
 
 import { chains } from "@frontend/utils/Web3Provider";
 import { useQuote } from "@frontend/utils/hooks";
@@ -63,10 +63,11 @@ export default function Swap({ defaultToken }: { defaultToken: IToken }) {
 
   const { data: quote } = useQuote({
     sellToken: selectedTokenData?.address,
-    amount: String(swapValue * 10 ** 4),
+    amount: String(swapValue * 10 ** selectedTokenData?.decimals),
   });
 
-  console.log("quote", quote);
+  console.log(String(swapValue * 10 ** selectedTokenData?.decimals));
+
   return (
     <Stack p={8}>
       <SearchableSelectModal
@@ -114,6 +115,11 @@ export default function Swap({ defaultToken }: { defaultToken: IToken }) {
               ...commonStyles,
               input: { ...commonStyles.input, fill: "#fff" },
             }}
+            error={
+              swapValue > Number(_.get(tokenBalance, "formatted"))
+                ? "Not enough balance"
+                : undefined
+            }
           />
           <Stack>
             <Button
@@ -136,13 +142,14 @@ export default function Swap({ defaultToken }: { defaultToken: IToken }) {
           </Stack>
         </Flex>
         <Flex justify="space-between" dir="row" mx={10}>
-          <Text>${(Number(swapValue || 0) * 0.01).toFixed(6)}</Text>
+          <Text size="sm">${(Number(swapValue || 0) * 0.01).toFixed(6)}</Text>
           <Flex align={"center"} gap={4}>
             <Text size="sm">
-              {Number(_.get(tokenBalance, "formatted")).toFixed(6)}
+              {Number(_.get(tokenBalance, "formatted") ?? 0).toFixed(6)}
             </Text>
             <Text
               c="blue"
+              size="sm"
               style={{ fontWeight: "bold", cursor: "pointer" }}
               onClick={() =>
                 setSwapValue(Number(_.get(tokenBalance, "formatted")))

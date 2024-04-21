@@ -16,8 +16,6 @@ import { IRuleType } from "@frontend/utils/types";
 export default function AllowedOriginsForm() {
   const appId = useParams()?.app as string;
   const searchParams = useSearchParams();
-  const router = useRouter();
-  const path = usePathname();
   const rule = searchParams?.get("rule") as string;
   const { mutateAsync, isPending, isSuccess } = useUpdateRuleMutation(
     appId,

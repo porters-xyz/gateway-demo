@@ -59,6 +59,10 @@ export default function RateLimitForm() {
         return isValid ? null : "Please select a valid period";
       },
     },
+    initialValues: {
+      requests: "",
+      period: "",
+    },
   });
 
   const handleValueRemove = (val: string) =>
@@ -121,7 +125,7 @@ export default function RateLimitForm() {
               form.values.requests + `/` + form.values.period,
               ...current,
             ]),
-              form.setValues({ requests: "", period: "" });
+              form.reset();
           }}
         >
           <IconPlus />

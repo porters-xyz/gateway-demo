@@ -29,6 +29,9 @@ export default function AllowedUserAgentsForm() {
     validate: {
       userAgent: matches(ruleRegex, "Enter a valid url user agent string"),
     },
+    initialValues: {
+      userAgent: "",
+    },
   });
 
   const handleValueRemove = (val: string) =>
@@ -67,7 +70,7 @@ export default function AllowedUserAgentsForm() {
           onClick={() => {
             if (formValidation().hasErrors) return;
             setValue((current: any) => [form.values.userAgent, ...current]),
-              form.setFieldValue("userAgent", "");
+              form.reset();
           }}
         >
           <IconPlus />

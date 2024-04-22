@@ -54,7 +54,7 @@ async function main() {
           isEditable: true,
           validationType: "regex",
           validationValue:
-            "/^d+/(-?)P(?=d|Td)(?:(d+)Y)?(?:(d+)M)?(?:(d+)([DW]))?(?:T(?:(d+)H)?(?:(d+)M)?(?:(d+(?:.d+)?)S)?)?$/",
+            "^d+/(-?)P(?=d|Td)(?:(d+)Y)?(?:(d+)M)?(?:(d+)([DW]))?(?:T(?:(d+)H)?(?:(d+)M)?(?:(d+(?:.d+)?)S)?)?$",
           isMultiple: true,
         },
       ],

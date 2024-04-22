@@ -117,12 +117,11 @@ export default function RateLimitForm() {
             if (value.some((v) => v.includes(form.values.period))) {
               return form.setErrors({ period: "Period already exists" });
             }
-
             setValue((current: any) => [
               form.values.requests + `/` + form.values.period,
               ...current,
             ]),
-              form.reset();
+              form.setValues({ requests: "", period: "" });
           }}
         >
           <IconPlus />

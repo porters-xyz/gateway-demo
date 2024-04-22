@@ -53,8 +53,7 @@ async function main() {
             "Allows you to limit number of requests for this app based on period",
           isEditable: true,
           validationType: "regex",
-          validationValue:
-            "^d+/(-?)P(?=d|Td)(?:(d+)Y)?(?:(d+)M)?(?:(d+)([DW]))?(?:T(?:(d+)H)?(?:(d+)M)?(?:(d+(?:.d+)?)S)?)?$",
+          validationValue: `^\d+\/P(?=\d|T\d)(?:(\d+)Y)?(?:(\d+)M)?(?:(\d+)([DW]))?(?:T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+(?:\.\d+)?)S)?)?$`,
           isMultiple: true,
         },
       ],

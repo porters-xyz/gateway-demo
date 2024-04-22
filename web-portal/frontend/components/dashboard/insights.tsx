@@ -6,7 +6,7 @@ import {
   Card,
   RingProgress,
 } from "@mantine/core";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import classes from "@frontend/styles/insight.module.css";
 import { AreaChart } from "@mantine/charts";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";

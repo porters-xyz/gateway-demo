@@ -1,7 +1,6 @@
 import { SiweMessage } from "siwe";
 import Cookies from "js-cookie";
 import { createSIWEConfig } from "@web3modal/siwe";
-import { revalidatePath } from "next/cache";
 
 export const getNonce = async () => {
   const res = await fetch("/api/siwe", { method: "PUT" });

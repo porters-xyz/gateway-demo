@@ -6,3 +6,8 @@
 .tab:hover {
     background-color: transparent;
 }
+
+.tabLabel {
+    font-size: 1.1rem;
+    font-weight: 700;
+}

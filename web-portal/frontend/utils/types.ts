@@ -76,3 +76,13 @@ export interface IBill {
   createdAt?: string;
   transactionType?: string;
 }
+
+export interface IToken {
+  chainId: number;
+  address: Address;
+  name: string;
+  symbol: string;
+  decimals: number;
+  logoURI: string;
+  extensions?: any;
+}

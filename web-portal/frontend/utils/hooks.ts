@@ -189,3 +189,31 @@ export const useSecretKeyMutation = (appId: string) => {
     },
   });
 };
+
+export const useQuote = ({
+  sellToken,
+  amount,
+}: {
+  sellToken: string;
+  amount: string;
+}) => {
+  const fetchQuote = async () => {
+    const response = await fetch(
+      `https://api.0x.org/swap/v1/price?sellToken=${sellToken}&buyToken=0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2&sellAmount=${amount}`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "0x-api-key": "api-key",
+        },
+      },
+    );
+    if (!response.ok) {
+      throw new Error("Failed to fetch quote");
+    }
+    return response.json();
+  };
+  return useQuery({
+    queryKey: ["quote", sellToken],
+    queryFn: fetchQuote,
+  });
+};

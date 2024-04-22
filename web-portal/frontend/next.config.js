@@ -12,6 +12,10 @@ const nextConfig = {
         hostname: "api.web3modal.com",
         port: "",
       },
+      {
+        protocol: "https",
+        hostname: "ethereum-optimism.github.io",
+      },
     ],
   },
   async rewrites() {

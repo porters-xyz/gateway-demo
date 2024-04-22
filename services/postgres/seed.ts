@@ -53,7 +53,8 @@ async function main() {
             "Allows you to limit number of requests for this app based on period",
           isEditable: true,
           validationType: "regex",
-          validationValue: "^d+/Pd+Yd+Md+Wd+Dd+Hd+Md+S$",
+          validationValue:
+            "/^d+/(-?)P(?=d|Td)(?:(d+)Y)?(?:(d+)M)?(?:(d+)([DW]))?(?:T(?:(d+)H)?(?:(d+)M)?(?:(d+(?:.d+)?)S)?)?$/",
           isMultiple: true,
         },
       ],

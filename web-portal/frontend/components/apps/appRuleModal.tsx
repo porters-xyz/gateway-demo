@@ -10,6 +10,7 @@ import ApprovedChainForm from "./forms/approvedChainsForm";
 import AllowedUserAgentsForm from "./forms/allowedUserAgentsForm";
 import AllowedOriginsForm from "./forms/allowedOriginsForm";
 import _ from "lodash";
+import RateLimitForm from "./forms/rateLimitForm";
 
 export default function CreateAppRuleModal() {
   const searchParams = useSearchParams();
@@ -29,6 +30,7 @@ export default function CreateAppRuleModal() {
       {shouldOpen === "secret-key" && <SecretKeyForm />}
       {shouldOpen === "approved-chains" && <ApprovedChainForm />}
       {shouldOpen === "allowed-user-agents" && <AllowedUserAgentsForm />}
+      {shouldOpen === "rate-limit" && <RateLimitForm />}
     </Modal>
   );
 }

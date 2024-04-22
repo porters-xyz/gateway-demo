@@ -30,7 +30,10 @@ const AppRules: React.FC<{ rule: Partial<IRuleType> }> = ({ rule }) => {
         color: "white",
       }}
     >
-      {item.value}
+      {item.value
+        ?.replace("P1D", "Daily")
+        .replace("P1W", "Weekly")
+        .replace("P1M", "Monthly")}
     </Pill>
   ));
 

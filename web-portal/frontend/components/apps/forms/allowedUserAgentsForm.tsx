@@ -19,7 +19,7 @@ export default function AllowedUserAgentsForm() {
   );
   const [value, setValue] = useAtom(existingRuleValuesAtom);
   const ruleTypes = useAtomValue(ruleTypesAtom);
-  const router = useRouter();
+
   const validationRule = _.get(
     _.find(ruleTypes, (r: IRuleType) => r.name === rule),
     "validationValue",

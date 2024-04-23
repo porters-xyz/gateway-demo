@@ -8,7 +8,6 @@ import classes from "@frontend/styles/tabs.module.css";
 import { IToken } from "@frontend/utils/types";
 import { useSetAtom } from "jotai";
 import { tokenDataAtom } from "@frontend/utils/atoms";
-import { useChainId } from "wagmi";
 import _ from "lodash";
 
 export default function SwapOrRedeem({
@@ -89,10 +88,13 @@ export async function getServerSideProps() {
   const data = await res.json();
 
   const { tokens } = data;
-  const defaultToken = _.filter(tokens, { name: "Ether" })[0];
+  const filteredTokens = _.filter(tokens, (token) => {
+    return token.chainId === 10 || token.chainId === 8453;
+  });
+  const defaultToken = _.filter(tokens, { name: "USD Coin" })[0];
   return {
     props: {
-      data: tokens satisfies IToken[],
+      data: filteredTokens satisfies IToken[],
       defaultToken: defaultToken satisfies IToken,
     },
   };

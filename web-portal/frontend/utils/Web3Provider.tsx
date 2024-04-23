@@ -1,15 +1,8 @@
 import { defaultWagmiConfig } from "@web3modal/wagmi/react/config";
 import { cookieStorage, createStorage } from "wagmi";
-import {
-  arbitrum,
-  base,
-  mainnet,
-  optimism,
-  polygon,
-  sepolia,
-} from "wagmi/chains";
+import { base, mainnet, optimism } from "wagmi/chains";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Provider as JotaiProvider, useSetAtom } from "jotai";
+import { Provider as JotaiProvider } from "jotai";
 import { State, WagmiProvider } from "wagmi";
 import { ReactNode } from "react";
 
@@ -29,14 +22,7 @@ const metadata = {
 };
 
 // Create wagmiConfig
-export const chains = [
-  mainnet,
-  sepolia,
-  optimism,
-  base,
-  arbitrum,
-  polygon,
-] as const;
+export const chains = [mainnet, optimism, base] as const;
 
 export const config = defaultWagmiConfig({
   chains,

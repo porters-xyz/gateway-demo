@@ -13,7 +13,7 @@ const (
     MONTH             = 30 * DAY
     YEAR              = 365 * DAY
 )
-var rateRegex = regexp.MustCompile(`(\d+)\/P(?:(\d+)Y)?(?:(\d+)M)?(?:(\d+)D)?T?(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)\.?(\d+)?S)?`)
+var rateRegex = regexp.MustCompile(`(\d+)\/P(?:(\d+)Y)?(?:(\d+)M)?(?:(\d+)D)?T?(?:(\d+)H)?(?:(\d+)M)?(?:(\d+(?:\.\d+)?)?S)?`)
 
 type Rate struct {
     Amount int
@@ -32,8 +32,7 @@ func ParseRate(rateString string) (Rate, error) {
     days := parseInt(matches[4])
     hours := parseInt(matches[5])
     minutes := parseInt(matches[6])
-    seconds := parseInt(matches[7])
-    decimals := parseInt(matches[8])
+    seconds := parseFloat(matches[7])
 
     // months set to 30 days, not to be added to real time
     period := time.Duration(years) * YEAR +
@@ -41,8 +40,7 @@ func ParseRate(rateString string) (Rate, error) {
         time.Duration(days) * DAY +
         time.Duration(hours) * time.Hour +
         time.Duration(minutes) * time.Minute +
-        time.Duration(seconds) * time.Second +
-        time.Duration(decimals / 100) * time.Millisecond
+        time.Duration(seconds * float64(time.Second))
 
     rate := Rate{
         Amount: amount,
@@ -58,6 +56,17 @@ func parseInt(value string) int {
     parsed, err := strconv.Atoi(value)
     if err != nil {
         return 0
+    }
+    return parsed
+}
+
+func parseFloat(value string) float64 {
+    if len(value) == 0 {
+        return 0.0
+    }
+    parsed, err := strconv.ParseFloat(value, 64)
+    if err != nil {
+        return 0.0
     }
     return parsed
 }

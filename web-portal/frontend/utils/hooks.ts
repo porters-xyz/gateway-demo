@@ -1,7 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getSession } from "./siwe";
-import { useAccount } from "wagmi";
+import { useAccount, useBalance } from "wagmi";
 import { usePathname, useRouter } from "next/navigation";
+import { Address } from "viem";
+import { portrOPAddress, supportedChains } from "./consts";
+import _ from "lodash";
+import { IQuote } from "./types";
 
 export const useSession = () => {
   const { address, isConnected } = useAccount();
@@ -192,28 +196,85 @@ export const useSecretKeyMutation = (appId: string) => {
 
 export const useQuote = ({
   sellToken,
-  amount,
+  chainId,
+  sellAmount,
 }: {
   sellToken: string;
-  amount: string;
+  chainId: number | string;
+  sellAmount: number;
 }) => {
   const fetchQuote = async () => {
+    const chainName = _.find(supportedChains, { id: String(chainId) });
+
     const response = await fetch(
-      `https://api.0x.org/swap/v1/price?sellToken=${sellToken}&buyToken=0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2&sellAmount=${amount}`,
+      `https://${chainName?.name}.api.0x.org/swap/v1/price?sellToken=${sellToken}&buyToken=${portrOPAddress}` +
+        `&sellAmount=${sellAmount}`,
       {
         headers: {
           "Content-Type": "application/json",
-          "0x-api-key": "api-key",
+          "0x-api-key": `api-key`,
         },
       },
     );
     if (!response.ok) {
       throw new Error("Failed to fetch quote");
     }
-    return response.json();
+    return response.json() as IQuote;
   };
   return useQuery({
     queryKey: ["quote", sellToken],
     queryFn: fetchQuote,
+    enabled: sellAmount > 0,
+    refetchInterval: 3000,
+  });
+};
+
+export const useTokenBalance = ({
+  token,
+  chainId,
+}: {
+  token: Address;
+  chainId: number;
+}) => {
+  return useBalance({
+    chainId,
+    token,
+    address: `0xd8da6bf26964af9d7eed9e03e53415d37aa96045`, // TODO: replace with user address
+  });
+};
+
+export const useTokenPrice = ({
+  token,
+  chainId,
+}: {
+  token: Address;
+  chainId: number;
+}) => {
+  const fetchTokenPrice = async () => {
+    const response = await fetch(`/api/utils/price/${chainId}/${token}`);
+    if (!response.ok) {
+      throw new Error("Failed to fetch token price");
+    }
+    return response.json();
+  };
+
+  return useQuery({
+    queryKey: ["price", token],
+    queryFn: fetchTokenPrice,
+  });
+};
+
+export const useTokenList = ({ chainId }: { chainId: number | string }) => {
+  const fetchTokenList = async () => {
+    const response = await fetch(`/api/utils/tokens/${chainId}`);
+    if (!response.ok) {
+      throw new Error("Failed to fetch token list");
+    }
+    return response.json();
+  };
+
+  return useQuery({
+    queryKey: ["tokens", chainId],
+    queryFn: fetchTokenList,
   });
 };

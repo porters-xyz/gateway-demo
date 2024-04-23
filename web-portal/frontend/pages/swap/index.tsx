@@ -1,29 +1,15 @@
 import DashboardLayout from "@frontend/components/dashboard/layout";
 import { Stack, Tabs, rem } from "@mantine/core";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { crimson } from "@frontend/utils/theme";
 import Swap from "@frontend/components/swap/Swap";
 import Redeem from "@frontend/components/swap/Redeem";
 import classes from "@frontend/styles/tabs.module.css";
-import { IToken } from "@frontend/utils/types";
-import { useSetAtom } from "jotai";
-import { tokenDataAtom } from "@frontend/utils/atoms";
-import { useChainId } from "wagmi";
+
 import _ from "lodash";
 
-export default function SwapOrRedeem({
-  data,
-  defaultToken,
-}: {
-  data: IToken[];
-  defaultToken: IToken;
-}) {
+export default function SwapOrRedeem() {
   const [value, setValue] = useState("swap");
-  const setTokenData = useSetAtom(tokenDataAtom);
-
-  useEffect(() => {
-    setTokenData(data);
-  });
 
   return (
     <DashboardLayout>
@@ -72,8 +58,8 @@ export default function SwapOrRedeem({
             </Tabs.Tab>
           </Tabs.List>
 
-          <Tabs.Panel value="swap" pt={20}>
-            <Swap defaultToken={defaultToken} />
+          <Tabs.Panel value="swap">
+            <Swap />
           </Tabs.Panel>
           <Tabs.Panel value="redeem">
             <Redeem />
@@ -82,18 +68,4 @@ export default function SwapOrRedeem({
       </Stack>
     </DashboardLayout>
   );
-}
-
-export async function getServerSideProps() {
-  const res = await fetch("https://static.optimism.io/optimism.tokenlist.json");
-  const data = await res.json();
-
-  const { tokens } = data;
-  const defaultToken = _.filter(tokens, { name: "Ether" })[0];
-  return {
-    props: {
-      data: tokens satisfies IToken[],
-      defaultToken: defaultToken satisfies IToken,
-    },
-  };
 }

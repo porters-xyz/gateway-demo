@@ -118,18 +118,6 @@ func parseTxType(str string) TxType {
     }
 }
 
-func NewTenant(id string) Tenant {
-    return Tenant{
-        Id: id,
-    }
-}
-
-func NewApp(id string) App {
-    return App{
-        Id: id,
-    }
-}
-
 func (t *Tenant) Key() string {
     return fmt.Sprintf("%s:%s", TENANT, t.Id)
 }

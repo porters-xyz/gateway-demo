@@ -8,8 +8,6 @@ import (
     "log"
     "net/http"
 
-    "github.com/gorilla/mux"
-
     "porters/db"
     "porters/proxy"
 )
@@ -39,9 +37,8 @@ func (b *BalanceTracker) Load() {
 // TODO optim: script this to avoid multi-hops
 func (b *BalanceTracker) HandleRequest(req *http.Request) {
     ctx := req.Context()
-    path := mux.Vars(req)[proxy.APP_PATH]
-    tmpapp := db.NewApp(path)
-    app := &tmpapp
+    appId := proxy.PluckAppId(req)
+    app := &db.App{Id: appId}
     err := app.Lookup(ctx)
     log.Println("app:", app)
     if err != nil {
@@ -62,7 +59,7 @@ func (b *BalanceTracker) HandleRequest(req *http.Request) {
         lifecycle := proxy.SetStageComplete(ctx, proxy.BalanceCheck)
         ctx = lifecycle.UpdateContext(ctx)
     } else {
-        log.Println("none remaining", path)
+        log.Println("none remaining", appId)
         var cancel context.CancelCauseFunc
         ctx, cancel = context.WithCancelCause(ctx)
         err := proxy.BalanceExceededError

@@ -3,12 +3,7 @@ import _ from "lodash";
 import { useForm, matches } from "@mantine/form";
 import { IconPlus } from "@tabler/icons-react";
 import { useUpdateRuleMutation } from "@frontend/utils/hooks";
-import {
-  useParams,
-  usePathname,
-  useRouter,
-  useSearchParams,
-} from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { useAtom, useAtomValue } from "jotai";
 import { existingRuleValuesAtom, ruleTypesAtom } from "@frontend/utils/atoms";
 import { IRuleType } from "@frontend/utils/types";
@@ -35,6 +30,9 @@ export default function AllowedOriginsForm() {
         ruleRegex,
         "Enter a valid url that starts with http or https",
       ),
+    },
+    initialValues: {
+      url: "",
     },
   });
 
@@ -75,7 +73,7 @@ export default function AllowedOriginsForm() {
           onClick={() => {
             if (formValidation().hasErrors) return;
             setValue((current: any) => [form.values.url, ...current]),
-              form.setFieldValue("url", "");
+              form.reset();
           }}
         >
           <IconPlus />

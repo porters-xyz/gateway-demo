@@ -19,7 +19,7 @@ export default function AllowedUserAgentsForm() {
   );
   const [value, setValue] = useAtom(existingRuleValuesAtom);
   const ruleTypes = useAtomValue(ruleTypesAtom);
-  const router = useRouter();
+
   const validationRule = _.get(
     _.find(ruleTypes, (r: IRuleType) => r.name === rule),
     "validationValue",
@@ -28,6 +28,9 @@ export default function AllowedUserAgentsForm() {
   const form = useForm({
     validate: {
       userAgent: matches(ruleRegex, "Enter a valid url user agent string"),
+    },
+    initialValues: {
+      userAgent: "",
     },
   });
 
@@ -67,7 +70,7 @@ export default function AllowedUserAgentsForm() {
           onClick={() => {
             if (formValidation().hasErrors) return;
             setValue((current: any) => [form.values.userAgent, ...current]),
-              form.setFieldValue("userAgent", "");
+              form.reset();
           }}
         >
           <IconPlus />

@@ -12,8 +12,11 @@ import (
 
     "github.com/gorilla/mux"
 
+    "porters/common"
     "porters/db"
 )
+
+var server *http.Server
 
 func Start() {
     // TODO grab url for gateway kit
@@ -45,9 +48,26 @@ func Start() {
     router := mux.NewRouter()
     router.HandleFunc("/{appId}", handler(revProxy))
     router.HandleFunc("/health", healthHandler())
-    err2 := http.ListenAndServe(":9000", router)
-    if err2 != nil {
-        panic(err2)
+
+    server = &http.Server{Addr: ":9000", Handler: router}
+    go func() {
+        err := server.ListenAndServe()
+        if err != nil {
+            log.Println("server error", err)
+        }
+    }()
+}
+
+func Stop() {
+    // 5 second shutdown
+    ctx, cancel := context.WithTimeout(context.Background(), common.SHUTDOWN_DELAY)
+    defer cancel()
+
+    err := server.Shutdown(ctx)
+    if err != nil {
+        log.Println("error shutting down", err)
+    } else {
+        log.Println("shutdown successful")
     }
 }
 

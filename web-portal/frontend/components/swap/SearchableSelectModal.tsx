@@ -49,12 +49,12 @@ export const SearchableSelectModal: React.FC<Props> = ({
         {filteredOptions.map((option) => (
           <Flex
             key={_.get(option, "address")}
-            onClick={() => onSelect(option)}
+            onClick={() => onSelect(option as IToken)}
             align="center"
             p={8}
           >
             <Image
-              src={_.get(option, "logoURI")}
+              src={_.get(option, "logoURI") ?? "/favicon.ico"}
               alt="ETH"
               width={32}
               height={32}

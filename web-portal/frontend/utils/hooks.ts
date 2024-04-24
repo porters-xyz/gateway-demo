@@ -4,6 +4,7 @@ import { useAccount, useBalance } from "wagmi";
 import { usePathname, useRouter } from "next/navigation";
 import { Address } from "viem";
 import { portrOPAddress } from "./consts";
+import { IToken } from "./types";
 export const useSession = () => {
     const { address, isConnected } = useAccount();
     const router = useRouter();
@@ -231,7 +232,7 @@ export const useTokenBalance = ({
     return useBalance({
         chainId,
         token,
-        address: `0xd8da6bf26964af9d7eed9e03e53415d37aa96045`,
+        address: `0xd8da6bf26964af9d7eed9e03e53415d37aa96045`, // TODO: replace with user address
     });
 };
 
@@ -250,10 +251,23 @@ export const useTokenPrice = ({
         return response.json();
     };
 
-    console.log("useTokenPrice", token);
-
     return useQuery({
         queryKey: ["price", token],
         queryFn: fetchTokenPrice,
+    });
+};
+
+export const useTokenList = ({ chainId }: { chainId: number | string }) => {
+    const fetchTokenList = async () => {
+        const response = await fetch(`/api/utils/tokens/${chainId}`);
+        if (!response.ok) {
+            throw new Error("Failed to fetch token list");
+        }
+        return response.json();
+    };
+
+    return useQuery({
+        queryKey: ["tokens", chainId],
+        queryFn: fetchTokenList,
     });
 };

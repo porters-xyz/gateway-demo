@@ -1,10 +1,8 @@
 import { useState } from "react";
 import { Flex, Stack, Button, TextInput, Text, Select } from "@mantine/core";
-import { useAtomValue } from "jotai";
 import _ from "lodash";
 import Image from "next/image";
 import { karla } from "@frontend/utils/theme";
-import { tokenDataAtom } from "@frontend/utils/atoms";
 import { IToken } from "@frontend/utils/types";
 import { SearchableSelectModal } from "./SearchableSelectModal";
 
@@ -12,6 +10,7 @@ import { chains } from "@frontend/utils/Web3Provider";
 import {
     useQuote,
     useTokenBalance,
+    useTokenList,
     useTokenPrice,
 } from "@frontend/utils/hooks";
 
@@ -33,9 +32,15 @@ const chainOptions = _.map(chains, "name").filter(
     (c) => !c.includes("Ethereum"),
 );
 
-export default function Swap({ defaultToken }: { defaultToken: IToken }) {
-    const tokenData = useAtomValue(tokenDataAtom);
+export default function Swap() {
     const [selectedChainId, setSelectedChainId] = useState(10);
+    const { data: tokenList } = useTokenList({ chainId: selectedChainId });
+
+    const defaultToken: IToken = _.filter(
+        tokenList,
+        (c: IToken) =>
+            c.address === `0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee`,
+    )[0];
 
     const [selectedTokenData, setSelectedTokenData] =
         useState<IToken>(defaultToken);
@@ -47,18 +52,18 @@ export default function Swap({ defaultToken }: { defaultToken: IToken }) {
     const [opened, setOpened] = useState(false);
 
     const filteredTokenData = _.filter(
-        tokenData,
+        tokenList,
         (t) => t.chainId === selectedChainId,
     );
 
     const { data: selectedTokenBalance } = useTokenBalance({
-        token: selectedTokenData.address,
-        chainId: selectedTokenData.chainId,
+        token: selectedTokenData?.address,
+        chainId: selectedTokenData?.chainId,
     });
 
     const { data: selectedTokenPrice } = useTokenPrice({
-        token: selectedTokenData.address,
-        chainId: selectedTokenData.chainId,
+        token: selectedTokenData?.address,
+        chainId: selectedTokenData?.chainId,
     });
 
     const [swapValue, setSwapValue] = useState(0);
@@ -67,11 +72,6 @@ export default function Swap({ defaultToken }: { defaultToken: IToken }) {
         sellToken: selectedTokenData?.address,
         chainId: selectedTokenData?.chainId,
         amount: String(swapValue * 10 ** selectedTokenData?.decimals),
-    });
-
-    console.log({
-        input: swapValue,
-        value: _.get(selectedTokenPrice, selectedTokenData?.address),
     });
 
     return (

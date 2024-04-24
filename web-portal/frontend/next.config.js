@@ -14,7 +14,7 @@ const nextConfig = {
             },
             {
                 protocol: "https",
-                hostname: "ethereum-optimism.github.io",
+                hostname: "tokens.1inch.io",
             },
         ],
     },

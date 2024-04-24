@@ -56,13 +56,7 @@ type Apprule struct {
     Value string
     CachedAt time.Time
     App App
-    RuleType Ruletype
-}
-
-type Ruletype struct {
-    Id string
-    Name string
-    Active bool
+    RuleType string
 }
 
 // tied to tenant, this isn't cached directly
@@ -128,11 +122,7 @@ func (a *App) Key() string {
 
 // Keys to a set
 func (ar *Apprule) Key() string {
-    return fmt.Sprintf("%s:%s", APPRULE, ar.App.Id)
-}
-
-func (rt *Ruletype) Key() string {
-    return fmt.Sprintf("%s:%s", RULETYPE, rt.Id)
+    return fmt.Sprintf("%s:%s:%s", APPRULE, ar.App.Id, ar.Id)
 }
 
 // TODO is this needed?

@@ -208,6 +208,17 @@ func (a *App) Lookup(ctx context.Context) error {
     return nil
 }
 
+func (a *App) Rules(ctx context.Context) ([]AppRule, error) {
+    key := fmt.Sprintf("%s:%s", APPRULE, a.Id)
+
+    iter := ScanKeys(ctx, key)
+    for iter.Next() {
+        iter.Val()
+        result, err := getCache().HGetAll(ctx, key).Result()
+    
+    }
+}
+
 func (p *Product) Lookup(ctx context.Context) error {
     fromContext, ok := productFromContext(ctx)
     if ok {
@@ -360,6 +371,9 @@ func ScanKeys(ctx context.Context, key string) *redis.ScanIterator {
     iter := getCache().Scan(ctx, 0, scankey, 0).Iterator()
     return iter
 }
+
+// TODO write scan for specific types, don't leak redis specifics outside
+// package
 
 // use context to prevent duplicate cache hits in same request
 

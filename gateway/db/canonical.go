@@ -111,7 +111,7 @@ func (a *App) fetchRules(ctx context.Context) ([]Apprule, error) {
     rules := make([]Apprule, 0)
     db := getCanonicalDB()
     // TODO join with rule types
-    rows, err := db.QueryContext(ctx, `SELECT id, value, active FROM "AppRule" WHERE "appId" = $1 AND "deletedAt" IS NULL`, a.Id)
+    rows, err := db.QueryContext(ctx, `SELECT "AppRule".id, "AppRule".value, "AppRule".active, "RuleType".name FROM "AppRule", "RuleType" WHERE "AppRule"."appId" = $1 AND "AppRule"."deletedAt" IS NULL AND "RuleType".active = '1' AND "AppRule"."ruleId" = "RuleType"."id"`, a.Id)
     if err != nil {
         return nil, err
     }
@@ -119,7 +119,7 @@ func (a *App) fetchRules(ctx context.Context) ([]Apprule, error) {
 
     for rows.Next() {
         apprule := Apprule{}
-        err := rows.Scan(&apprule.Id, &apprule.Value, &apprule.Active)
+        err := rows.Scan(&apprule.Id, &apprule.Value, &apprule.Active, &apprule.RuleType)
         if err != nil {
             return nil, err
         }

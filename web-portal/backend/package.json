@@ -5,7 +5,8 @@
   "author": "",
   "private": true,
   "prisma": {
-    "schema": "../../services/postgres/schema.prisma"
+    "schema": "../../services/postgres/schema.prisma",
+    "seed": "ts-node ../../services/postgres/seed.ts"
   },
   "license": "UNLICENSED",
   "scripts": {

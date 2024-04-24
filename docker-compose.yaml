@@ -18,13 +18,15 @@ services:
   schema:
     build:
       context: ./services/postgres
-    image: porters-schema
+    image: porters-schema:latest
 
   frontend:
     env_file:
       - .env
     build:
       context: ./web-portal/frontend
+      args:
+        API_ENDPOINT: ${API_ENDPOINT}
     depends_on:
       - backend
     expose:
@@ -38,7 +40,6 @@ services:
     build:
       context: ./web-portal/backend
     depends_on:
-      - schema
       - postgres
     expose:
       - 4000

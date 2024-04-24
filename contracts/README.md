@@ -48,7 +48,9 @@ $ anvil
 ### Deploy
 
 ```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
+$ forge create --rpc-url $ETH_RPC_URL --chain 10 --account deployer src/PortersUsage.sol:PortersUsage
+
+$ forge verify-contract --etherscan-api-key $ETHERSCAN_KEY --chain 10 <DEPLOYED_ADDRESS> PortersUsage
 ```
 
 ### Cast

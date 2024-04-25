@@ -1,7 +1,7 @@
 import React from "react";
 import { Stack, Table, Flex, Title, Card, Button } from "@mantine/core";
 import { IBill } from "@frontend/utils/types";
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 import Link from "next/link";
 import { billingHistoryAtom, sessionAtom } from "@frontend/utils/atoms";

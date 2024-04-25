@@ -208,15 +208,31 @@ func (a *App) Lookup(ctx context.Context) error {
     return nil
 }
 
-func (a *App) Rules(ctx context.Context) ([]AppRule, error) {
-    key := fmt.Sprintf("%s:%s", APPRULE, a.Id)
+func (a *App) Rules(ctx context.Context) ([]Apprule, error) {
+    rules := make([]Apprule, 0)
+    pattern := fmt.Sprintf("%s:%s", APPRULE, a.Id)
 
-    iter := ScanKeys(ctx, key)
-    for iter.Next() {
-        iter.Val()
+    // TODO check whether cache needs refresh
+    iter := ScanKeys(ctx, pattern)
+    for iter.Next(ctx) {
+        key := iter.Val()
         result, err := getCache().HGetAll(ctx, key).Result()
-    
+        if err != nil {
+            log.Println("error during scan", err)
+            continue
+        }
+        id := key // TODO extract id from key
+        active, _ := strconv.ParseBool(result["active"])
+        cachedAt, _ := time.Parse(time.RFC3339, result["cachedAt"])
+        ar := Apprule{
+            Id: id,
+            Active: active,
+            Value: result["value"],
+            CachedAt: cachedAt,
+        }
+        rules = append(rules, ar)
     }
+    return rules, nil
 }
 
 func (p *Product) Lookup(ctx context.Context) error {

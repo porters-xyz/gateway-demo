@@ -14,7 +14,7 @@ const nextConfig = {
             },
             {
                 protocol: "https",
-                hostname: "tokens.1inch.io",
+                hostname: "*.1inch.io",
             },
         ],
     },

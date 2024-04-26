@@ -202,12 +202,13 @@ export const useQuote = ({
     amount: string;
 }) => {
     const fetchQuote = async () => {
+        console.log({ sellToken, chainId, amount });
         const response = await fetch(
-            `https://api.0x.org/swap/v1/price?sellToken=${sellToken}&buyToken=${portrOPAddress}&sellAmount=${amount}`,
+            `https://api.0x.org/swap/v1/price?sellToken=${sellToken}&buyToken=${portrOPAddress}&sellAmount=${Number(amount)}`,
             {
                 headers: {
                     "Content-Type": "application/json",
-                    "0x-api-key": "api-key",
+                    "0x-api-key": process.env.NEXT_PUBLIC_0XAPI,
                 },
             },
         );

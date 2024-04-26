@@ -22,6 +22,7 @@ import {
   useTokenPrice,
 } from "@frontend/utils/hooks";
 import { portrTokenData } from "@frontend/utils/consts";
+import { useQueryClient } from "@tanstack/react-query";
 
 // Common styles for TextInput and Select components
 const commonStyles = {
@@ -55,11 +56,16 @@ export default function Swap() {
 
   const [sellAmount, setSellAmount] = useState(0.0);
   const [buyAmount, setBuyAmount] = useState(0.0);
-
+  const queryClient = useQueryClient();
   const handleTokenChange = (token: IToken) => {
     setSelectedTokenData(token);
     setSellAmount(0.0);
     setBuyAmount(0.0);
+  };
+
+  const handleSellAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSellAmount(Number(e.target.value));
+    queryClient.invalidateQueries({ queryKey: ["quote"] });
   };
 
   const [opened, setOpened] = useState(false);
@@ -96,6 +102,8 @@ export default function Swap() {
   if (selectedTokenBalance?.decimals === 0) {
     setBuyAmount(0.0);
   }
+
+  console.log(isLoading);
 
   return (
     <Stack p={8} mt={10}>
@@ -138,7 +146,7 @@ export default function Swap() {
             label="Swap"
             type="number"
             value={sellAmount}
-            onChange={(e) => setSellAmount(parseFloat(e.target.value))}
+            onChange={(e) => handleSellAmountChange(e)}
             styles={{
               ...commonStyles,
               input: { ...commonStyles.input, fill: "#fff" },

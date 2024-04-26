@@ -5,7 +5,6 @@ import (
     "database/sql"
     "errors"
     "log"
-    "os"
     "sync"
 
     "github.com/lib/pq"
@@ -33,7 +32,7 @@ var postgresMutex sync.Once
 
 func getCanonicalDB() *sql.DB {
     postgresMutex.Do(func() {
-        connStr := os.Getenv("DATABASE_URL")
+        connStr := common.GetConfig(common.DATABASE_URL)
         connector, err := pq.NewConnector(connStr)
         if err != nil {
             // TODO handle nicely, maybe retry?

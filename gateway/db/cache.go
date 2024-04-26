@@ -4,7 +4,6 @@ import (
     "context"
     "fmt"
     "log"
-    "os"
     "strconv"
     "sync"
     "time"
@@ -46,12 +45,12 @@ var redisMutex sync.Once
 func getCache() *redis.Client {
     redisMutex.Do(func() {
         // TODO figure out which redis instance to connect to
-        opts, err := redis.ParseURL(os.Getenv("REDIS_URL"))
+        opts, err := redis.ParseURL(common.GetConfig(common.REDIS_URL))
         if err != nil {
             opts = &redis.Options{
-                Addr: os.Getenv("REDIS_ADDR"),
-                Username: os.Getenv("REDIS_USER"),
-                Password: os.Getenv("REDIS_PASSWORD"),
+                Addr: common.GetConfig(common.REDIS_ADDR),
+                Username: common.GetConfig(common.REDIS_USER),
+                Password: common.GetConfig(common.REDIS_PASSWORD),
                 DB: 0,
             }
         }

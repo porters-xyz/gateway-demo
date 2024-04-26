@@ -3,24 +3,23 @@ package proxy
 import (
     "context"
     "errors"
-    "io"
+    "fmt"
     "log"
     "net/url"
     "net/http"
     "net/http/httputil"
-    "os"
+    "time"
 
     "github.com/gorilla/mux"
 
     "porters/common"
-    "porters/db"
 )
 
 var server *http.Server
 
 func Start() {
     // TODO grab url for gateway kit
-    proxyUrl := os.Getenv("PROXY_TO")
+    proxyUrl := common.GetConfig(common.PROXY_TO)
     remote, err := url.Parse(proxyUrl)
     log.Println("remote", remote)
     if err != nil {
@@ -36,18 +35,14 @@ func Start() {
         }
     }
 
-    healthHandler := func() func(http.ResponseWriter, *http.Request) {
-        return func(resp http.ResponseWriter, req *http.Request) {
-            hc := (&db.Cache{}).Healthcheck()
-            resp.Header().Set("Content-Type", "application/json")
-            io.WriteString(resp, hc.ToJson())
-        }
-    }
-
     revProxy := setupProxy(remote)
     router := mux.NewRouter()
-    router.HandleFunc("/{appId}", handler(revProxy))
-    router.HandleFunc("/health", healthHandler())
+    // TODO put health check on subroute
+
+    proxyRouter := addProxyRoutes(router)
+    proxyRouter.HandleFunc(fmt.Sprintf(`/{%s}`, APP_PATH), handler(revProxy))
+
+    _ = addHealthcheckRoute(router)
 
     server = &http.Server{Addr: ":9000", Handler: router}
     go func() {
@@ -60,7 +55,8 @@ func Start() {
 
 func Stop() {
     // 5 second shutdown
-    ctx, cancel := context.WithTimeout(context.Background(), common.SHUTDOWN_DELAY)
+    shutdownTime := time.Duration(common.GetConfigInt(common.SHUTDOWN_DELAY)) * time.Second
+    ctx, cancel := context.WithTimeout(context.Background(), shutdownTime)
     defer cancel()
 
     err := server.Shutdown(ctx)
@@ -85,8 +81,9 @@ func setupProxy(remote *url.URL) *httputil.ReverseProxy {
     revProxy.Director = func(req *http.Request) {
         defaultDirector(req)
 
-        // TODO move to filter
         req.Host = remote.Host
+        // TODO proxy to pokt chain id
+        //req.URL.Path = PROXY_TO + mapping
 
         cancel := RequestCanceler(req)
 

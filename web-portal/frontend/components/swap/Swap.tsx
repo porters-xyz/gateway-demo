@@ -1,5 +1,13 @@
-import { useState } from "react";
-import { Flex, Stack, Button, TextInput, Text, Select } from "@mantine/core";
+import { useEffect, useState } from "react";
+import {
+  Flex,
+  Stack,
+  Button,
+  TextInput,
+  Text,
+  Select,
+  Loader,
+} from "@mantine/core";
 import _ from "lodash";
 import Image from "next/image";
 import { karla } from "@frontend/utils/theme";
@@ -13,6 +21,7 @@ import {
   useTokenList,
   useTokenPrice,
 } from "@frontend/utils/hooks";
+import { portrTokenData } from "@frontend/utils/consts";
 
 // Common styles for TextInput and Select components
 const commonStyles = {
@@ -44,8 +53,13 @@ export default function Swap() {
   const [selectedTokenData, setSelectedTokenData] =
     useState<IToken>(defaultToken);
 
+  const [sellAmount, setSellAmount] = useState(0.0);
+  const [buyAmount, setBuyAmount] = useState(0.0);
+
   const handleTokenChange = (token: IToken) => {
     setSelectedTokenData(token);
+    setSellAmount(0.0);
+    setBuyAmount(0.0);
   };
 
   const [opened, setOpened] = useState(false);
@@ -65,13 +79,23 @@ export default function Swap() {
     chainId: selectedTokenData?.chainId,
   });
 
-  const [swapValue, setSwapValue] = useState(0);
-
-  const { data: quote } = useQuote({
+  const { data: quote, isLoading } = useQuote({
     sellToken: selectedTokenData?.address,
     chainId: selectedTokenData?.chainId,
-    amount: String(swapValue * 10 ** selectedTokenData?.decimals),
+    sellAmount: Number(sellAmount * 10 ** selectedTokenData?.decimals),
   });
+
+  const showError =
+    sellAmount > Number(_.get(selectedTokenBalance, "formatted"));
+  useEffect(
+    () =>
+      setBuyAmount(Number(quote?.buyAmount) / 10 ** portrTokenData?.decimals),
+    [quote],
+  );
+
+  if (selectedTokenBalance?.decimals === 0) {
+    setBuyAmount(0.0);
+  }
 
   return (
     <Stack p={8} mt={10}>
@@ -113,18 +137,14 @@ export default function Swap() {
             placeholder="Enter amount"
             label="Swap"
             type="number"
-            value={swapValue}
-            onChange={(e) => setSwapValue(parseFloat(e.target.value))}
+            value={sellAmount}
+            onChange={(e) => setSellAmount(parseFloat(e.target.value))}
             styles={{
               ...commonStyles,
               input: { ...commonStyles.input, fill: "#fff" },
               error: { marginLeft: 10 },
             }}
-            error={
-              swapValue > Number(_.get(selectedTokenBalance, "formatted"))
-                ? "Not enough balance"
-                : undefined
-            }
+            error={showError ? "Not enough balance" : undefined}
           />
           <Stack>
             <Button
@@ -147,10 +167,14 @@ export default function Swap() {
           </Stack>
         </Flex>
         <Flex justify="space-between" dir="row" mx={10}>
-          <Text size="sm">
-            $
+          <Text
+            size="sm"
+            style={{ fontWeight: 600 }}
+            c={showError ? "red" : "green"}
+          >
+            {`$ `}
             {(
-              Number(swapValue ?? 0) *
+              Number(sellAmount ?? 0) *
                 Number(
                   _.get(selectedTokenPrice, [selectedTokenData?.address], 0),
                 ) || 0.0
@@ -167,7 +191,7 @@ export default function Swap() {
               size="sm"
               style={{ fontWeight: "bold", cursor: "pointer" }}
               onClick={() =>
-                setSwapValue(
+                setSellAmount(
                   _.get(selectedTokenBalance, "formatted", 0) as number,
                 )
               }
@@ -194,6 +218,10 @@ export default function Swap() {
             ...commonStyles,
             input: { ...commonStyles.input, fill: "#fff" },
           }}
+          value={!isLoading && buyAmount ? buyAmount : ""}
+          leftSection={isLoading ? <Loader size="sm" /> : null}
+          onChange={(e) => setBuyAmount(parseFloat(e.target.value))}
+          readOnly
         />
         <Button
           style={{

@@ -14,6 +14,17 @@ export const portrTokenData: IToken = {
   address: portrOPAddress,
   name: "PORTER Gateway",
   symbol: "PORTR",
-  decimals: 6,
+  decimals: 18,
   logoURI: "/favicon.ico",
 };
+
+export const supportedChains = [
+  {
+    id: "10",
+    name: "optimism",
+  },
+  {
+    id: "8543",
+    name: "base",
+  },
+];

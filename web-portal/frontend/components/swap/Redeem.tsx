@@ -3,12 +3,10 @@ import { Flex, Stack, Button, TextInput, Text, Select } from "@mantine/core";
 import _ from "lodash";
 import Image from "next/image";
 import { karla } from "@frontend/utils/theme";
-import { IToken } from "@frontend/utils/types";
-import { SearchableSelectModal } from "./SearchableSelectModal";
+
 import { portrTokenData } from "@frontend/utils/consts";
 import { chains } from "@frontend/utils/Web3Provider";
-import { useTokenBalance, useTokenList } from "@frontend/utils/hooks";
-import { portrOPAddress } from "@frontend/utils/consts";
+import { useTokenBalance } from "@frontend/utils/hooks";
 
 // Common styles for TextInput and Select components
 const commonStyles = {

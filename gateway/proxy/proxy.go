@@ -14,6 +14,7 @@ import (
 
     "porters/common"
     "porters/db"
+    "porters/utils"
 )
 
 var server *http.Server
@@ -83,8 +84,11 @@ func setupProxy(remote *url.URL) *httputil.ReverseProxy {
         defaultDirector(req)
 
         req.Host = remote.Host
-        // TODO proxy to pokt chain id
-        //req.URL.Path = PROXY_TO + mapping
+
+        poktId := lookupPoktId(req)
+        target := utils.NewTarget(remote, poktId)
+        req.URL = target.URL()
+        log.Println("proxying to", target.URL())
 
         cancel := RequestCanceler(req)
 

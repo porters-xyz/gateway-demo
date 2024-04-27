@@ -93,6 +93,7 @@ type Product struct {
     Name string // subdomain on endpoint
     PoktId string // mapping on pokt network
     Weight int
+    CachedAt time.Time
     MissedAt time.Time
 }
 

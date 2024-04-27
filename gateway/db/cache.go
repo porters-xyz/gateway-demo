@@ -114,7 +114,9 @@ func (ar *Apprule) cache(ctx context.Context) error {
     err := getCache().HSet(ctx, ar.Key(), 
         "active", ar.Active,
         "value", ar.Value,
-        "active", ar.Active).Err()
+        "appId", ar.App.Id,
+        "ruleType", ar.RuleType,
+        "cachedAt", time.Now()).Err()
     if err != nil {
         // TODO handle errors correctly
         return err
@@ -125,7 +127,10 @@ func (ar *Apprule) cache(ctx context.Context) error {
 func (p *Product) cache(ctx context.Context) error {
     err := getCache().HSet(ctx, p.Key(),
         "poktId", p.PoktId,
-        "weight", p.Weight).Err()
+        "weight", p.Weight,
+        "active", p.Active,
+        "cachedAt", time.Now(),
+        "missedAt", p.MissedAt).Err()
     if err != nil {
         // TODO handle error here rather than return it
         return err
@@ -307,6 +312,11 @@ func (t *Tenant) refreshAt() time.Time {
 
 func (a *App) refreshAt() time.Time {
     return a.CachedAt.Add(1 * time.Minute)
+}
+
+// Products rarely change, hourly is ok
+func (p *Product) refreshAt() time.Time {
+    return p.CachedAt.Add(1 * time.Hour)
 }
 
 func backoff(missedAt string) bool {

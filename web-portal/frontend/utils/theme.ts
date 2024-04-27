@@ -59,6 +59,7 @@ export const theme = createTheme({
           fontFamily: crimson.style.fontFamily,
           fontWeight: 700,
           fontSize: rem(20),
+          color: "white",
         },
       },
     }),

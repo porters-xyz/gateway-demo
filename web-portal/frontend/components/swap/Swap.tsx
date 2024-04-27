@@ -10,12 +10,15 @@ import {
 } from "@mantine/core";
 import _ from "lodash";
 import Image from "next/image";
-import { karla } from "@frontend/utils/theme";
+import { crimson, karla } from "@frontend/utils/theme";
 import { IToken } from "@frontend/utils/types";
 import { SearchableSelectModal } from "./SearchableSelectModal";
+import { Address, erc20Abi } from "viem";
+import { supportedChains } from "@frontend/utils/consts";
 
 import { chains } from "@frontend/utils/Web3Provider";
 import {
+  useCheckAllowance,
   useQuote,
   useTokenBalance,
   useTokenList,
@@ -23,6 +26,12 @@ import {
 } from "@frontend/utils/hooks";
 import { portrTokenData } from "@frontend/utils/consts";
 import { useQueryClient } from "@tanstack/react-query";
+import {
+  useChainId,
+  useSendTransaction,
+  useSwitchChain,
+  useWriteContract,
+} from "wagmi";
 
 // Common styles for TextInput and Select components
 const commonStyles = {
@@ -38,25 +47,99 @@ const commonStyles = {
   },
 };
 
-const chainOptions = _.map(chains, "name").filter(
-  (c) => !c.includes("Ethereum"),
-);
+const chainOptions = _.map(chains, "name").filter((c) => !c.includes("Eth"));
 
 export default function Swap() {
+  // Network/Token data
   const [selectedChainId, setSelectedChainId] = useState(10);
+  const selectedChain = _.find(
+    chains,
+    (c) => Number(c.id) === Number(selectedChainId),
+  );
   const { data: tokenList } = useTokenList({ chainId: selectedChainId });
+  const defaultToken = _.first(tokenList) as IToken;
 
-  const defaultToken: IToken = _.filter(
-    tokenList,
-    (c: IToken) => c.address === `0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee`,
-  )[0];
+  const exchangeProxy = _.get(
+    _.find(supportedChains, { id: selectedChainId }),
+    "exchangeProxy",
+  ) as unknown as Address;
 
-  const [selectedTokenData, setSelectedTokenData] =
-    useState<IToken>(defaultToken);
+  // Utils
+  const chainId = useChainId();
+  const { switchChain } = useSwitchChain();
+  const { writeContract } = useWriteContract();
+  const { sendTransaction } = useSendTransaction();
+  const queryClient = useQueryClient();
 
+  // UI States
+  const [selectedTokenData, setSelectedTokenData] = useState<IToken>();
   const [sellAmount, setSellAmount] = useState(0.0);
   const [buyAmount, setBuyAmount] = useState(0.0);
-  const queryClient = useQueryClient();
+  const [opened, setOpened] = useState(false);
+
+  // Data Fetching
+  const { data: selectedTokenBalance } = useTokenBalance({
+    token:
+      selectedTokenData?.address === defaultToken?.address
+        ? undefined
+        : selectedTokenData?.address!,
+    chainId: selectedTokenData?.chainId!,
+  });
+
+  const { data: selectedTokenPrice } = useTokenPrice({
+    token: selectedTokenData?.address!,
+    chainId: selectedTokenData?.chainId!,
+  });
+
+  const {
+    data: quote,
+    isLoading: isQuoteLoading,
+    isFetching: isQuoteFetching,
+  } = useQuote({
+    sellToken: selectedTokenData?.address!,
+    chainId: selectedTokenData?.chainId!,
+    sellAmount: Number(sellAmount * 10 ** selectedTokenData?.decimals!),
+  });
+
+  const { data: allowance } = useCheckAllowance({
+    sellTokenAddress: selectedTokenData?.address!,
+    selectedChainId,
+    exchangeProxy,
+  });
+
+  // Helpers
+  const showError =
+    sellAmount > Number(_.get(selectedTokenBalance, "formatted")) ||
+    !selectedTokenBalance;
+
+  const shouldDisable =
+    isQuoteLoading ||
+    isQuoteFetching ||
+    !buyAmount ||
+    !sellAmount ||
+    showError ||
+    !quote ||
+    !selectedChain ||
+    !selectedTokenData ||
+    !selectedTokenBalance;
+
+  const sellAmountBigNumber = Number.isNaN(sellAmount)
+    ? BigInt(0)
+    : BigInt(sellAmount * 10 ** (selectedTokenData?.decimals ?? 18));
+
+  const needToSwitchChain = chainId !== selectedChainId;
+  const needToApproveToken =
+    allowance === BigInt(0) ||
+    (allowance &&
+      allowance < BigInt(sellAmount * 10 ** selectedTokenData?.decimals!));
+
+  // Action Handlers
+  const handleSwitchNetwork = () => {
+    if (chainId !== quote?.chainId) {
+      switchChain({ chainId: quote?.chainId });
+    }
+  };
+
   const handleTokenChange = (token: IToken) => {
     setSelectedTokenData(token);
     setSellAmount(0.0);
@@ -65,52 +148,52 @@ export default function Swap() {
 
   const handleSellAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSellAmount(Number(e.target.value));
-    queryClient.invalidateQueries({ queryKey: ["quote"] });
+    queryClient.refetchQueries({ queryKey: ["0xPrice"] });
+    queryClient.refetchQueries({ queryKey: ["0xQuote"] });
   };
 
-  const [opened, setOpened] = useState(false);
+  const handleAllowance = () => {
+    writeContract({
+      chainId: selectedChainId,
+      address: quote?.sellTokenAddress,
+      abi: erc20Abi,
+      functionName: "approve",
+      args: [exchangeProxy, sellAmountBigNumber],
+    });
+  };
 
-  const filteredTokenData = _.filter(
-    tokenList,
-    (t) => t.chainId === selectedChainId,
-  );
+  const handleSwap = () => {
+    sendTransaction({
+      to: quote?.to!,
+      value: quote?.value,
+      data: quote?.data,
+    });
+  };
 
-  const { data: selectedTokenBalance } = useTokenBalance({
-    token: selectedTokenData?.address,
-    chainId: selectedTokenData?.chainId,
-  });
+  // Effects
 
-  const { data: selectedTokenPrice } = useTokenPrice({
-    token: selectedTokenData?.address,
-    chainId: selectedTokenData?.chainId,
-  });
+  useEffect(() => {
+    if (!selectedTokenData) setSelectedTokenData(defaultToken);
+  }, [defaultToken]);
 
-  const { data: quote, isLoading } = useQuote({
-    sellToken: selectedTokenData?.address,
-    chainId: selectedTokenData?.chainId,
-    sellAmount: Number(sellAmount * 10 ** selectedTokenData?.decimals),
-  });
+  useEffect(() => {
+    if (selectedTokenBalance?.value === BigInt(0)) {
+      setBuyAmount(0.0);
+    }
+  }, [selectedTokenBalance]);
 
-  const showError =
-    sellAmount > Number(_.get(selectedTokenBalance, "formatted"));
   useEffect(
     () =>
       setBuyAmount(Number(quote?.buyAmount) / 10 ** portrTokenData?.decimals),
     [quote],
   );
 
-  if (selectedTokenBalance?.decimals === 0) {
-    setBuyAmount(0.0);
-  }
-
-  console.log(isLoading);
-
   return (
     <Stack p={8} mt={10}>
       <SearchableSelectModal
         onClose={() => setOpened(false)}
         opened={opened}
-        options={filteredTokenData}
+        options={tokenList!}
         onSelect={(token: IToken) => {
           handleTokenChange(token);
           setOpened(false);
@@ -184,7 +267,7 @@ export default function Swap() {
             {(
               Number(sellAmount ?? 0) *
                 Number(
-                  _.get(selectedTokenPrice, [selectedTokenData?.address], 0),
+                  _.get(selectedTokenPrice, [selectedTokenData?.address!], 0),
                 ) || 0.0
             ).toFixed(6)}
           </Text>
@@ -226,8 +309,12 @@ export default function Swap() {
             ...commonStyles,
             input: { ...commonStyles.input, fill: "#fff" },
           }}
-          value={!isLoading && buyAmount ? buyAmount : ""}
-          leftSection={isLoading ? <Loader size="sm" /> : null}
+          value={
+            !isQuoteLoading && !isQuoteFetching && buyAmount ? buyAmount : ""
+          }
+          leftSection={
+            isQuoteLoading || isQuoteFetching ? <Loader size="sm" /> : null
+          }
           onChange={(e) => setBuyAmount(parseFloat(e.target.value))}
           readOnly
         />
@@ -249,7 +336,31 @@ export default function Swap() {
         </Button>
       </Flex>
 
-      <Button size="lg">Swap</Button>
+      <Button
+        size="lg"
+        onClick={
+          needToSwitchChain
+            ? handleSwitchNetwork
+            : needToApproveToken
+              ? handleAllowance
+              : handleSwap
+        }
+        bg={needToSwitchChain || showError ? "red" : "carrot"}
+        disabled={shouldDisable}
+      >
+        {showError
+          ? "Not enough balance"
+          : needToSwitchChain
+            ? `Switch to ${selectedChain?.name!}`
+            : needToApproveToken
+              ? `Approve ${selectedTokenData?.name!}`
+              : "Swap"}
+      </Button>
+      {needToSwitchChain && (
+        <Text style={{ textAlign: "center", color: "red" }}>
+          You will need to sign-in again, <br /> if you need to switch networks.
+        </Text>
+      )}
     </Stack>
   );
 }

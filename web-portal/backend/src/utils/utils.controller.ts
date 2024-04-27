@@ -1,11 +1,11 @@
-import { Controller, Get, UseGuards, Param } from '@nestjs/common';
+import { Controller, Get, UseGuards, Param, Body } from '@nestjs/common';
 import { AuthGuard } from '../guards/auth.guard';
 import { UtilsService } from './utils.service';
 
 @Controller('utils')
 @UseGuards(AuthGuard)
 export class UtilsController {
-  constructor(private readonly utilsService: UtilsService) {}
+  constructor(private readonly utilsService: UtilsService) { }
 
   @Get('endpoints')
   async getChains() {
@@ -35,5 +35,35 @@ export class UtilsController {
     // @note: this action returns popular tokens by chainId
     const tokens = await this.utilsService.getTokenList(chainId);
     return tokens;
+  }
+
+  @Get('quote/:chainName/:sellToken/:sellAmount')
+  async get0xQuote(
+    @Param('chainName') chainName: string,
+    @Param('sellToken') sellToken: string,
+    @Param('sellAmount') sellAmount: number,
+  ) {
+    // @note: this action returns quote from 0x protocol for provided sellToken, sellAmount and chainName
+    const quote = await this.utilsService.get0xQuote(
+      chainName,
+      sellToken,
+      sellAmount,
+    );
+    return quote;
+  }
+
+  @Get('price/:chainName/:sellToken/:sellAmount')
+  async get0xPrice(
+    @Param('chainName') chainName: string,
+    @Param('sellToken') sellToken: string,
+    @Param('sellAmount') sellAmount: number,
+  ) {
+    // @note: this action returns price from 0x protocol for provided sellToken, sellAmount and chainName
+    const price = await this.utilsService.get0xPrice(
+      chainName,
+      sellToken,
+      sellAmount,
+    );
+    return price;
   }
 }

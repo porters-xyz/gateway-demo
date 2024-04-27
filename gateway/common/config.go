@@ -15,6 +15,7 @@ const (
     NUM_WORKERS           = "NUM_WORKERS"
     PROXY_TO              = "PROXY_TO"
     HOST                  = "HOST" // host to add subdomains to
+    PORT                  = "PORT"
     DATABASE_URL          = "DATABASE_URL"
     REDIS_URL             = "REDIS_URL"
     REDIS_ADDR            = "REDIS_ADDR"
@@ -41,6 +42,7 @@ func setupConfig() *Config {
         config.defaults[JOB_BUFFER_SIZE] = "50"
         config.defaults[NUM_WORKERS] = "10"
         config.defaults[HOST] = "localhost"
+        config.defaults[PORT] = "9000"
     })
     return config
 }

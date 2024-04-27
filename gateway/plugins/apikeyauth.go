@@ -46,7 +46,7 @@ func (a ApiKeyAuth) HandleRequest(req *http.Request) {
         return
     }
     lifecycle := proxy.SetStageComplete(newCtx, proxy.Auth)
-    newCtx = lifecycle.UpdateContext(newCtx)
+    newCtx = proxy.UpdateContext(newCtx, lifecycle)
     *req = *req.WithContext(newCtx)
 }
 

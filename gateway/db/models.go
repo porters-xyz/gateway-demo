@@ -50,6 +50,7 @@ type App struct {
     Tenant Tenant
 }
 
+type Apprules []Apprule
 type Apprule struct {
     Id string
     Active bool
@@ -88,8 +89,9 @@ type Relaytx struct {
 // product miss means subdomain on endpoint doesn't match known product
 type Product struct {
     Id string
+    Active bool
     Name string // subdomain on endpoint
-    Num int // optional (for evm chain)
+    PoktId string // mapping on pokt network
     Weight int
     MissedAt time.Time
 }
@@ -136,5 +138,21 @@ func (r *Relaytx) Key() string {
 }
 
 func (p *Product) Key() string {
-    return fmt.Sprintf("%s:%s", PRODUCT, p.Id)
+    return fmt.Sprintf("%s:%s", PRODUCT, p.Name)
+}
+
+func (t *Tenant) ContextKey() string {
+    return TENANT
+}
+
+func (a *App) ContextKey() string {
+    return APP
+}
+
+func (ar Apprules) ContextKey() string {
+    return APPRULE
+}
+
+func (p *Product) ContextKey() string {
+    return PRODUCT
 }

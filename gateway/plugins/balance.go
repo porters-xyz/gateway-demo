@@ -21,12 +21,16 @@ type balancecache struct {
     cachedBalance int
 }
 
+const (
+    BALANCE string = "BALANCE"
+)
+
 func (b *BalanceTracker) Name() string {
     return "Relay Balance Limiter"
 }
 
 func (b *BalanceTracker) Key() string {
-    return "BALANCE"
+    return BALANCE
 }
 
 func (b *BalanceTracker) Load() {
@@ -52,12 +56,12 @@ func (b *BalanceTracker) HandleRequest(req *http.Request) {
     if err != nil {
         // TODO can we recover from this?
     }
-    ctx = context.WithValue(ctx, b.Key(), bal)
+    ctx = proxy.UpdateContext(ctx, bal)
     // TODO Check that balance is greater than or equal to req weight
     if bal.cachedBalance > 0 {
         log.Println("balance remaining")
         lifecycle := proxy.SetStageComplete(ctx, proxy.BalanceCheck)
-        ctx = lifecycle.UpdateContext(ctx)
+        ctx = proxy.UpdateContext(ctx, lifecycle)
     } else {
         log.Println("none remaining", appId)
         var cancel context.CancelCauseFunc
@@ -72,28 +76,24 @@ func (b *BalanceTracker) HandleResponse(resp *http.Response) error {
     // TODO read pokt docs for if there is better way to check response
     ctx := resp.Request.Context()
     if resp.StatusCode < 400 {
-        bal := b.getFromContext(ctx)
-        newval := db.DecrementCounter(ctx, bal.Key(), 1)
-        log.Println("balance is now:", newval)
+        entity, ok := proxy.FromContext(ctx, BALANCE)
+        if ok {
+            bal := entity.(*balancecache)
+            newval := db.DecrementCounter(ctx, bal.Key(), 1)
+            log.Println("balance is now:", newval)
+        }
     }
     // TODO >= 400 need to return error?
     // TODO log usage in correct way (for analytics)
     return nil
 }
 
-func (b *BalanceTracker) getFromContext(ctx context.Context) *balancecache {
-    var bal *balancecache
-    value := ctx.Value(b.Key())
-    if value != nil {
-        bal = value.(*balancecache)
-    } else {
-        // TODO see if we can lookup from app or tenant
-    }
-    return bal
-}
-
 func (c *balancecache) Key() string {
     return fmt.Sprintf("%s:%s", c.tracker.Key(), c.tenant.Id)
+}
+
+func (c *balancecache) ContextKey() string {
+    return BALANCE
 }
 
 func (c *balancecache) Lookup(ctx context.Context) error {

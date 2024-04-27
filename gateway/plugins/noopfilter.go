@@ -25,5 +25,5 @@ func (n NoopFilter) Key() string {
 
 func (n NoopFilter) HandleRequest(req *http.Request) {
     lifecycle := proxy.SetStageComplete(req.Context(), n.LifecycleStage)
-    *req = *req.WithContext(lifecycle.UpdateContext(req.Context()))
+    *req = *req.WithContext(proxy.UpdateContext(req.Context(), lifecycle))
 }

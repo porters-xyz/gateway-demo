@@ -13,6 +13,7 @@ import (
     "github.com/gorilla/mux"
 
     "porters/common"
+    "porters/db"
 )
 
 var server *http.Server
@@ -37,14 +38,14 @@ func Start() {
 
     revProxy := setupProxy(remote)
     router := mux.NewRouter()
-    // TODO put health check on subroute
 
     proxyRouter := addProxyRoutes(router)
     proxyRouter.HandleFunc(fmt.Sprintf(`/{%s}`, APP_PATH), handler(revProxy))
 
     _ = addHealthcheckRoute(router)
 
-    server = &http.Server{Addr: ":9000", Handler: router}
+    port := fmt.Sprintf(":%d", common.GetConfigInt(common.PORT))
+    server = &http.Server{Addr: port, Handler: router}
     go func() {
         err := server.ListenAndServe()
         if err != nil {
@@ -141,10 +142,17 @@ func setupProxy(remote *url.URL) *httputil.ReverseProxy {
     return revProxy
 }
 
-func setupContext(req *http.Request) {
-    // TODO read ctx from request and make any modifications
+func lookupPoktId(req *http.Request) string {
     ctx := req.Context()
-    lifecyclectx := Lifecycle{}.UpdateContext(ctx)
-    *req = *req.WithContext(lifecyclectx)
+    name := PluckProductName(req)
+    product := &db.Product{Name: name}
+    err := product.Lookup(ctx)
+    if err != nil {
+        // TODO pick appropriate HTTP code
+        log.Println("product not found", err)
+    }
+    productCtx := UpdateContext(ctx, product) 
+    *req = *req.WithContext(productCtx)
+    // TODO put product into context for usage and weight purposes
+    return product.PoktId
 }
-

@@ -124,7 +124,7 @@ func (ar *Apprule) cache(ctx context.Context) error {
 
 func (p *Product) cache(ctx context.Context) error {
     err := getCache().HSet(ctx, p.Key(),
-        "num", p.Num,
+        "poktId", p.PoktId,
         "weight", p.Weight).Err()
     if err != nil {
         // TODO handle error here rather than return it
@@ -234,6 +234,7 @@ func (a *App) Rules(ctx context.Context) ([]Apprule, error) {
     return rules, nil
 }
 
+// Lookup by name, p should have a valid "Name" set before lookup
 func (p *Product) Lookup(ctx context.Context) error {
     fromContext, ok := productFromContext(ctx)
     if ok {
@@ -253,8 +254,9 @@ func (p *Product) Lookup(ctx context.Context) error {
             }
         } else {
             log.Println("got product:", result)
-            p.Num, _ = strconv.Atoi(result["num"])
+            p.PoktId, _ = result["poktId"]
             p.Weight, _ = strconv.Atoi(result["weight"])
+            p.Active, _ = strconv.ParseBool(result["active"])
         }
     }
     return nil

@@ -128,11 +128,14 @@ func (a *App) fetchRules(ctx context.Context) ([]Apprule, error) {
     return rules, nil
 }
 
-// TODO this doesn't exist in database yet, returns unimplemented for now
 func (p *Product) fetch(ctx context.Context) error {
     db := getCanonicalDB()
-    _ = db.QueryRowContext(ctx, `SELECT * FROM "Product" WHERE id = $1`, p.Id)
-    return errors.New("unimplemented SQL table")
+    row := db.QueryRowContext(ctx, `SELECT id, name, "poktId", weight, active FROM "Products" WHERE name = $1`, p.Name)
+    err := row.Scan(&p.Id, &p.Name, &p.PoktId, &p.Weight, &p.Active)
+    if err != nil {
+        return err
+    }
+    return nil
 }
 
 // TODO Get any credits since cached time

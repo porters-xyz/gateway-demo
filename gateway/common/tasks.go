@@ -2,8 +2,6 @@ package common
 
 import (
     "log"
-    "os"
-    "strconv"
     "sync"
     "time"
 )
@@ -30,14 +28,7 @@ var qmutex sync.Once
 // Another singleton
 func GetTaskQueue() *TaskQueue {
     qmutex.Do(func() {
-        bufferSize := 50 // default
-        bufferSizeEnv, ok := os.LookupEnv("JOB_BUFFER_SIZE")
-        bufferSizeInt, err := strconv.Atoi(bufferSizeEnv)
-        if ok && err == nil {
-            bufferSize = bufferSizeInt
-        } else {
-            log.Println("unable to read JOB_BUFFER_SIZE from env, using default")
-        }
+        bufferSize := GetConfigInt(JOB_BUFFER_SIZE)
         q = &TaskQueue{
             Tasks: make(chan Runnable, bufferSize),
             errors: make(chan error, bufferSize),
@@ -46,15 +37,9 @@ func GetTaskQueue() *TaskQueue {
     return q
 }
 
+// TODO include workers to clear out error channel
 func (q *TaskQueue) SetupWorkers() {
-    numWorkers := 10 // default
-    numWorkersEnv, ok := os.LookupEnv("NUM_WORKERS")
-    numWorkersInt, err := strconv.Atoi(numWorkersEnv)
-    if ok && err == nil {
-        numWorkers = numWorkersInt
-    } else {
-        log.Println("unable to read NUM_WORKERS from env, using default")
-    }
+    numWorkers := GetConfigInt(NUM_WORKERS)
     for i := 0; i < numWorkers; i++ {
         go worker(q)
     }
@@ -63,7 +48,7 @@ func (q *TaskQueue) SetupWorkers() {
 // use this for graceful shutdown
 func (q *TaskQueue) CloseQueue() {
     close(q.Tasks)
-
+    shutdownTime := time.Duration(GetConfigInt(SHUTDOWN_DELAY)) * time.Second
     ticker := time.NewTicker(100 * time.Millisecond)
     for {
         select {
@@ -71,7 +56,7 @@ func (q *TaskQueue) CloseQueue() {
             if len(q.Tasks) == 0 {
                 return
             }
-        case <-time.After(SHUTDOWN_DELAY):
+        case <-time.After(shutdownTime):
             log.Println("workers not finished, work may be lost")
             return
         }

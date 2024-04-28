@@ -50,19 +50,14 @@ type App struct {
     Tenant Tenant
 }
 
+type Apprules []Apprule
 type Apprule struct {
     Id string
     Active bool
     Value string
     CachedAt time.Time
     App App
-    RuleType Ruletype
-}
-
-type Ruletype struct {
-    Id string
-    Name string
-    Active bool
+    RuleType string
 }
 
 // tied to tenant, this isn't cached directly
@@ -94,9 +89,11 @@ type Relaytx struct {
 // product miss means subdomain on endpoint doesn't match known product
 type Product struct {
     Id string
+    Active bool
     Name string // subdomain on endpoint
-    Num int // optional (for evm chain)
+    PoktId string // mapping on pokt network
     Weight int
+    CachedAt time.Time
     MissedAt time.Time
 }
 
@@ -118,18 +115,6 @@ func parseTxType(str string) TxType {
     }
 }
 
-func NewTenant(id string) Tenant {
-    return Tenant{
-        Id: id,
-    }
-}
-
-func NewApp(id string) App {
-    return App{
-        Id: id,
-    }
-}
-
 func (t *Tenant) Key() string {
     return fmt.Sprintf("%s:%s", TENANT, t.Id)
 }
@@ -140,11 +125,7 @@ func (a *App) Key() string {
 
 // Keys to a set
 func (ar *Apprule) Key() string {
-    return fmt.Sprintf("%s:%s", APPRULE, ar.App.Id)
-}
-
-func (rt *Ruletype) Key() string {
-    return fmt.Sprintf("%s:%s", RULETYPE, rt.Id)
+    return fmt.Sprintf("%s:%s:%s", APPRULE, ar.App.Id, ar.Id)
 }
 
 // TODO is this needed?
@@ -158,5 +139,21 @@ func (r *Relaytx) Key() string {
 }
 
 func (p *Product) Key() string {
-    return fmt.Sprintf("%s:%s", PRODUCT, p.Id)
+    return fmt.Sprintf("%s:%s", PRODUCT, p.Name)
+}
+
+func (t *Tenant) ContextKey() string {
+    return TENANT
+}
+
+func (a *App) ContextKey() string {
+    return APP
+}
+
+func (ar Apprules) ContextKey() string {
+    return APPRULE
+}
+
+func (p *Product) ContextKey() string {
+    return PRODUCT
 }

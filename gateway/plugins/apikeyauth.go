@@ -30,8 +30,6 @@ func (a ApiKeyAuth) Key() string {
 
 func (a ApiKeyAuth) HandleRequest(req *http.Request) {
     apiKey := req.Header.Get(a.ApiKeyName)
-    // TODO remove logging
-    log.Println("apikey", apiKey)
     newCtx := context.WithValue(req.Context(), proxy.AUTH_VAL, apiKey)
 
     if validApiKey(apiKey) {
@@ -46,7 +44,7 @@ func (a ApiKeyAuth) HandleRequest(req *http.Request) {
         return
     }
     lifecycle := proxy.SetStageComplete(newCtx, proxy.Auth)
-    newCtx = lifecycle.UpdateContext(newCtx)
+    newCtx = proxy.UpdateContext(newCtx, lifecycle)
     *req = *req.WithContext(newCtx)
 }
 

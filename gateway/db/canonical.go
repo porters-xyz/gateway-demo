@@ -5,7 +5,6 @@ import (
     "database/sql"
     "errors"
     "log"
-    "os"
     "sync"
 
     "github.com/lib/pq"
@@ -33,7 +32,7 @@ var postgresMutex sync.Once
 
 func getCanonicalDB() *sql.DB {
     postgresMutex.Do(func() {
-        connStr := os.Getenv("DATABASE_URL")
+        connStr := common.GetConfig(common.DATABASE_URL)
         connector, err := pq.NewConnector(connStr)
         if err != nil {
             // TODO handle nicely, maybe retry?
@@ -111,7 +110,7 @@ func (a *App) fetchRules(ctx context.Context) ([]Apprule, error) {
     rules := make([]Apprule, 0)
     db := getCanonicalDB()
     // TODO join with rule types
-    rows, err := db.QueryContext(ctx, `SELECT id, value, active FROM "AppRule" WHERE "appId" = $1 AND "deletedAt" IS NULL`, a.Id)
+    rows, err := db.QueryContext(ctx, `SELECT "AppRule".id, "AppRule".value, "AppRule".active, "RuleType".name FROM "AppRule", "RuleType" WHERE "AppRule"."appId" = $1 AND "AppRule"."deletedAt" IS NULL AND "RuleType".active = '1' AND "AppRule"."ruleId" = "RuleType"."id"`, a.Id)
     if err != nil {
         return nil, err
     }
@@ -119,7 +118,7 @@ func (a *App) fetchRules(ctx context.Context) ([]Apprule, error) {
 
     for rows.Next() {
         apprule := Apprule{}
-        err := rows.Scan(&apprule.Id, &apprule.Value, &apprule.Active)
+        err := rows.Scan(&apprule.Id, &apprule.Value, &apprule.Active, &apprule.RuleType)
         if err != nil {
             return nil, err
         }
@@ -129,11 +128,14 @@ func (a *App) fetchRules(ctx context.Context) ([]Apprule, error) {
     return rules, nil
 }
 
-// TODO this doesn't exist in database yet, returns unimplemented for now
 func (p *Product) fetch(ctx context.Context) error {
     db := getCanonicalDB()
-    _ = db.QueryRowContext(ctx, `SELECT * FROM "Product" WHERE id = $1`, p.Id)
-    return errors.New("unimplemented SQL table")
+    row := db.QueryRowContext(ctx, `SELECT id, name, "poktId", weight, active FROM "Products" WHERE name = $1`, p.Name)
+    err := row.Scan(&p.Id, &p.Name, &p.PoktId, &p.Weight, &p.Active)
+    if err != nil {
+        return err
+    }
+    return nil
 }
 
 // TODO Get any credits since cached time

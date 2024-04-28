@@ -4,7 +4,6 @@ import (
     "context"
     "fmt"
     "log"
-    "os"
     "strconv"
     "sync"
     "time"
@@ -46,12 +45,12 @@ var redisMutex sync.Once
 func getCache() *redis.Client {
     redisMutex.Do(func() {
         // TODO figure out which redis instance to connect to
-        opts, err := redis.ParseURL(os.Getenv("REDIS_URL"))
+        opts, err := redis.ParseURL(common.GetConfig(common.REDIS_URL))
         if err != nil {
             opts = &redis.Options{
-                Addr: os.Getenv("REDIS_ADDR"),
-                Username: os.Getenv("REDIS_USER"),
-                Password: os.Getenv("REDIS_PASSWORD"),
+                Addr: common.GetConfig(common.REDIS_ADDR),
+                Username: common.GetConfig(common.REDIS_USER),
+                Password: common.GetConfig(common.REDIS_PASSWORD),
                 DB: 0,
             }
         }
@@ -115,7 +114,9 @@ func (ar *Apprule) cache(ctx context.Context) error {
     err := getCache().HSet(ctx, ar.Key(), 
         "active", ar.Active,
         "value", ar.Value,
-        "active", ar.Active).Err()
+        "appId", ar.App.Id,
+        "ruleType", ar.RuleType,
+        "cachedAt", time.Now()).Err()
     if err != nil {
         // TODO handle errors correctly
         return err
@@ -125,8 +126,11 @@ func (ar *Apprule) cache(ctx context.Context) error {
 
 func (p *Product) cache(ctx context.Context) error {
     err := getCache().HSet(ctx, p.Key(),
-        "num", p.Num,
-        "weight", p.Weight).Err()
+        "poktId", p.PoktId,
+        "weight", p.Weight,
+        "active", p.Active,
+        "cachedAt", time.Now(),
+        "missedAt", p.MissedAt).Err()
     if err != nil {
         // TODO handle error here rather than return it
         return err
@@ -208,6 +212,34 @@ func (a *App) Lookup(ctx context.Context) error {
     return nil
 }
 
+func (a *App) Rules(ctx context.Context) ([]Apprule, error) {
+    rules := make([]Apprule, 0)
+    pattern := fmt.Sprintf("%s:%s", APPRULE, a.Id)
+
+    // TODO check whether cache needs refresh
+    iter := ScanKeys(ctx, pattern)
+    for iter.Next(ctx) {
+        key := iter.Val()
+        result, err := getCache().HGetAll(ctx, key).Result()
+        if err != nil {
+            log.Println("error during scan", err)
+            continue
+        }
+        id := key // TODO extract id from key
+        active, _ := strconv.ParseBool(result["active"])
+        cachedAt, _ := time.Parse(time.RFC3339, result["cachedAt"])
+        ar := Apprule{
+            Id: id,
+            Active: active,
+            Value: result["value"],
+            CachedAt: cachedAt,
+        }
+        rules = append(rules, ar)
+    }
+    return rules, nil
+}
+
+// Lookup by name, p should have a valid "Name" set before lookup
 func (p *Product) Lookup(ctx context.Context) error {
     fromContext, ok := productFromContext(ctx)
     if ok {
@@ -227,8 +259,9 @@ func (p *Product) Lookup(ctx context.Context) error {
             }
         } else {
             log.Println("got product:", result)
-            p.Num, _ = strconv.Atoi(result["num"])
+            p.PoktId, _ = result["poktId"]
             p.Weight, _ = strconv.Atoi(result["weight"])
+            p.Active, _ = strconv.ParseBool(result["active"])
         }
     }
     return nil
@@ -279,6 +312,11 @@ func (t *Tenant) refreshAt() time.Time {
 
 func (a *App) refreshAt() time.Time {
     return a.CachedAt.Add(1 * time.Minute)
+}
+
+// Products rarely change, hourly is ok
+func (p *Product) refreshAt() time.Time {
+    return p.CachedAt.Add(1 * time.Hour)
 }
 
 func backoff(missedAt string) bool {
@@ -360,6 +398,9 @@ func ScanKeys(ctx context.Context, key string) *redis.ScanIterator {
     iter := getCache().Scan(ctx, 0, scankey, 0).Iterator()
     return iter
 }
+
+// TODO write scan for specific types, don't leak redis specifics outside
+// package
 
 // use context to prevent duplicate cache hits in same request
 

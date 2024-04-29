@@ -8,6 +8,7 @@ import (
     "log"
     "net/http"
 
+    "porters/common"
     "porters/db"
     "porters/proxy"
 )
@@ -39,14 +40,14 @@ func (b *BalanceTracker) Load() {
 }
 
 // TODO optim: script this to avoid multi-hops
-func (b *BalanceTracker) HandleRequest(req *http.Request) {
+func (b *BalanceTracker) HandleRequest(req *http.Request) error {
     ctx := req.Context()
     appId := proxy.PluckAppId(req)
     app := &db.App{Id: appId}
     err := app.Lookup(ctx)
     log.Println("app:", app)
     if err != nil {
-        // TODO can't find app
+        return proxy.NewHTTPError(http.StatusNotFound)
     }
     bal := &balancecache{
         tracker: b,
@@ -54,29 +55,27 @@ func (b *BalanceTracker) HandleRequest(req *http.Request) {
     }
     err = bal.Lookup(ctx)
     if err != nil {
-        // TODO can we recover from this?
+        return proxy.NewHTTPError(http.StatusNotFound)
     }
-    ctx = proxy.UpdateContext(ctx, bal)
+    ctx = common.UpdateContext(ctx, bal)
     // TODO Check that balance is greater than or equal to req weight
     if bal.cachedBalance > 0 {
         log.Println("balance remaining")
         lifecycle := proxy.SetStageComplete(ctx, proxy.BalanceCheck)
-        ctx = proxy.UpdateContext(ctx, lifecycle)
+        ctx = common.UpdateContext(ctx, lifecycle)
+        *req = *req.WithContext(ctx)
     } else {
         log.Println("none remaining", appId)
-        var cancel context.CancelCauseFunc
-        ctx, cancel = context.WithCancelCause(ctx)
-        err := proxy.BalanceExceededError
-        cancel(err)
+        return proxy.BalanceExceededError
     }
-    *req = *req.WithContext(ctx)
+    return nil
 }
 
 func (b *BalanceTracker) HandleResponse(resp *http.Response) error {
     // TODO read pokt docs for if there is better way to check response
     ctx := resp.Request.Context()
     if resp.StatusCode < 400 {
-        entity, ok := proxy.FromContext(ctx, BALANCE)
+        entity, ok := common.FromContext(ctx, BALANCE)
         if ok {
             bal := entity.(*balancecache)
             newval := db.DecrementCounter(ctx, bal.Key(), 1)

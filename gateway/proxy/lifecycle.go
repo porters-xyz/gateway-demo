@@ -2,6 +2,8 @@ package proxy
 
 import (
     "context"
+
+    "porters/common"
 )
 
 // Used for tracking in context for completion of lifecycle
@@ -42,7 +44,7 @@ func SetStageComplete(ctx context.Context, stages LifecycleMask) *Lifecycle {
 }
 
 func lifecycleFromContext(ctx context.Context) *Lifecycle {
-    entity, ok := FromContext(ctx, LIFECYCLE_MASK)
+    entity, ok := common.FromContext(ctx, LIFECYCLE_MASK)
     if !ok {
         // Empty lifecyle if missing
         return &Lifecycle{}

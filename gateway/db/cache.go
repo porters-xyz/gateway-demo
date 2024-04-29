@@ -9,6 +9,7 @@ import (
     "time"
 
     "github.com/redis/go-redis/v9"
+    rl "github.com/go-redis/redis_rate/v10"
 
     "porters/common"
 )
@@ -29,12 +30,12 @@ type refreshable interface {
     refresh(ctx context.Context) error
 }
 
-type incrementable interface {
+type Incrementable interface {
     Key() string
     Field() string
 }
 
-type decrementable interface {
+type Decrementable interface {
     Key() string
     Field() string
 }
@@ -166,9 +167,9 @@ func (p *Paymenttx) cache(ctx context.Context) error {
 //}
 
 func (t *Tenant) Lookup(ctx context.Context) error {
-    fromContext, ok := tenantFromContext(ctx)
+    fromContext, ok := common.FromContext(ctx, TENANT)
     if ok {
-        *t = fromContext
+        *t = *fromContext.(*Tenant)
     } else {
         key := t.Key()
         result, err := getCache().HGetAll(ctx, key).Result()
@@ -186,9 +187,9 @@ func (t *Tenant) Lookup(ctx context.Context) error {
 }
 
 func (a *App) Lookup(ctx context.Context) error {
-    fromContext, ok := appFromContext(ctx)
+    fromContext, ok := common.FromContext(ctx, APP)
     if ok {
-        *a = fromContext
+        *a = *fromContext.(*App)
     } else {
         key := a.Key()
         log.Println("checking cache for app", key)
@@ -212,7 +213,7 @@ func (a *App) Lookup(ctx context.Context) error {
     return nil
 }
 
-func (a *App) Rules(ctx context.Context) ([]Apprule, error) {
+func (a *App) Rules(ctx context.Context) (Apprules, error) {
     rules := make([]Apprule, 0)
     pattern := fmt.Sprintf("%s:%s", APPRULE, a.Id)
 
@@ -232,6 +233,7 @@ func (a *App) Rules(ctx context.Context) ([]Apprule, error) {
             Id: id,
             Active: active,
             Value: result["value"],
+            RuleType: result["ruleType"],
             CachedAt: cachedAt,
         }
         rules = append(rules, ar)
@@ -241,9 +243,9 @@ func (a *App) Rules(ctx context.Context) ([]Apprule, error) {
 
 // Lookup by name, p should have a valid "Name" set before lookup
 func (p *Product) Lookup(ctx context.Context) error {
-    fromContext, ok := productFromContext(ctx)
+    fromContext, ok := common.FromContext(ctx, PRODUCT)
     if ok {
-        *p = fromContext
+        *p = *fromContext.(*Product)
     } else {
         key := p.Key()
         log.Println("finding product from cache:", key)
@@ -293,6 +295,15 @@ func (a *App) refresh(ctx context.Context) {
         a.Tenant.Lookup(ctx)
     }
     a.cache(ctx)
+
+    rules, err := a.fetchRules(ctx)
+    if err != nil {
+        log.Println("error accessing rules", err)
+        return
+    }
+    for _, r := range rules {
+        r.cache(ctx)
+    }
 }
 
 func (p *Product) refresh(ctx context.Context) {
@@ -351,7 +362,7 @@ func GetIntVal(ctx context.Context, name string) int {
     return intval
 }
 
-func IncrementField(ctx context.Context, incr incrementable, amount int) int {
+func IncrementField(ctx context.Context, incr Incrementable, amount int) int {
     incrBy := int64(amount)
     newVal, err := getCache().HIncrBy(ctx, incr.Key(), incr.Field(), incrBy).Result()
     if err != nil {
@@ -360,7 +371,7 @@ func IncrementField(ctx context.Context, incr incrementable, amount int) int {
     return int(newVal)
 }
 
-func DecrementField(ctx context.Context, decr decrementable, amount int) int {
+func DecrementField(ctx context.Context, decr Decrementable, amount int) int {
     decrBy := -int64(amount)
     newVal, err := getCache().HIncrBy(ctx, decr.Key(), decr.Field(), decrBy).Result()
     if err != nil {
@@ -399,37 +410,7 @@ func ScanKeys(ctx context.Context, key string) *redis.ScanIterator {
     return iter
 }
 
-// TODO write scan for specific types, don't leak redis specifics outside
-// package
-
-// use context to prevent duplicate cache hits in same request
-
-func tenantFromContext(ctx context.Context) (Tenant, bool) {
-    var tenant Tenant
-    value := ctx.Value(TENANT)
-    if value != nil {
-        tenant = value.(Tenant)
-        return tenant, true
-    }
-    return tenant, false
-}
-
-func appFromContext(ctx context.Context) (App, bool) {
-    var app App
-    value := ctx.Value(APP)
-    if value != nil {
-        app = value.(App)
-        return app, true
-    }
-    return app, false
-}
-
-func productFromContext(ctx context.Context) (Product, bool) {
-    var product Product
-    value := ctx.Value(PRODUCT)
-    if value != nil {
-        product = value.(Product)
-        return product, true
-    }
-    return product, false
+func Limiter() *rl.Limiter {
+    rdb := getCache()
+    return rl.NewLimiter(rdb)
 }

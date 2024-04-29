@@ -17,7 +17,7 @@ const (
     PRODUCT       = "PRODUCT"
 )
 
-type model interface {
+type Model interface {
     Key() string
 }
 

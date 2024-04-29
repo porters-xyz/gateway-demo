@@ -2,13 +2,13 @@ package plugins
 
 // Set up leaky buckets for different periods of rate limiting
 
-
 import (
     "context"
     "fmt"
     "log"
     "net/http"
-    "time"
+
+    rl "github.com/go-redis/redis_rate/v10"
 
     "porters/db"
     "porters/proxy"
@@ -17,16 +17,7 @@ import (
 
 type LeakyBucketPlugin struct {
     // Allows for multiple versions of leaky buckets focused on different scopes
-    scopeContext string // switch to type on proxy for scopes (tenant, provider, app, client)
-}
-
-// For each request lookup set of buckets for app/key/tenant etc
-// TODO Build from app rules if not exist
-type LeakyBucket struct {
-    // TODO each limiter has a bucket of different size
-    size int
-    rate int // specified in count per period
-    period time.Duration
+    ScopeContext string // switch to type on proxy for scopes (tenant, provider, app, client)
 }
 
 func (l *LeakyBucketPlugin) Name() string {
@@ -34,14 +25,14 @@ func (l *LeakyBucketPlugin) Name() string {
 }
 
 func (l *LeakyBucketPlugin) Key() string {
-    return fmt.Sprintf(`%s:%s`, "LEAKY", l.scopeContext)
+    return fmt.Sprintf(`%s:%s`, "LEAKY", l.ScopeContext)
 }
 
 func (l *LeakyBucketPlugin) Load() {
     // TODO initialize
 }
 
-func (l *LeakyBucketPlugin) HandleRequest(req *http.Request) {
+func (l *LeakyBucketPlugin) HandleRequest(req *http.Request) error {
     ctx := req.Context()
     appId := proxy.PluckAppId(req)
     app := &db.App{Id: appId}
@@ -50,40 +41,50 @@ func (l *LeakyBucketPlugin) HandleRequest(req *http.Request) {
         log.Println("err", err)
     }
     buckets := l.getBucketsForScope(ctx, app)
-    for _, b := range buckets {
-        b.leak()
+    limiter := db.Limiter()
+    for k, v := range buckets {
+        res, err := limiter.Allow(ctx, k, v)
+        if err != nil {
+            // TODO make into appropriate http code
+            return proxy.NewHTTPError(http.StatusBadGateway)
+        }
+
+        log.Println("rate limit result:", res)
+
+        // rate limited
+        if res.Allowed == 0 {
+            // TODO set retry-after header
+            return proxy.NewRateLimitError(v.Rate, v.Period)
+        }
     }
+    return nil
 }
 
-func (l *LeakyBucketPlugin) HandleResponse(resp *http.Response) {
-
-}
-
-func (l *LeakyBucketPlugin) getBucketsForScope(ctx context.Context, app *db.App) []LeakyBucket {
-    var buckets []LeakyBucket
-    key := fmt.Sprintf("%s:%s", l.Key(), app.Id)
-    iter := db.ScanKeys(ctx, key)
-    for iter.Next(ctx) {
-        // TODO grab value from redis
-        //ratestr := iter.Val()
-        rate, err := utils.ParseRate("")
+func (l *LeakyBucketPlugin) getBucketsForScope(ctx context.Context, app *db.App) map[string]rl.Limit {
+    buckets := make(map[string]rl.Limit)
+    rules, err := app.Rules(ctx)
+    if err != nil {
+        // TODO should this stop all proxying?
+        log.Println("error getting rules", err)
+        return buckets
+    }
+    for _, rule := range rules {
+        if rule.RuleType != "rate-limits" {
+            continue
+        }
+        rate, err := utils.ParseRate(rule.Value)
         if err != nil {
             log.Println("Invalid rate")
             continue
         }
 
-        bucket := LeakyBucket{
-            size: rate.Amount,
-            rate: rate.Amount,
-            period: rate.Period,
+        bucket := rl.Limit{
+            Rate: rate.Amount,
+            Burst: rate.Amount,
+            Period: rate.Period,
         }
-        buckets = append(buckets, bucket)
+
+        buckets[rule.Id] = bucket
     }
     return buckets
-}
-
-func (l *LeakyBucket) leak() {
-    // TODO refill bucket if enough time has elapsed
-    // TODO check if empty
-    // TODO take from bucket
 }

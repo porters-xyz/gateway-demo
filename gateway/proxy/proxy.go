@@ -100,7 +100,10 @@ func setupProxy(remote *url.URL) *httputil.ReverseProxy {
                 case <-req.Context().Done():
                     return
                 default:
-                    h.HandleRequest(req)
+                    err := h.HandleRequest(req)
+                    if err != nil {
+                        cancel(err)
+                    }
                 }
             }
         }
@@ -146,6 +149,13 @@ func setupProxy(remote *url.URL) *httputil.ReverseProxy {
     return revProxy
 }
 
+func setupContext(req *http.Request) {
+    // TODO read ctx from request and make any modifications
+    ctx := req.Context()
+    lifecyclectx := common.UpdateContext(ctx, &Lifecycle{})
+    *req = *req.WithContext(lifecyclectx)
+}
+
 func lookupPoktId(req *http.Request) string {
     ctx := req.Context()
     name := PluckProductName(req)
@@ -155,7 +165,7 @@ func lookupPoktId(req *http.Request) string {
         // TODO pick appropriate HTTP code
         log.Println("product not found", err)
     }
-    productCtx := UpdateContext(ctx, product) 
+    productCtx := common.UpdateContext(ctx, product) 
     *req = *req.WithContext(productCtx)
     // TODO put product into context for usage and weight purposes
     return product.PoktId

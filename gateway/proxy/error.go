@@ -3,6 +3,7 @@ package proxy
 import (
     "fmt"
     "net/http"
+    "time"
 )
 
 var FilterBlockError error = fmt.Errorf("filter chain stopped")
@@ -14,6 +15,10 @@ type HTTPError struct {
 }
 func NewHTTPError(code int) *HTTPError {
     return &HTTPError{code}
+}
+func NewRateLimitError(limit int, period time.Duration) error {
+    return fmt.Errorf("rate limit of %d per %v exceeded: %w",
+        limit, period, NewHTTPError(http.StatusTooManyRequests))
 }
 func (httpe *HTTPError) Error() string {
     return http.StatusText(httpe.code)

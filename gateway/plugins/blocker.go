@@ -5,7 +5,6 @@ import (
     "fmt"
     "log"
     "net/http"
-    "porters/proxy"
 )
 
 type Blocker struct {}
@@ -22,10 +21,9 @@ func (b Blocker) Key() string {
     return "BLOCKER"
 }
 
-func (b Blocker) HandleRequest(req *http.Request) {
-    cancel := proxy.RequestCanceler(req)
+func (b Blocker) HandleRequest(req *http.Request) error {
     log.Println("logging block")
-    cancel(errors.New(fmt.Sprint("blocked by prehandler", b.Name())))
+    return errors.New(fmt.Sprint("blocked by prehandler", b.Name()))
 }
 
 func (b Blocker) HandleResponse(resp *http.Response) error {

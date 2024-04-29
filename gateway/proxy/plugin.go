@@ -19,9 +19,10 @@ type Plugin interface {
 // it
 // Implementation should put any state needed between handlers into context of
 // request
+// returns error if request is denied
 type PreHandler interface {
     Plugin
-    HandleRequest(*http.Request)
+    HandleRequest(*http.Request) error
 }
 
 // Posthandlers run in order and can modify the response, or run process based

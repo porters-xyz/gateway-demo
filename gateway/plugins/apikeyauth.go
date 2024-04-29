@@ -8,6 +8,7 @@ import (
     "log"
     "net/http"
 
+    "porters/common"
     "porters/proxy"
 )
 
@@ -28,7 +29,7 @@ func (a ApiKeyAuth) Key() string {
     return "API_KEY_AUTH"
 }
 
-func (a ApiKeyAuth) HandleRequest(req *http.Request) {
+func (a ApiKeyAuth) HandleRequest(req *http.Request) error {
     apiKey := req.Header.Get(a.ApiKeyName)
     newCtx := context.WithValue(req.Context(), proxy.AUTH_VAL, apiKey)
 
@@ -41,11 +42,12 @@ func (a ApiKeyAuth) HandleRequest(req *http.Request) {
             //return
         //}
     } else {
-        return
+        return proxy.NewHTTPError(http.StatusBadRequest)
     }
     lifecycle := proxy.SetStageComplete(newCtx, proxy.Auth)
-    newCtx = proxy.UpdateContext(newCtx, lifecycle)
+    newCtx = common.UpdateContext(newCtx, lifecycle)
     *req = *req.WithContext(newCtx)
+    return nil
 }
 
 // TODO check api key is in valid format to quickly determine errant requests

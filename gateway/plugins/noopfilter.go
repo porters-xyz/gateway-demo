@@ -3,6 +3,8 @@ package plugins
 import (
     "log"
     "net/http"
+
+    "porters/common"
     "porters/proxy"
 )
 
@@ -23,7 +25,8 @@ func (n NoopFilter) Key() string {
     return "NOOP_FILTER"
 }
 
-func (n NoopFilter) HandleRequest(req *http.Request) {
+func (n NoopFilter) HandleRequest(req *http.Request) error {
     lifecycle := proxy.SetStageComplete(req.Context(), n.LifecycleStage)
-    *req = *req.WithContext(proxy.UpdateContext(req.Context(), lifecycle))
+    *req = *req.WithContext(common.UpdateContext(req.Context(), lifecycle))
+    return nil
 }

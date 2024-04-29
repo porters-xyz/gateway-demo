@@ -347,6 +347,7 @@ export default function Swap() {
         }
         bg={needToSwitchChain || showError ? "red" : "carrot"}
         disabled={shouldDisable}
+        c="white"
       >
         {showError
           ? "Not enough balance"

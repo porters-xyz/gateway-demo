@@ -48,11 +48,7 @@ export default function CreateAppModal() {
         {...getInputProps("description")}
       />
 
-      <Button
-        onClick={() => createApp.mutate()}
-        fullWidth
-        style={{ marginTop: 32 }}
-      >
+      <Button onClick={() => createApp.mutate()} fullWidth mt={32}>
         Create New App
       </Button>
     </Modal>

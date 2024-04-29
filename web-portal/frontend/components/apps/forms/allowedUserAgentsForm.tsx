@@ -83,7 +83,7 @@ export default function AllowedUserAgentsForm() {
 
       <Button
         fullWidth
-        style={{ marginTop: 32 }}
+        mt={32}
         onClick={() => mutateAsync(value)}
         loading={isPending && !isSuccess}
       >

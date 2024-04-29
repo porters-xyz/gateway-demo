@@ -4,7 +4,7 @@ import {
   useRouter,
   useParams,
 } from "next/navigation";
-import { Textarea, TextInput, Button, Modal } from "@mantine/core";
+import { Textarea, TextInput, Button, Modal, Flex } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { useUpdateAppMutation } from "@frontend/utils/hooks";
 import _ from "lodash";
@@ -37,8 +37,6 @@ export default function UpdateAppModal({
     },
   });
 
-  console.log(name, description, values);
-
   const updateApp = useUpdateAppMutation(String(appId));
 
   return (
@@ -64,21 +62,35 @@ export default function UpdateAppModal({
         {...getInputProps("description")}
       />
 
-      <Button
-        onClick={async () =>
-          await updateApp.mutateAsync({
-            data: {
-              name: values?.name,
-              description: values?.description,
-            },
-            action: "update",
-          })
-        }
-        fullWidth
-        style={{ marginTop: 32 }}
-      >
-        Update App
-      </Button>
+      <Flex gap={8} mt={32}>
+        <Button
+          onClick={async () =>
+            await updateApp.mutateAsync({
+              action: "delete",
+              data: {},
+            })
+          }
+          variant="outline"
+          color="black"
+          fullWidth
+        >
+          Delete App
+        </Button>
+        <Button
+          onClick={() =>
+            updateApp.mutate({
+              data: {
+                name: values?.name,
+                description: values?.description,
+              },
+              action: "update",
+            })
+          }
+          fullWidth
+        >
+          Update App
+        </Button>
+      </Flex>
     </Modal>
   );
 }

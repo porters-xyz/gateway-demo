@@ -7,7 +7,6 @@ import { supportedChains } from "./consts";
 import _ from "lodash";
 import { IToken } from "./types";
 
-import { useResetAtom } from "jotai/utils";
 export const useSession = () => {
   const { address, isConnected } = useAccount();
   const router = useRouter();
@@ -118,7 +117,8 @@ export const useCreateAppMutation = (
 
 export const useUpdateAppMutation = (appId: string) => {
   const queryClient = useQueryClient();
-
+  const path = usePathname();
+  const router = useRouter();
   const updateAppMutation = async ({
     action,
     data,
@@ -148,6 +148,7 @@ export const useUpdateAppMutation = (appId: string) => {
   return useMutation({
     mutationFn: updateAppMutation,
     onSuccess: () => {
+      router.replace(path);
       queryClient.invalidateQueries(); // TODO <--- revisit this
       console.log(`Updated App`);
     },

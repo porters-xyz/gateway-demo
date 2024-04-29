@@ -82,7 +82,7 @@ const SecretKeyGenerator = ({
     <Button
       fullWidth
       onClick={onGenerate}
-      style={{ marginTop: 32 }}
+      mt={32}
       loading={isPending && !isSuccess && action === "generate"}
     >
       Generate New
@@ -129,7 +129,7 @@ export default function SecretKeyForm() {
           variant="outline"
           color="black"
           loading={isPending && !isSuccess && action === "delete"}
-          style={{ marginTop: 16 }}
+          mt={16}
         >
           Remove Secret Key
         </Button>

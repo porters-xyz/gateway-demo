@@ -28,7 +28,7 @@ export default function ApprovedChainForm() {
       <SearchableMultiSelect items={items} value={value} setValue={setValue} />
       <Button
         fullWidth
-        style={{ marginTop: 32 }}
+        mt={32}
         onClick={() => mutateAsync(value)}
         loading={isPending && !isSuccess}
       >

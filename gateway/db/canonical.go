@@ -106,7 +106,7 @@ func (a *App) fetch(ctx context.Context) error {
     return nil
 }
 
-func (a *App) fetchRules(ctx context.Context) ([]Apprule, error) {
+func (a *App) fetchRules(ctx context.Context) (Apprules, error) {
     rules := make([]Apprule, 0)
     db := getCanonicalDB()
     // TODO join with rule types

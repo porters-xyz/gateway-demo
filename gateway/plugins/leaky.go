@@ -17,7 +17,7 @@ import (
 
 type LeakyBucketPlugin struct {
     // Allows for multiple versions of leaky buckets focused on different scopes
-    scopeContext string // switch to type on proxy for scopes (tenant, provider, app, client)
+    ScopeContext string // switch to type on proxy for scopes (tenant, provider, app, client)
 }
 
 func (l *LeakyBucketPlugin) Name() string {
@@ -25,7 +25,7 @@ func (l *LeakyBucketPlugin) Name() string {
 }
 
 func (l *LeakyBucketPlugin) Key() string {
-    return fmt.Sprintf(`%s:%s`, "LEAKY", l.scopeContext)
+    return fmt.Sprintf(`%s:%s`, "LEAKY", l.ScopeContext)
 }
 
 func (l *LeakyBucketPlugin) Load() {
@@ -49,6 +49,8 @@ func (l *LeakyBucketPlugin) HandleRequest(req *http.Request) error {
             return proxy.NewHTTPError(http.StatusBadGateway)
         }
 
+        log.Println("rate limit result:", res)
+
         // rate limited
         if res.Allowed == 0 {
             // TODO set retry-after header
@@ -67,6 +69,9 @@ func (l *LeakyBucketPlugin) getBucketsForScope(ctx context.Context, app *db.App)
         return buckets
     }
     for _, rule := range rules {
+        if rule.RuleType != "rate-limits" {
+            continue
+        }
         rate, err := utils.ParseRate(rule.Value)
         if err != nil {
             log.Println("Invalid rate")

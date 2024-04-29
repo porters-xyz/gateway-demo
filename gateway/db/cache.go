@@ -233,6 +233,7 @@ func (a *App) Rules(ctx context.Context) (Apprules, error) {
             Id: id,
             Active: active,
             Value: result["value"],
+            RuleType: result["ruleType"],
             CachedAt: cachedAt,
         }
         rules = append(rules, ar)
@@ -294,6 +295,15 @@ func (a *App) refresh(ctx context.Context) {
         a.Tenant.Lookup(ctx)
     }
     a.cache(ctx)
+
+    rules, err := a.fetchRules(ctx)
+    if err != nil {
+        log.Println("error accessing rules", err)
+        return
+    }
+    for _, r := range rules {
+        r.cache(ctx)
+    }
 }
 
 func (p *Product) refresh(ctx context.Context) {

@@ -82,12 +82,12 @@ export const useUserApps = (userAddress: string) => {
 
 export const useCreateAppMutation = (
   address: string,
-  values: {
+  data: {
     name: string;
     description?: string;
   },
 ) => {
-  const { name, description } = values;
+  const { name, description } = data;
   const router = useRouter();
   const queryClient = useQueryClient();
   const createAppMutation = async () => {
@@ -110,6 +110,38 @@ export const useCreateAppMutation = (
       router.push("/dashboard");
       queryClient.invalidateQueries(); // TODO <--- revisit this
       console.log("New App Created");
+    },
+  });
+};
+
+export const useUpdateAppMutation = (
+  appId: string,
+  action: "update" | "delete",
+  data?: {
+    name?: string;
+    description?: string;
+  },
+) => {
+  const queryClient = useQueryClient();
+  const updateAppMutation = async () => {
+    const response = await fetch(`/api/apps/${appId}`, {
+      method: action === "update" ? "PATCH" : "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: action === "update" ? JSON.stringify({ ...data }) : null,
+    });
+    if (!response.ok) {
+      throw new Error(`Failed to ${action} app`);
+    }
+    return response.json();
+  };
+
+  return useMutation({
+    mutationFn: updateAppMutation,
+    onSuccess: () => {
+      queryClient.invalidateQueries(); // TODO <--- revisit this
+      console.log(`${action}d App`);
     },
   });
 };

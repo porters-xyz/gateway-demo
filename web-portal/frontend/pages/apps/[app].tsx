@@ -1,4 +1,12 @@
-import { Breadcrumbs, Stack, Text, Title, Tooltip } from "@mantine/core";
+import {
+  Breadcrumbs,
+  Button,
+  Flex,
+  Stack,
+  Text,
+  Title,
+  Tooltip,
+} from "@mantine/core";
 import _ from "lodash";
 import DashboardLayout from "@frontend/components/dashboard/layout";
 import { useParams } from "next/navigation";
@@ -7,6 +15,7 @@ import { appsAtom } from "@frontend/utils/atoms";
 import { IApp } from "@frontend/utils/types";
 import StyledLink from "@frontend/components/dashboard/styledlink";
 import AppTabs from "@frontend/components/apps/apptabs";
+import { IconEdit } from "@tabler/icons-react";
 
 const appsRootUrl = [
   {
@@ -36,10 +45,19 @@ export default function App() {
       <Stack gap={20}>
         <Breadcrumbs>{breadCrumbItems}</Breadcrumbs>
 
-        <Title order={1} maw={700}>
-          {_.get(app, "name")}
-        </Title>
+        <Flex justify="space-between" align="center">
+          <Title order={1} maw={700}>
+            {_.get(app, "name")}
+          </Title>
 
+          <Button
+            onClick={() => console.log("hello")}
+            variant="outline"
+            color="umbra.1"
+          >
+            Update
+          </Button>
+        </Flex>
         <Tooltip.Floating
           label={_.get(app, "description")}
           bg="black"

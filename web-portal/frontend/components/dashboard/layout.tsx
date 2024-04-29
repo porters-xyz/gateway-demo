@@ -8,6 +8,7 @@ import {
   Button,
   Stack,
 } from "@mantine/core";
+
 import Link from "next/link";
 import { useDisclosure } from "@mantine/hooks";
 import logo from "@frontend/public/logo.png";
@@ -39,6 +40,8 @@ import {
 } from "@frontend/utils/atoms";
 import { useAccount, useAccountEffect, useEnsName } from "wagmi";
 import { IconSettings } from "@tabler/icons-react";
+import { usePathname, useRouter } from "next/navigation";
+import CreateAppModal from "./createAppModal";
 
 export default function DashboardLayout({
   children,
@@ -49,7 +52,9 @@ export default function DashboardLayout({
   const { data: sessionValue } = useSession();
   const { data: endpoints } = useEndpoints();
   const { data: ruletypes } = useRuleTypes();
+  const router = useRouter();
 
+  const path = usePathname();
   const [session, setSession] = useAtom(sessionAtom);
   const { address } = useAccount();
   const setEndpointAtom = useSetAtom(endpointsAtom);
@@ -118,9 +123,10 @@ export default function DashboardLayout({
             Welcome, {ensName ?? String(session?.address).substring(0, 10)}
           </Title>
           <Flex gap="md">
-            <Link href="?new=app">
-              <Button>Create App</Button>
-            </Link>
+            <Button onClick={() => router.replace(path + "?new=app")}>
+              Create App
+            </Button>
+
             <LogoutButton />
           </Flex>
         </Flex>
@@ -180,6 +186,7 @@ export default function DashboardLayout({
       </AppShell.Navbar>
 
       <AppShell.Main>
+        <CreateAppModal />
         <Container size={"xl"}>{children}</Container>
       </AppShell.Main>
     </AppShell>

@@ -7,6 +7,7 @@ import { supportedChains } from "./consts";
 import _ from "lodash";
 import { IToken } from "./types";
 
+import { useResetAtom } from "jotai/utils";
 export const useSession = () => {
   const { address, isConnected } = useAccount();
   const router = useRouter();
@@ -90,6 +91,7 @@ export const useCreateAppMutation = (
   const { name, description } = data;
   const router = useRouter();
   const queryClient = useQueryClient();
+
   const createAppMutation = async () => {
     const response = await fetch(`/api/apps/${address}`, {
       method: "POST",
@@ -114,26 +116,32 @@ export const useCreateAppMutation = (
   });
 };
 
-export const useUpdateAppMutation = (
-  appId: string,
-  action: "update" | "delete",
-  data?: {
-    name?: string;
-    description?: string;
-  },
-) => {
+export const useUpdateAppMutation = (appId: string) => {
   const queryClient = useQueryClient();
-  const updateAppMutation = async () => {
+
+  const updateAppMutation = async ({
+    action,
+    data,
+  }: {
+    action: "update" | "delete";
+    data?: { name?: string; description?: string };
+  }) => {
+    const method = action === "update" ? "PATCH" : "DELETE";
+    const requestBody =
+      action === "update" ? JSON.stringify({ ...data }) : null;
+
     const response = await fetch(`/api/apps/${appId}`, {
-      method: action === "update" ? "PATCH" : "DELETE",
+      method: method,
       headers: {
         "Content-Type": "application/json",
       },
-      body: action === "update" ? JSON.stringify({ ...data }) : null,
+      body: requestBody,
     });
+
     if (!response.ok) {
       throw new Error(`Failed to ${action} app`);
     }
+
     return response.json();
   };
 
@@ -141,7 +149,7 @@ export const useUpdateAppMutation = (
     mutationFn: updateAppMutation,
     onSuccess: () => {
       queryClient.invalidateQueries(); // TODO <--- revisit this
-      console.log(`${action}d App`);
+      console.log(`Updated App`);
     },
   });
 };

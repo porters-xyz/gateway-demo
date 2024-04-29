@@ -9,13 +9,14 @@ import {
 } from "@mantine/core";
 import _ from "lodash";
 import DashboardLayout from "@frontend/components/dashboard/layout";
-import { useParams } from "next/navigation";
+import { useParams, usePathname, useRouter } from "next/navigation";
 import { useAtomValue } from "jotai";
 import { appsAtom } from "@frontend/utils/atoms";
 import { IApp } from "@frontend/utils/types";
 import StyledLink from "@frontend/components/dashboard/styledlink";
 import AppTabs from "@frontend/components/apps/apptabs";
-import { IconEdit } from "@tabler/icons-react";
+
+import UpdateAppModal from "@frontend/components/apps/updateAppModal";
 
 const appsRootUrl = [
   {
@@ -28,6 +29,10 @@ export default function App() {
   const appId = _.get(useParams(), "app");
   const apps: Array<IApp> = useAtomValue(appsAtom);
   const app = _.find(apps, { id: appId }) as IApp;
+
+  const path = usePathname();
+  const router = useRouter();
+
   const breadCrumbItems = _.map(
     [
       ...appsRootUrl,
@@ -42,6 +47,7 @@ export default function App() {
 
   return (
     <DashboardLayout>
+      <UpdateAppModal name={app?.name} description={app?.description} />
       <Stack gap={20}>
         <Breadcrumbs>{breadCrumbItems}</Breadcrumbs>
 
@@ -51,7 +57,7 @@ export default function App() {
           </Title>
 
           <Button
-            onClick={() => console.log("hello")}
+            onClick={() => router.replace(`${path}?edit=1`)}
             variant="outline"
             color="umbra.1"
           >

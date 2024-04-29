@@ -64,12 +64,13 @@ export default function UpdateAppModal({
 
       <Flex gap={8} mt={32}>
         <Button
-          onClick={async () =>
+          onClick={async () => {
             await updateApp.mutateAsync({
               action: "delete",
               data: {},
-            })
-          }
+            });
+            router.replace("/dashboard");
+          }}
           variant="outline"
           color="black"
           fullWidth

@@ -10,7 +10,6 @@ import { UserModule } from './user/user.module';
 import { AppsModule } from './apps/apps.module';
 import { OrgModule } from './org/org.module';
 import { UtilsModule } from './utils/utils.module';
-import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -22,7 +21,6 @@ import { ScheduleModule } from '@nestjs/schedule';
     ConfigModule.forRoot({
       envFilePath: ['@/.env', '.env.local'],
     }),
-    ScheduleModule.forRoot(),
     TenantModule,
     SiweModule,
     UserModule,

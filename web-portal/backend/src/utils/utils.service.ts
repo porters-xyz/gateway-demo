@@ -1,16 +1,16 @@
 import { Injectable, Inject, HttpException, HttpStatus } from '@nestjs/common';
 import { CustomPrismaService } from 'nestjs-prisma';
 import { PrismaClient } from '@/.generated/client';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
-
-export const portrAddress = "0x54d5f8a0e0f06991e63e46420bcee1af7d9fe944";
+export const portrAddress = '0x54d5f8a0e0f06991e63e46420bcee1af7d9fe944';
 
 @Injectable()
 export class UtilsService {
   constructor(
     @Inject('Postgres')
     private prisma: CustomPrismaService<PrismaClient>, // <-- Inject the PrismaClient
-  ) { }
+  ) {}
 
   async getChains() {
     const chains = this.prisma.client.products.findMany({
@@ -91,8 +91,8 @@ export class UtilsService {
       `https://${chainName}.api.0x.org/swap/v1/quote?sellToken=${sellToken}&buyToken=${portrAddress}&sellAmount=${sellAmount}`,
       {
         headers: {
-          Accept: "application/json",
-          "0x-api-key": process.env.OX_API_KEY!,
+          Accept: 'application/json',
+          '0x-api-key': process.env.OX_API_KEY!,
         },
       },
     );
@@ -104,15 +104,15 @@ export class UtilsService {
     }
     const data = await res.json();
     return data;
-  };
+  }
 
   async get0xPrice(chainName: string, sellToken: string, sellAmount: number) {
     const res = await fetch(
       `https://${chainName}.api.0x.org/swap/v1/price?sellToken=${sellToken}&buyToken=${portrAddress}&sellAmount=${sellAmount}`,
       {
         headers: {
-          Accept: "application/json",
-          "0x-api-key": process.env.OX_API_KEY!,
+          Accept: 'application/json',
+          '0x-api-key': process.env.OX_API_KEY!,
         },
       },
     );
@@ -124,6 +124,10 @@ export class UtilsService {
     }
     const data = await res.json();
     return data;
-  };
+  }
 
+  @Cron(CronExpression.EVERY_MINUTE)
+  async watchEvent() {
+    console.log('Watching Event');
+  }
 }

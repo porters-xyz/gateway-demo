@@ -4,16 +4,14 @@ import { PrismaClient, TransactionType } from '@/.generated/client';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { Log, parseAbiItem } from 'viem';
 import { viemClient } from './viemClient';
-
 import web3 from 'web3';
 
 interface IParsedLog {
   tenantId: string;
-  amount:  number;
+  amount: number;
   referenceId: string;
   transactionType: TransactionType;
 }
-
 
 const portrAddress = '0x54d5f8a0e0f06991e63e46420bcee1af7d9fe944';
 const event = parseAbiItem(
@@ -151,63 +149,29 @@ export class UtilsService {
       toBlock: blockNumber,
     });
 
-    const parsedLogs: IParsedLog[]  = logs.map((log:any) => ({
+    const parsedLogs: IParsedLog[] = logs.map((log: any) => ({
       tenantId: web3.utils
         .toAscii(log?.args?._identifier!)
         .replaceAll(`\x00`, ''),
       amount: Number(log?.args?._amount!),
       referenceId: log.transactionHash!,
-      transactionType: TransactionType.CREDIT,
+      transactionType: TransactionType.CREDIT!,
     }));
 
-    console.log({parsedLogs});
+    console.log({ parsedLogs });
 
-    // Check for duplicates before creating records
-    const uniqueParsedLogs = await this.filterDuplicateLogs(parsedLogs);
+    if (!parsedLogs) console.log('No New Redemptions');
 
-    if(!uniqueParsedLogs)
-    {
-      console.log('No New Redemptions');
-    }
     // Create records for unique logs
-    const appliedLogs = this.prisma.client.paymentLedger.createMany({
-      data: {...uniqueParsedLogs},
+    const appliedLogs = await this.prisma.client.paymentLedger.createMany({
+      skipDuplicates: true,
+      data: parsedLogs,
     });
 
-    console.log({uniqueParsedLogs});
+    console.log({ appliedLogs });
 
-    if (!appliedLogs) {
-      console.log('Error Applying logs');
-    }
+    if (!appliedLogs) console.log('Error Applying logs');
 
     console.log('Applied New logs');
-
-  }
-
-  async filterDuplicateLogs(logs: IParsedLog[]) {
-    const existingReferenceIds = new Set<string>();
-    const uniqueLogs: IParsedLog[] = [];
-
-    // Fetch existing records from the database
-    const existingRecords = await this.prisma.client.paymentLedger.findMany({
-      where: {
-        referenceId: {
-          in: logs.map((log) => log.referenceId),
-        }
-      }
-    });
-
-    existingRecords.forEach((record: any) => {
-      existingReferenceIds.add(record.referenceId);
-    });
-
-
-    for (const log of logs) {
-      if (!existingReferenceIds.has(log.referenceId)) {
-        uniqueLogs.push(log);
-      }
-    }
-
-    return uniqueLogs;
   }
 }

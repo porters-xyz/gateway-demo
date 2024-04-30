@@ -1,6 +1,6 @@
 datasource db {
   provider = "postgresql"
-  url      = "postgresql://postgres:AZhRAs18Pr7dT2a@localhost:9999"
+  url      = env("DATABASE_URL")
 }
 
 generator client {
@@ -99,7 +99,7 @@ model PaymentLedger {
   id              String          @id @unique @default(cuid())
   tenant          Tenant          @relation(fields: [tenantId], references: [id])
   tenantId        String
-  referenceId     String    @unique
+  referenceId     String          @unique
   amount          Int
   transactionType TransactionType
   createdAt       DateTime        @default(now())
@@ -114,7 +114,7 @@ model RelayLedger {
   id              String          @id @unique @default(cuid())
   tenant          Tenant          @relation(fields: [tenantId], references: [id])
   tenantId        String
-  referenceId     String
+  referenceId     String          @unique
   amount          Int
   product         Products        @relation(fields: [productId], references: [id])
   productId       String

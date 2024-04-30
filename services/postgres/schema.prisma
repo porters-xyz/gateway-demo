@@ -99,8 +99,8 @@ model PaymentLedger {
   id              String          @id @unique @default(cuid())
   tenant          Tenant          @relation(fields: [tenantId], references: [id])
   tenantId        String
-  referenceId     String
-  amount          Int
+  referenceId     String          @unique
+  amount          BigInt
   transactionType TransactionType
   createdAt       DateTime        @default(now())
 }
@@ -114,8 +114,8 @@ model RelayLedger {
   id              String          @id @unique @default(cuid())
   tenant          Tenant          @relation(fields: [tenantId], references: [id])
   tenantId        String
-  referenceId     String
-  amount          Int
+  referenceId     String          @unique
+  amount          BigInt
   product         Products        @relation(fields: [productId], references: [id])
   productId       String
   transactionType TransactionType

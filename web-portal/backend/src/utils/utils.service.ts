@@ -9,7 +9,7 @@ import web3 from 'web3';
 
 interface IParsedLog {
   tenantId: string;
-  amount: string;
+  amount:  number;
   referenceId: string;
   transactionType: TransactionType;
 }
@@ -147,7 +147,7 @@ export class UtilsService {
     const blockNumber = await viemClient.getBlockNumber();
     const logs = await viemClient.getLogs({
       event,
-      fromBlock: blockNumber - BigInt(300),
+      fromBlock: blockNumber - BigInt(1000),
       toBlock: blockNumber,
     });
 
@@ -155,23 +155,33 @@ export class UtilsService {
       tenantId: web3.utils
         .toAscii(log?.args?._identifier!)
         .replaceAll(`\x00`, ''),
-      amount: log?.args?._amount!,
+      amount: Number(log?.args?._amount!),
       referenceId: log.transactionHash!,
       transactionType: TransactionType.CREDIT,
     }));
 
+    console.log({parsedLogs});
+
     // Check for duplicates before creating records
     const uniqueParsedLogs = await this.filterDuplicateLogs(parsedLogs);
 
+    if(!uniqueParsedLogs)
+    {
+      console.log('No New Redemptions');
+    }
     // Create records for unique logs
     const appliedLogs = this.prisma.client.paymentLedger.createMany({
-      data: uniqueParsedLogs,
+      data: {...uniqueParsedLogs},
     });
 
-    if (!appliedLogs) console.log('No New Redemptions');
+    console.log({uniqueParsedLogs});
+
+    if (!appliedLogs) {
+      console.log('Error Applying logs');
+    }
+
     console.log('Applied New logs');
 
-    return;
   }
 
   async filterDuplicateLogs(logs: IParsedLog[]) {
@@ -200,6 +210,4 @@ export class UtilsService {
 
     return uniqueLogs;
   }
-
-
 }

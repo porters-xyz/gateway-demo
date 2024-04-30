@@ -2,9 +2,10 @@ import { Injectable, Inject, HttpException, HttpStatus } from '@nestjs/common';
 import { CustomPrismaService } from 'nestjs-prisma';
 import { PrismaClient } from '@/.generated/client';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { watchContractEvent } from '@wagmi/core';
+import watchEv
 import { abi } from './abi';
-import { config } from './wagmiConfig';
+import { parseAbiItem } from 'viem'
+import { viemClient } from './viemClient';
 export const portrAddress = '0x54d5f8a0e0f06991e63e46420bcee1af7d9fe944';
 
 @Injectable()
@@ -131,14 +132,11 @@ export class UtilsService {
   @Cron(CronExpression.EVERY_MINUTE)
   async watchEvent() {
     console.log('Watching for events');
-    // const unwatch = watchContractEvent(config, {
-    //   address: portrAddress,
-    //   abi,
-    //   eventName: 'Applied',
-    //   onLogs(logs: any) {
-    //     console.log('New logs:', logs);
-    //   },
-    // });
-    // unwatch();
+    const unwatch = viemClient.watchEvent({
+      address: portrAddress,
+      event: parseAbiItem('event Applied(bytes32 indexed _identifier, uint256 _amount)'),
+      onLogs: logs => console.log(logs)
+    })
+    unwatch();
   }
 }

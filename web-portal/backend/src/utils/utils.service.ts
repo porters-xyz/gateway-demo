@@ -4,7 +4,12 @@ import { PrismaClient } from '@/.generated/client';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { parseAbiItem } from 'viem';
 import { viemClient } from './viemClient';
-export const portrAddress = '0x54d5f8a0e0f06991e63e46420bcee1af7d9fe944';
+import _ from 'lodash';
+
+const portrAddress = '0x54d5f8a0e0f06991e63e46420bcee1af7d9fe944';
+const event = parseAbiItem(
+  'event Applied(bytes32 indexed _identifier, uint256 _amount)',
+);
 
 @Injectable()
 export class UtilsService {
@@ -129,14 +134,19 @@ export class UtilsService {
 
   @Cron(CronExpression.EVERY_MINUTE)
   async watchEvent() {
-    console.log('Watching for events');
-    const unwatch = viemClient.watchEvent({
-      address: portrAddress,
-      event: parseAbiItem(
-        'event Applied(bytes32 indexed _identifier, uint256 _amount)',
-      ),
-      onLogs: (logs) => console.log(logs),
+    console.log('Getting Event Logs');
+    const blockNumber = await viemClient.getBlockNumber();
+    const logs = await viemClient.getLogs({
+      event,
+      fromBlock: blockNumber - BigInt(5000),
+      toBlock: blockNumber,
     });
-    unwatch();
+    console.log({ logs });
+    const parsedLogs = _.map(logs, (item) => ({
+      _identifier: _.get(item, 'args._identifier', ''),
+      _amount: _.get(item, 'args._amount', ''),
+      transactionHash: _.get(item, 'transactionHash', ''),
+    }));
+    console.log({ parsedLogs });
   }
 }

@@ -141,7 +141,7 @@ export default function RateLimitForm() {
 
       <Button
         fullWidth
-        style={{ marginTop: 32 }}
+        mt={32}
         onClick={handleSubmit}
         loading={isPending && !isSuccess}
       >

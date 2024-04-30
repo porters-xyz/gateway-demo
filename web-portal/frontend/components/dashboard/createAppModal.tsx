@@ -17,7 +17,7 @@ export default function CreateAppModal() {
     },
 
     validate: {
-      name: (value) => {
+      name: (value: string) => {
         if (value.length < 3) {
           return "Name should be at least 3 characters long";
         }
@@ -48,11 +48,7 @@ export default function CreateAppModal() {
         {...getInputProps("description")}
       />
 
-      <Button
-        onClick={() => createApp.mutate()}
-        fullWidth
-        style={{ marginTop: 32 }}
-      >
+      <Button onClick={() => createApp.mutate()} fullWidth mt={32}>
         Create New App
       </Button>
     </Modal>

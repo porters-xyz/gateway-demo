@@ -22,6 +22,7 @@ export class AppsService {
         enterpriseId: {
           in: enterprises,
         },
+        deletedAt: null,
       },
     });
 
@@ -38,6 +39,7 @@ export class AppsService {
         tenantId: {
           in: tenants.map((tenant) => tenant.id),
         },
+        deletedAt: null,
       },
       include: {
         appRules: true,
@@ -93,8 +95,11 @@ export class AppsService {
   }
 
   async deleteApp(appId: string) {
-    const deletedApp = await this.prisma.client.app.delete({
+    const deletedApp = await this.prisma.client.app.update({
       where: { id: appId },
+      data: {
+        deletedAt: new Date(),
+      },
     });
 
     if (!deletedApp) {
@@ -139,8 +144,11 @@ export class AppsService {
   }
 
   async deleteAppRule(appId: string, ruleId: string) {
-    const deletedAppRule = await this.prisma.client.appRule.delete({
+    const deletedAppRule = await this.prisma.client.appRule.update({
       where: { id: ruleId, appId },
+      data: {
+        deletedAt: new Date(),
+      },
     });
 
     if (!deletedAppRule) {
@@ -201,7 +209,7 @@ export class AppsService {
         ),
     );
 
-    const ruleIdsToDelete = deleteAppRules.map((rule) => rule.id);
+    const ruleIdsToDelete = deleteAppRules.map((rule: any) => rule.id);
 
     const ruleDataToCreate = newAppRules.map((newRule) => ({
       appId,
@@ -222,13 +230,16 @@ export class AppsService {
       });
     }
 
-    await this.prisma.client.appRule.deleteMany({
+    await this.prisma.client.appRule.updateMany({
       where: {
         appId: appId,
         ruleId: ruleId,
         id: {
           in: ruleIdsToDelete,
         },
+      },
+      data: {
+        deletedAt: new Date(),
       },
     });
 

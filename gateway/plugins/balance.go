@@ -68,6 +68,7 @@ func (b *BalanceTracker) HandleRequest(req *http.Request) error {
         return proxy.NewHTTPError(http.StatusNotFound)
     }
     ctx = common.UpdateContext(ctx, bal)
+    ctx = common.UpdateContext(ctx, app)
     // TODO Check that balance is greater than or equal to req weight
     if bal.cachedBalance > 0 {
         log.Println("balance remaining")
@@ -140,6 +141,7 @@ func newUsageUpdater(ctx context.Context, status string) *usageUpdater {
 }
 
 func (u *usageUpdater) Run() {
+    log.Println("updater", u)
     if u.status == "success" {
         ctx := context.Background()
         db.DecrementCounter(ctx, u.bal.Key(), u.product.Weight)

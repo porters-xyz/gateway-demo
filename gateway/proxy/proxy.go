@@ -44,6 +44,7 @@ func Start() {
     proxyRouter.HandleFunc(fmt.Sprintf(`/{%s}`, APP_PATH), handler(revProxy))
 
     _ = addHealthcheckRoute(router)
+    _ = addMetricsRoute(router)
 
     port := fmt.Sprintf(":%d", common.GetConfigInt(common.PORT))
     server = &http.Server{Addr: port, Handler: router}

@@ -209,6 +209,7 @@ func (a *App) Lookup(ctx context.Context) error {
             a.Tenant.Id = result["tenant"]
             a.Tenant.Lookup(ctx)
         }
+        common.UpdateContext(ctx, a)
     }
     return nil
 }

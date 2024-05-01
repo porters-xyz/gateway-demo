@@ -7,6 +7,7 @@ import (
     "log"
     "sync"
 
+    "github.com/google/uuid"
     "github.com/lib/pq"
 
     "porters/common"
@@ -146,25 +147,17 @@ func (ptx *Paymenttx) fetch(ctx context.Context) error {
     return nil
 }
 
-// TODO we might just write this.
-func (rtx *Relaytx) fetch(ctx context.Context) error {
-    db := getCanonicalDB()
-    row := db.QueryRowContext(ctx, `SELECT id FROM "RelayLedger" WHERE id = $1`, rtx.Id)
-    err := row.Scan()
-    if err != nil {
-        return err
-    }
-    return nil
-}
-
 func (rtx *Relaytx) write(ctx context.Context) error {
     // TODO write CREDITS to postgres
     db := getCanonicalDB()
-    uuid := ' ' // TODO get UUID
+    uuid := uuid.New()
+    if rtx.Reference == "" {
+        rtx.Reference = uuid.String()
+    }
     res, err := db.ExecContext(ctx, `INSERT INTO "RelayLedger"
         ("id", "tenantId", "referenceId", "amount", "chainId", "transactionType")
         VALUES
-        ($1, $2, $3, $4, $5, 'CREDIT')`, uuid, rtx.Tenant.Id, rtx.Reference, rtx.Amount, rtx.Product.Id) 
+        ($1, $2, $3, $4, $5, 'CREDIT')`, uuid.String(), rtx.App.Tenant.Id, rtx.Reference, rtx.Amount, rtx.Product.Id) 
     if err != nil {
         return err
     } else {

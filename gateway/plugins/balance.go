@@ -11,6 +11,7 @@ import (
     "porters/common"
     "porters/db"
     "porters/proxy"
+    "porters/utils"
 )
 
 type BalanceTracker struct {
@@ -19,7 +20,16 @@ type BalanceTracker struct {
 type balancecache struct {
     tracker *BalanceTracker
     tenant *db.Tenant
+    app *db.App
+    product *db.Product
     cachedBalance int
+}
+
+type usageUpdater struct {
+    status string
+    bal *balancecache
+    app *db.App
+    product *db.Product
 }
 
 const (
@@ -58,6 +68,7 @@ func (b *BalanceTracker) HandleRequest(req *http.Request) error {
         return proxy.NewHTTPError(http.StatusNotFound)
     }
     ctx = common.UpdateContext(ctx, bal)
+    ctx = common.UpdateContext(ctx, app)
     // TODO Check that balance is greater than or equal to req weight
     if bal.cachedBalance > 0 {
         log.Println("balance remaining")
@@ -74,13 +85,13 @@ func (b *BalanceTracker) HandleRequest(req *http.Request) error {
 func (b *BalanceTracker) HandleResponse(resp *http.Response) error {
     // TODO read pokt docs for if there is better way to check response
     ctx := resp.Request.Context()
+
     if resp.StatusCode < 400 {
-        entity, ok := common.FromContext(ctx, BALANCE)
-        if ok {
-            bal := entity.(*balancecache)
-            newval := db.DecrementCounter(ctx, bal.Key(), 1)
-            log.Println("balance is now:", newval)
-        }
+        updater := newUsageUpdater(ctx, "success")
+        common.GetTaskQueue().Tasks <- updater
+    } else {
+        updater := newUsageUpdater(ctx, "failure")
+        common.GetTaskQueue().Tasks <- updater
     }
     // TODO >= 400 need to return error?
     // TODO log usage in correct way (for analytics)
@@ -106,4 +117,41 @@ func (c *balancecache) Lookup(ctx context.Context) error {
         c.cachedBalance = db.GetIntVal(ctx, c.Key())
     }
     return nil
+}
+
+func newUsageUpdater(ctx context.Context, status string) *usageUpdater {
+    updater := &usageUpdater{
+        status: status,
+    }
+
+    entity, ok := common.FromContext(ctx, BALANCE)
+    if ok {
+        updater.bal = entity.(*balancecache)
+    }
+    entity, ok = common.FromContext(ctx, db.PRODUCT)
+    if ok {
+        updater.product = entity.(*db.Product)
+    }
+    entity, ok = common.FromContext(ctx, db.APP)
+    if ok {
+        updater.app = entity.(*db.App)
+    }
+
+    return updater
+}
+
+func (u *usageUpdater) Run() {
+    log.Println("updater", u)
+    if u.status == "success" {
+        ctx := context.Background()
+        db.DecrementCounter(ctx, u.bal.Key(), u.product.Weight)
+        use := &db.Relaytx{
+            App: *u.app,
+            Product: *u.product,
+        }
+
+        db.IncrementField(ctx, use, u.product.Weight)
+    }
+    hashedAppId := utils.Hash(u.app.Id)
+    common.EndpointUsage.WithLabelValues(hashedAppId, u.product.Name, u.status).Inc()
 }

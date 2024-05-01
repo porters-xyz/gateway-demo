@@ -80,7 +80,7 @@ type Relaytx struct {
     Reference string
     Amount int
     Product Product
-    Tenant Tenant
+    App App
     TxType TxType
 }
 
@@ -128,14 +128,9 @@ func (ar *Apprule) Key() string {
     return fmt.Sprintf("%s:%s:%s", APPRULE, ar.App.Id, ar.Id)
 }
 
-// TODO is this needed?
-func (p *Paymenttx) Key() string {
-   return "" 
-}
-
 // TODO sort out how this is used
 func (r *Relaytx) Key() string {
-    return fmt.Sprintf("%s:%s", RELAYTX, r.Id)
+    return fmt.Sprintf("%s:%s:%s", RELAYTX, r.App.Id, r.Product.Name)
 }
 
 func (p *Product) Key() string {
@@ -156,4 +151,8 @@ func (ar Apprules) ContextKey() string {
 
 func (p *Product) ContextKey() string {
     return PRODUCT
+}
+
+func (r *Relaytx) Field() string {
+    return "amount"
 }

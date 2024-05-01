@@ -48,7 +48,7 @@ func (r *Reconciler) spawnTasks() {
             task := &reconcileTask{
                 relaytx: rtx,
             }
-            queue.Tasks <- task
+            queue.Add(task)
         }
     }
 }

@@ -16,4 +16,9 @@ var (
         Name: "gateway_job_queue",
         Help: "If this grows too big it may effect performance, should scale up",
     })
+
+    ErrGauge = promauto.NewGauge(prometheus.GaugeOpts{
+        Name: "gateway_err_queue",
+        Help: "Errors are centrally handled, high volumes of errors should be addressed",
+    })
 )

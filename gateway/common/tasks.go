@@ -18,7 +18,7 @@ type SimpleTask struct {
 }
 
 type TaskQueue struct {
-    Tasks chan Runnable
+    tasks chan Runnable
     errors chan error
 }
 
@@ -30,7 +30,7 @@ func GetTaskQueue() *TaskQueue {
     qmutex.Do(func() {
         bufferSize := GetConfigInt(JOB_BUFFER_SIZE)
         q = &TaskQueue{
-            Tasks: make(chan Runnable, bufferSize),
+            tasks: make(chan Runnable, bufferSize),
             errors: make(chan error, bufferSize),
         }
     })
@@ -47,13 +47,13 @@ func (q *TaskQueue) SetupWorkers() {
 
 // use this for graceful shutdown
 func (q *TaskQueue) CloseQueue() {
-    close(q.Tasks)
+    close(q.tasks)
     shutdownTime := time.Duration(GetConfigInt(SHUTDOWN_DELAY)) * time.Second
     ticker := time.NewTicker(100 * time.Millisecond)
     for {
         select {
         case <-ticker.C:
-            if len(q.Tasks) == 0 {
+            if len(q.tasks) == 0 {
                 return
             }
         case <-time.After(shutdownTime):
@@ -63,16 +63,35 @@ func (q *TaskQueue) CloseQueue() {
     }
 }
 
+func (q *TaskQueue) Add(runnable Runnable) {
+   q.tasks <- runnable
+   JobGauge.Inc()
+}
+
+func (q *TaskQueue) ReportError(err error) {
+    q.errors <- err
+    ErrGauge.Inc()
+}
+
 func worker(q *TaskQueue) {
-    for task := range q.Tasks {
+    for task := range q.tasks {
         switch t := task.(type) {
         case Combinable:
-            task.(Combinable).Combine(q.Tasks)
+            task.(Combinable).Combine(q.tasks)
         case Runnable:
             task.Run()
         default:
             log.Println("unspecified task", task, t)
         }
+        JobGauge.Set(float64(len(q.tasks)))
+    }
+}
+
+// TODO do more than log
+func errWorkers(q *TaskQueue) {
+    for err := range q.errors {
+        log.Println("error encountered", err)
+        ErrGauge.Dec()
     }
 }
 

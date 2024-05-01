@@ -88,10 +88,10 @@ func (b *BalanceTracker) HandleResponse(resp *http.Response) error {
 
     if resp.StatusCode < 400 {
         updater := newUsageUpdater(ctx, "success")
-        common.GetTaskQueue().Tasks <- updater
+        common.GetTaskQueue().Add(updater)
     } else {
         updater := newUsageUpdater(ctx, "failure")
-        common.GetTaskQueue().Tasks <- updater
+        common.GetTaskQueue().Add(updater)
     }
     // TODO >= 400 need to return error?
     // TODO log usage in correct way (for analytics)

@@ -1,14 +1,14 @@
 import { useState } from "react";
 import { Flex, Stack, Button, TextInput, Text, Select } from "@mantine/core";
-import _ from "lodash";
+import _, { isNumber } from "lodash";
 import Image from "next/image";
 import { karla } from "@frontend/utils/theme";
 
 import { portrTokenData } from "@frontend/utils/consts";
 import { chains } from "@frontend/utils/Web3Provider";
 import { useTokenBalance } from "@frontend/utils/hooks";
-import { useChainId, useWriteContract } from "wagmi";
-import { toHex } from "viem";
+import { useChainId, useWriteContract, useSwitchChain } from "wagmi";
+import { toHex, zeroAddress } from "viem";
 
 import { abi } from "@frontend/utils/abi";
 
@@ -32,9 +32,16 @@ const chainOptions = _.map(chains, "name").filter(
 
 export default function Redeem() {
     const [selectedChainId, setSelectedChainId] = useState(10);
+    const selectedChain = _.find(
+        chains,
+        (c) => Number(c.id) === Number(selectedChainId),
+    );
+
     const { writeContract } = useWriteContract();
 
     const chainId = useChainId();
+    const { switchChain } = useSwitchChain();
+
     const { data: selectedTokenBalance } = useTokenBalance({
         token: portrTokenData.address,
         chainId: portrTokenData?.chainId,
@@ -45,8 +52,18 @@ export default function Redeem() {
     const shouldDisable =
         !redeemValue ||
         !(Number(selectedTokenBalance?.formatted) > 0) ||
-        !accountId ||
-        chainId !== selectedChainId;
+        !accountId;
+    const needToSwitchChain = chainId !== selectedChainId;
+
+    const handleSwitchNetwork = () => {
+        switchChain({ chainId: selectedChainId });
+    };
+
+    const hexAccountId = accountId ? toHex(accountId) : zeroAddress;
+    const bigNumberRedeem =
+        isNumber(redeemValue) && redeemValue > 0
+            ? BigInt(redeemValue * 10 ** portrTokenData?.decimals)
+            : BigInt(0);
 
     const handleRedeem = () =>
         writeContract({
@@ -54,8 +71,15 @@ export default function Redeem() {
             address: portrTokenData?.address,
             abi,
             functionName: "applyToAccount",
-            args: [toHex(accountId!), BigInt(redeemValue * 10 ** 18)],
+            args: [hexAccountId, bigNumberRedeem],
         });
+
+    console.log({
+        handleRedeem,
+        writeContract,
+        hexAccountId,
+        bigNumberRedeem,
+    });
 
     return (
         <Stack p={8} mt={10}>
@@ -207,12 +231,21 @@ export default function Redeem() {
             <Button
                 size="lg"
                 c="white"
-                bg={shouldDisable ? "red" : "carrot"}
-                disabled={shouldDisable}
+                bg={shouldDisable || needToSwitchChain ? "red" : "carrot"}
+                // disabled={shouldDisable}
                 onClick={handleRedeem}
             >
-                Redeem
+                {!needToSwitchChain
+                    ? `Redeem`
+                    : `Swtich to ${selectedChain?.name}`}
             </Button>
+
+            {needToSwitchChain && (
+                <Text style={{ textAlign: "center", color: "red" }}>
+                    You will need to sign-in again, <br /> if you need to switch
+                    networks.
+                </Text>
+            )}
         </Stack>
     );
 }

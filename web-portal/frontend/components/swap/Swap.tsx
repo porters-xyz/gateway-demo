@@ -195,18 +195,19 @@ export default function Swap() {
 
     useEffect(() => {
         if (selectedTokenBalance?.value === BigInt(0)) {
+            setFieldValue("sellAmount", 0.0);
             setFieldValue("buyAmount", 0.0);
         }
     }, [selectedTokenBalance]);
 
-    useEffect(
-        () =>
-            setFieldValue(
-                "buyAmount",
-                Number(quote?.buyAmount) / 10 ** portrTokenData?.decimals,
-            ),
-        [quote],
-    );
+    useEffect(() => {
+        setFieldValue(
+            "buyAmount",
+            quote?.buyAmount
+                ? _.toNumber(quote?.buyAmount) / 10 ** portrTokenData?.decimals
+                : 0.0,
+        );
+    }, [quote]);
 
     return (
         <Stack p={8} mt={10}>

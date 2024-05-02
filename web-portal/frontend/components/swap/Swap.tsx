@@ -8,7 +8,7 @@ import {
     Select,
     Loader,
 } from "@mantine/core";
-import _ from "lodash";
+import _, { isNumber } from "lodash";
 import Image from "next/image";
 import { karla } from "@frontend/utils/theme";
 import { IToken } from "@frontend/utils/types";
@@ -32,6 +32,7 @@ import {
     useSwitchChain,
     useWriteContract,
 } from "wagmi";
+import { useForm } from "@mantine/form";
 
 // Common styles for TextInput and Select components
 const commonStyles = {
@@ -67,14 +68,30 @@ export default function Swap() {
     // Utils
     const chainId = useChainId();
     const { switchChain } = useSwitchChain();
-    const { writeContract } = useWriteContract();
+    const { writeContractAsync } = useWriteContract();
     const { sendTransaction } = useSendTransaction();
     const queryClient = useQueryClient();
 
     // UI States
     const [selectedTokenData, setSelectedTokenData] = useState<IToken>();
-    const [sellAmount, setSellAmount] = useState(0.0);
-    const [buyAmount, setBuyAmount] = useState(0.0);
+
+    const { values, getInputProps, setFieldValue } = useForm({
+        validate: {
+            sellAmount: (val) =>
+                val < Number(selectedTokenBalance?.formatted)
+                    ? null
+                    : "Not Enough Balance",
+            buyAmount: (val: number) =>
+                isNumber(val) && val > 0 ? null : `Invalid Quote`,
+        },
+        initialValues: {
+            sellAmount: 0.0,
+            buyAmount: 0.0,
+        },
+    });
+
+    const { sellAmount, buyAmount } = values;
+
     const [opened, setOpened] = useState(false);
 
     // Data Fetching
@@ -143,18 +160,17 @@ export default function Swap() {
 
     const handleTokenChange = (token: IToken) => {
         setSelectedTokenData(token);
-        setSellAmount(0.0);
-        setBuyAmount(0.0);
+        setFieldValue("sellAmount", 0.0);
+        setFieldValue("buyAmount", 0.0);
     };
 
-    const handleSellAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setSellAmount(Number(e.target.value));
+    useEffect(() => {
         queryClient.refetchQueries({ queryKey: ["0xPrice"] });
         queryClient.refetchQueries({ queryKey: ["0xQuote"] });
-    };
+    }, [sellAmount]);
 
-    const handleAllowance = () => {
-        writeContract({
+    const handleAllowance = async () => {
+        await writeContractAsync({
             chainId: selectedChainId,
             address: quote?.sellTokenAddress,
             abi: erc20Abi,
@@ -179,13 +195,14 @@ export default function Swap() {
 
     useEffect(() => {
         if (selectedTokenBalance?.value === BigInt(0)) {
-            setBuyAmount(0.0);
+            setFieldValue("buyAmount", 0.0);
         }
     }, [selectedTokenBalance]);
 
     useEffect(
         () =>
-            setBuyAmount(
+            setFieldValue(
+                "buyAmount",
                 Number(quote?.buyAmount) / 10 ** portrTokenData?.decimals,
             ),
         [quote],
@@ -234,8 +251,7 @@ export default function Swap() {
                         placeholder="Enter amount"
                         label="Swap"
                         type="number"
-                        value={sellAmount}
-                        onChange={(e) => handleSellAmountChange(e)}
+                        {...getInputProps("sellAmount")}
                         styles={{
                             ...commonStyles,
                             input: { ...commonStyles.input, fill: "#fff" },
@@ -301,12 +317,12 @@ export default function Swap() {
                             size="sm"
                             style={{ fontWeight: "bold", cursor: "pointer" }}
                             onClick={() =>
-                                setSellAmount(
+                                setFieldValue(
+                                    "sellAmount",
                                     Number(
                                         _.get(
                                             selectedTokenBalance,
                                             "formatted",
-                                            0,
                                         ),
                                     ),
                                 )
@@ -334,17 +350,12 @@ export default function Swap() {
                         ...commonStyles,
                         input: { ...commonStyles.input, fill: "#fff" },
                     }}
-                    value={
-                        !isQuoteLoading && !isQuoteFetching && buyAmount
-                            ? buyAmount
-                            : ""
-                    }
                     leftSection={
                         isQuoteLoading || isQuoteFetching ? (
                             <Loader size="sm" />
                         ) : null
                     }
-                    onChange={(e) => setBuyAmount(parseFloat(e.target.value))}
+                    {...getInputProps("buyAmount")}
                     readOnly
                 />
                 <Button

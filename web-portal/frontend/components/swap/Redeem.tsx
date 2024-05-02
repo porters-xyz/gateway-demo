@@ -1,13 +1,18 @@
 import { useState } from "react";
 import { Flex, Stack, Button, TextInput, Text, Select } from "@mantine/core";
-import _, { isNumber } from "lodash";
+import _, { isNumber, isString } from "lodash";
 import Image from "next/image";
 import { karla } from "@frontend/utils/theme";
-
+import { useForm } from "@mantine/form";
 import { portrTokenData } from "@frontend/utils/consts";
 import { chains } from "@frontend/utils/Web3Provider";
 import { useTokenBalance } from "@frontend/utils/hooks";
-import { useChainId, useWriteContract, useSwitchChain } from "wagmi";
+import {
+    useChainId,
+    useWriteContract,
+    useSwitchChain,
+    useAccount,
+} from "wagmi";
 import { toHex, zeroAddress } from "viem";
 
 import { abi } from "@frontend/utils/abi";
@@ -41,14 +46,27 @@ export default function Redeem() {
 
     const chainId = useChainId();
     const { switchChain } = useSwitchChain();
+    const { address } = useAccount();
 
     const { data: selectedTokenBalance } = useTokenBalance({
         token: portrTokenData.address,
         chainId: portrTokenData?.chainId,
     });
 
-    const [redeemValue, setRedeemValue] = useState(0);
-    const [accountId, setAccountId] = useState();
+    const { values, getInputProps, setFieldValue } = useForm({
+        validate: {
+            accountId: (val) => isString(val),
+            redeemValue: (val: number) =>
+                val > Number(selectedTokenBalance?.formatted),
+        },
+        initialValues: {
+            accountId: "",
+            redeemValue: 0,
+        },
+    });
+
+    const { redeemValue, accountId } = values;
+
     const shouldDisable =
         !redeemValue ||
         !(Number(selectedTokenBalance?.formatted) > 0) ||
@@ -60,10 +78,9 @@ export default function Redeem() {
     };
 
     const hexAccountId = accountId ? toHex(accountId) : zeroAddress;
-    const bigNumberRedeem =
-        isNumber(redeemValue) && redeemValue > 0
-            ? BigInt(redeemValue * 10 ** portrTokenData?.decimals)
-            : BigInt(0);
+    const bigNumberRedeem = BigInt(
+        redeemValue * 10 ** portrTokenData?.decimals ?? 0,
+    );
 
     const handleRedeem = () =>
         writeContract({
@@ -115,10 +132,7 @@ export default function Redeem() {
                         placeholder="Enter amount"
                         label="Redeem"
                         type="number"
-                        value={redeemValue}
-                        onChange={(e) =>
-                            setRedeemValue(parseFloat(e.target.value))
-                        }
+                        {...getInputProps("redeemValue")}
                         styles={{
                             ...commonStyles,
                             input: { ...commonStyles.input, fill: "#fff" },
@@ -169,7 +183,8 @@ export default function Redeem() {
                             size="sm"
                             style={{ fontWeight: "bold", cursor: "pointer" }}
                             onClick={() =>
-                                setRedeemValue(
+                                setFieldValue(
+                                    "redeemValue",
                                     Number(
                                         _.get(
                                             selectedTokenBalance,
@@ -203,8 +218,7 @@ export default function Redeem() {
                         ...commonStyles,
                         input: { ...commonStyles.input, fill: "#fff" },
                     }}
-                    value={accountId}
-                    onChange={(e) => setAccountId(e.target.value)}
+                    {...getInputProps("accountId")}
                 />
             </Flex>
             <Flex

@@ -56,7 +56,7 @@ export default function Redeem() {
         validate: {
             accountId: (val) => isString(val),
             redeemValue: (val: number) =>
-                val > Number(selectedTokenBalance?.formatted),
+                val > Number(_.get(selectedTokenBalance, "formatted", 0)),
         },
         initialValues: {
             accountId: "",
@@ -68,7 +68,7 @@ export default function Redeem() {
 
     const shouldDisable =
         !redeemValue ||
-        !(Number(selectedTokenBalance?.formatted) > 0) ||
+        !(Number(_.get(selectedTokenBalance, "formatted", 0)) > 0) ||
         !accountId;
     const needToSwitchChain = chainId !== selectedChainId;
 
@@ -101,6 +101,7 @@ export default function Redeem() {
         data,
         isPending,
         isSuccess,
+        selectedTokenBalance,
     });
 
     return (
@@ -145,7 +146,7 @@ export default function Redeem() {
                         }}
                         error={
                             redeemValue >
-                            Number(_.get(selectedTokenBalance, "formatted"))
+                            Number(_.get(selectedTokenBalance, "formatted", 0))
                                 ? "Not enough balance"
                                 : undefined
                         }
@@ -179,7 +180,7 @@ export default function Redeem() {
                     <Flex align={"center"} gap={4}>
                         <Text size="sm">
                             {Number(
-                                _.get(selectedTokenBalance, "formatted") ?? 0,
+                                _.get(selectedTokenBalance, "formatted", 0),
                             ).toFixed(6)}
                         </Text>
 

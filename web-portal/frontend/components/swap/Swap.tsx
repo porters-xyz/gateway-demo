@@ -78,7 +78,7 @@ export default function Swap() {
     const { values, getInputProps, setFieldValue } = useForm({
         validate: {
             sellAmount: (val) =>
-                val < Number(selectedTokenBalance?.formatted)
+                val < Number(_.get(selectedTokenBalance, "formatted", 0))
                     ? null
                     : "Not Enough Balance",
             buyAmount: (val: number) =>
@@ -126,7 +126,7 @@ export default function Swap() {
 
     // Helpers
     const showError =
-        sellAmount > Number(_.get(selectedTokenBalance, "formatted")) ||
+        sellAmount > Number(_.get(selectedTokenBalance, "formatted", 0)) ||
         !selectedTokenBalance;
 
     const shouldDisable =
@@ -309,7 +309,7 @@ export default function Swap() {
                     <Flex align={"center"} gap={4}>
                         <Text size="sm">
                             {Number(
-                                _.get(selectedTokenBalance, "formatted") ?? 0,
+                                _.get(selectedTokenBalance, "formatted", 0),
                             ).toFixed(6)}
                         </Text>
 
@@ -324,6 +324,7 @@ export default function Swap() {
                                         _.get(
                                             selectedTokenBalance,
                                             "formatted",
+                                            0,
                                         ),
                                     ),
                                 )

@@ -8,7 +8,7 @@ import { portrTokenData } from "@frontend/utils/consts";
 import { chains } from "@frontend/utils/Web3Provider";
 import { useTokenBalance } from "@frontend/utils/hooks";
 import { useChainId, useWriteContract } from "wagmi";
-import web3 from 'web3';
+import { toHex } from "viem";
 
 import { abi } from "@frontend/utils/abi";
 
@@ -54,7 +54,7 @@ export default function Redeem() {
             address: portrTokenData?.address,
             abi,
             functionName: "applyToAccount",
-            args: [web.utils.],
+            args: [toHex(accountId!), BigInt(redeemValue * 10 ** 18)],
         });
 
     return (

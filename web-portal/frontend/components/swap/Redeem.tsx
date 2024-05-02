@@ -7,12 +7,7 @@ import { useForm } from "@mantine/form";
 import { portrTokenData } from "@frontend/utils/consts";
 import { chains } from "@frontend/utils/Web3Provider";
 import { useTokenBalance } from "@frontend/utils/hooks";
-import {
-    useChainId,
-    useWriteContract,
-    useSwitchChain,
-    useAccount,
-} from "wagmi";
+import { useChainId, useWriteContract, useSwitchChain } from "wagmi";
 import { toHex, zeroAddress } from "viem";
 
 import { abi } from "@frontend/utils/abi";
@@ -42,7 +37,7 @@ export default function Redeem() {
         (c) => Number(c.id) === Number(selectedChainId),
     );
 
-    const { writeContract, data, isPending, isSuccess } = useWriteContract();
+    const { writeContractAsync } = useWriteContract();
 
     const chainId = useChainId();
     const { switchChain } = useSwitchChain();
@@ -76,13 +71,18 @@ export default function Redeem() {
         switchChain({ chainId: selectedChainId });
     };
 
-    const hexAccountId = accountId ? toHex(accountId) : zeroAddress;
+    const hexAccountId = accountId
+        ? toHex(accountId, {
+              size: 32,
+          })
+        : zeroAddress;
     const bigNumberRedeem = BigInt(
         redeemValue * 10 ** portrTokenData?.decimals ?? 0,
     );
 
-    const handleRedeem = () =>
-        writeContract({
+    const handleRedeem = async () => {
+        console.log("Attempting to redeem...");
+        await writeContractAsync({
             abi,
             chainId: selectedChainId,
             address: portrTokenData?.address,
@@ -90,18 +90,14 @@ export default function Redeem() {
             args: [hexAccountId, bigNumberRedeem],
         });
 
-    console.log({
-        handleRedeem,
-        writeContract,
-        hexAccountId,
-        bigNumberRedeem,
-    });
+        console.log("Attempt was made");
+    };
 
     console.log({
-        data,
-        isPending,
-        isSuccess,
-        selectedTokenBalance,
+        handleRedeem,
+        writeContractAsync,
+        hexAccountId,
+        bigNumberRedeem,
     });
 
     return (

@@ -42,11 +42,10 @@ export default function Redeem() {
         (c) => Number(c.id) === Number(selectedChainId),
     );
 
-    const { writeContract } = useWriteContract();
+    const { writeContract, data, isPending, isSuccess } = useWriteContract();
 
     const chainId = useChainId();
     const { switchChain } = useSwitchChain();
-    const { address } = useAccount();
 
     const { data: selectedTokenBalance } = useTokenBalance({
         token: portrTokenData.address,
@@ -84,9 +83,9 @@ export default function Redeem() {
 
     const handleRedeem = () =>
         writeContract({
+            abi,
             chainId: selectedChainId,
             address: portrTokenData?.address,
-            abi,
             functionName: "applyToAccount",
             args: [hexAccountId, bigNumberRedeem],
         });
@@ -96,6 +95,12 @@ export default function Redeem() {
         writeContract,
         hexAccountId,
         bigNumberRedeem,
+    });
+
+    console.log({
+        data,
+        isPending,
+        isSuccess,
     });
 
     return (
@@ -246,8 +251,8 @@ export default function Redeem() {
                 size="lg"
                 c="white"
                 bg={shouldDisable || needToSwitchChain ? "red" : "carrot"}
-                // disabled={shouldDisable}
-                onClick={handleRedeem}
+                disabled={shouldDisable}
+                onClick={needToSwitchChain ? handleSwitchNetwork : handleRedeem}
             >
                 {!needToSwitchChain
                     ? `Redeem`

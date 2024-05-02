@@ -11,6 +11,9 @@ primary_region = 'sea'
 [deploy]
   strategy = 'canary'
 
+[env]
+  HOST = 'g.staging.porters.xyz'
+
 [http_service]
   internal_port = 9000
   force_https = true

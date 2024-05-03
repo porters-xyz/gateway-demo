@@ -36,14 +36,20 @@ func (r *Reconciler) Load() {
 func (r *Reconciler) spawnTasks() {
     queue := common.GetTaskQueue()
     ctx := context.Background()
+    // TODO ticker is wrong here, should use age to decide if needs write to db
     for range r.ticker.C {
         // TODO go through redis and add to job queue
         // TODO figure out where per-chain usage stored
-        iter := db.ScanKeys(ctx, "PRODUCT")
+        iter := db.ScanKeys(ctx, "RELAYTX")
         for iter.Next(ctx) {
-            //strval := iter.Val() // use for building relaytx
-            rtx := &db.Relaytx{
-                
+            rtxkey := iter.Val() // use for building relaytx
+            
+            rtx, ok := db.RelaytxFromKey(ctx, rtxkey)
+            if ok {
+                task := &reconcileTask{
+                    relaytx: rtx, 
+                }
+                queue.Tasks <- task
             }
             task := &reconcileTask{
                 relaytx: rtx,
@@ -55,4 +61,5 @@ func (r *Reconciler) spawnTasks() {
 
 func (t *reconcileTask) Run() {
     // TODO In transaction grab from redis, write to postgres, clear redis
+    
 }

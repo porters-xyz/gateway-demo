@@ -7,7 +7,6 @@ import (
     "log"
     "sync"
 
-    "github.com/google/uuid"
     "github.com/lib/pq"
 
     "porters/common"
@@ -83,6 +82,7 @@ func (t *Tenant) fetch(ctx context.Context) error {
 // cached balance is counted down as relays are used
 // cached balance is incremented on new CREDIT txns and and needs to track last
 // "createdAt"
+// TODO needs to take un-reconciled RelayLedger entries into account as well 
 func (t *Tenant) canonicalBalance(ctx context.Context) error {
     db := getCanonicalDB()
     query := `SELECT
@@ -139,25 +139,14 @@ func (p *Product) fetch(ctx context.Context) error {
     return nil
 }
 
-// TODO Get any credits since cached time
-// TODO Need another function for getting updated balance
-func (ptx *Paymenttx) fetch(ctx context.Context) error {
-    //db := getCanonicalDB()
-    //row := db.QueryRowContext(ctx)
-    return nil
-}
-
 func (rtx *Relaytx) write(ctx context.Context) error {
     // TODO write CREDITS to postgres
     db := getCanonicalDB()
-    uuid := uuid.New()
-    if rtx.Reference == "" {
-        rtx.Reference = uuid.String()
-    }
+    // TODO change schema to include app id
     res, err := db.ExecContext(ctx, `INSERT INTO "RelayLedger"
-        ("id", "tenantId", "referenceId", "amount", "chainId", "transactionType")
+        ("id", "tenantId", "referenceId", "amount", "productId", "transactionType")
         VALUES
-        ($1, $2, $3, $4, $5, 'CREDIT')`, uuid.String(), rtx.App.Tenant.Id, rtx.Reference, rtx.Amount, rtx.Product.Id) 
+        ($1, (SELECT "tenantId" FROM "App" WHERE id = $2), $3, $4, (SELECT id FROM "Products" WHERE name = $5), 'CREDIT')`, rtx.Id, rtx.AppId, rtx.Reference, rtx.Amount, rtx.ProductName) 
     if err != nil {
         return err
     } else {

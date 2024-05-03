@@ -82,14 +82,15 @@ export const useUserApps = (userAddress: string) => {
 
 export const useCreateAppMutation = (
   address: string,
-  values: {
+  data: {
     name: string;
     description?: string;
   },
 ) => {
-  const { name, description } = values;
+  const { name, description } = data;
   const router = useRouter();
   const queryClient = useQueryClient();
+
   const createAppMutation = async () => {
     const response = await fetch(`/api/apps/${address}`, {
       method: "POST",
@@ -110,6 +111,46 @@ export const useCreateAppMutation = (
       router.push("/dashboard");
       queryClient.invalidateQueries(); // TODO <--- revisit this
       console.log("New App Created");
+    },
+  });
+};
+
+export const useUpdateAppMutation = (appId: string) => {
+  const queryClient = useQueryClient();
+  const path = usePathname();
+  const router = useRouter();
+  const updateAppMutation = async ({
+    action,
+    data,
+  }: {
+    action: "update" | "delete";
+    data?: { name?: string; description?: string };
+  }) => {
+    const method = action === "update" ? "PATCH" : "DELETE";
+    const requestBody =
+      action === "update" ? JSON.stringify({ ...data }) : null;
+
+    const response = await fetch(`/api/apps/${appId}`, {
+      method: method,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: requestBody,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to ${action} app`);
+    }
+
+    return response.json();
+  };
+
+  return useMutation({
+    mutationFn: updateAppMutation,
+    onSuccess: () => {
+      router.replace(path);
+      queryClient.invalidateQueries(); // TODO <--- revisit this
+      console.log(`Updated App`);
     },
   });
 };

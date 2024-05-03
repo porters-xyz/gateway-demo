@@ -17,6 +17,7 @@ export class OrgService {
             id: userId,
           },
         },
+        deletedAt: null,
       },
     });
     return org;

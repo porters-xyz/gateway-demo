@@ -145,12 +145,12 @@ func (u *usageUpdater) Run() {
     if u.status == "success" {
         ctx := context.Background()
         db.DecrementCounter(ctx, u.bal.Key(), u.product.Weight)
-        use := &db.Relaytx{
-            App: *u.app,
-            Product: *u.product,
-        }
 
-        db.IncrementField(ctx, use, u.product.Weight)
+        use := &db.Relaytx{
+            AppId: u.app.Id,
+            ProductName: u.product.Name,
+        }
+        db.IncrementCounter(ctx, use.Key(), u.product.Weight)
     }
     hashedAppId := utils.Hash(u.app.Id)
     common.EndpointUsage.WithLabelValues(hashedAppId, u.product.Name, u.status).Inc()

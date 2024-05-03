@@ -2,9 +2,9 @@ import { Injectable, Inject, HttpException, HttpStatus } from '@nestjs/common';
 import { CustomPrismaService } from 'nestjs-prisma';
 import { PrismaClient, TransactionType } from '@/.generated/client';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { Log, parseAbiItem } from 'viem';
+import { Log, parseAbiItem, fromHex } from 'viem';
 import { viemClient } from './viemClient';
-import web3 from 'web3';
+
 
 interface IParsedLog {
     tenantId: string;
@@ -151,8 +151,7 @@ export class UtilsService {
         });
 
         const parsedLogs: IParsedLog[] = logs.map((log: any) => ({
-            tenantId: web3.utils
-                .toAscii(log?.args?._identifier!)
+            tenantId: fromHex(log?.args?._identifier!, 'string')
                 .replaceAll(`\x00`, ''),
             amount: Number(log?.args?._amount!),
             referenceId: log.transactionHash!,

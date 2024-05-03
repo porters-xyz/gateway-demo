@@ -10,7 +10,7 @@ import {
 } from "@mantine/core";
 
 import Link from "next/link";
-import { useDisclosure } from "@mantine/hooks";
+import { useDisclosure, useViewportSize } from "@mantine/hooks";
 import logo from "@frontend/public/logo.png";
 import NavLink from "./navlink";
 import {
@@ -40,8 +40,9 @@ import {
 } from "@frontend/utils/atoms";
 import { useAccount, useAccountEffect, useEnsName } from "wagmi";
 import { IconSettings } from "@tabler/icons-react";
-import { usePathname, useRouter } from "next/navigation";
+
 import CreateAppModal from "./createAppModal";
+import CreateAppButton from "./createApp";
 
 export default function DashboardLayout({
   children,
@@ -52,9 +53,7 @@ export default function DashboardLayout({
   const { data: sessionValue } = useSession();
   const { data: endpoints } = useEndpoints();
   const { data: ruletypes } = useRuleTypes();
-  const router = useRouter();
 
-  const path = usePathname();
   const [session, setSession] = useAtom(sessionAtom);
   const { address } = useAccount();
   const setEndpointAtom = useSetAtom(endpointsAtom);
@@ -99,9 +98,12 @@ export default function DashboardLayout({
     address: session?.address,
   });
 
+  const { width } = useViewportSize();
+  const isMobile = width < 600;
+
   return (
     <AppShell
-      header={{ height: 80 }}
+      header={{ height: 70 }}
       layout="alt"
       navbar={{
         width: 300,
@@ -111,22 +113,16 @@ export default function DashboardLayout({
       padding="md"
     >
       <AppShell.Header>
-        <Burger
-          opened={opened}
-          onClick={toggle}
-          hiddenFrom="sm"
-          size="sm"
-          p={12}
-        />
-        <Flex justify={"space-between"} align={"center"} h="100%" px={"2%"}>
+        <Flex w={"full"} justify="space-between" align="center" p={14}>
+          <Burger opened={opened} onClick={toggle} hiddenFrom="sm" p={12} />
           <Title order={2}>
-            Welcome, {ensName ?? String(session?.address).substring(0, 10)}
+            Welcome
+            {!isMobile
+              ? `, ${ensName ?? String(session?.address).substring(0, 10)}`
+              : null}
           </Title>
-          <Flex gap="md">
-            <Button onClick={() => router.replace(path + "?new=app")}>
-              Create App
-            </Button>
-
+          <Flex gap={8}>
+            <CreateAppButton />
             <LogoutButton />
           </Flex>
         </Flex>

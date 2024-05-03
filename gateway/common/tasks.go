@@ -12,13 +12,20 @@ type Runnable interface {
     Run()
 }
 
+type Delayable interface {
+    Runnable
+    Ready() bool
+}
+
 // contains bits necessary to run later
 type SimpleTask struct {
     run func()
+    runtime time.Time
 }
 
 type TaskQueue struct {
     tasks chan Runnable
+    delayed chan Delayable
     errors chan error
 }
 
@@ -95,7 +102,15 @@ func errWorkers(q *TaskQueue) {
     }
 }
 
+func delayWorker(q *TaskQueue) {
+    for task := range
+}
+
 // SimpleTask can be extended if needed
 func (t *SimpleTask) Run() {
     t.run()
+}
+
+func (t *SimpleTask) Ready() bool {
+    return time.Now() > t.runtime {
 }

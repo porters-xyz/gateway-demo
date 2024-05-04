@@ -1,4 +1,3 @@
-"use client";
 import React from "react";
 import {
   Container,
@@ -16,8 +15,9 @@ import heroImage from "@frontend/public/hero_image.png";
 import backgroundOne from "@frontend/public/background_1.png";
 import Link from "next/link";
 import { useMediaQuery } from "@mantine/hooks";
+import { crimson, redRose } from "@frontend/utils/theme";
 
-export function HeroSection() {
+export default function HeroSection() {
   const isMobile = useMediaQuery(`(max-width: ${em(750)})`);
 
   return (
@@ -52,8 +52,26 @@ export function HeroSection() {
       </Flex>
       <Flex align="center" justify="space-between" gap={100}>
         <Box>
-          <Title>Your Gateway to Web3</Title>
-          <Text c="umbra" opacity={0.5} mt="md" maw={isMobile ? 400 : 500}>
+          <Title
+            style={{
+              fontFamily: redRose.style.fontFamily,
+              fontWeight: 600,
+              fontSize: 36,
+            }}
+          >
+            Your Gateway to Web3
+          </Title>
+          <Text
+            c="umbra"
+            opacity={0.9}
+            mt="md"
+            maw={isMobile ? 400 : 500}
+            style={{
+              fontFamily: crimson.style.fontFamily,
+              fontWeight: 500,
+              fontSize: 19,
+            }}
+          >
             Accelerate your Web3 journey with our plug-and-play platform
             offering comprehensive analytics, Web3-native developer suite and
             hassle-free access to POKT’s Decentralised RPC Service – simplifying
@@ -68,6 +86,7 @@ export function HeroSection() {
         </Box>
         {!isMobile && (
           <Box>
+            {/* TODO: Add backgroundOne image */}
             <Image src={heroImage.src} alt="hello" width={400} height={400} />
           </Box>
         )}

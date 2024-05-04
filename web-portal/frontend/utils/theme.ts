@@ -1,5 +1,5 @@
 import { createTheme, rem, Button, Input } from "@mantine/core";
-import { Crimson_Text, Karla } from "next/font/google";
+import { Crimson_Text, Karla, Red_Rose } from "next/font/google";
 export const crimson = Crimson_Text({
   subsets: ["latin"],
   display: "swap",
@@ -11,6 +11,12 @@ export const karla = Karla({
   fallback: ["serif"],
   subsets: ["latin"],
   weight: ["400", "500", "600", "700", "800"],
+});
+
+export const redRose = Red_Rose({
+  subsets: ["latin"],
+  display: "swap",
+  weight: ["400", "600", "500", "700"],
 });
 
 export const theme = createTheme({

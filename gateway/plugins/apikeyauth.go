@@ -73,7 +73,7 @@ func (a *ApiKeyAuth) getRulesForScope(ctx context.Context, app *db.App) []string
         log.Println("error getting rules", err)
     } else {
         for _, rule := range rules {
-            if rule.RuleType != "secret-key" && !rule.Active {
+            if rule.RuleType != "secret-key" || !rule.Active {
                 continue
             }
             apirules = append(apirules, rule.Value)

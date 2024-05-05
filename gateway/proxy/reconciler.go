@@ -59,10 +59,6 @@ func (r *Reconciler) spawnTasks() {
                 }
                 queue.Add(task)
             }
-            task := &reconcileTask{
-                relaytx: rtx,
-            }
-            queue.Add(task)
         }
     }
 }

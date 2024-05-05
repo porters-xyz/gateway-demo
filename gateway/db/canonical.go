@@ -85,10 +85,15 @@ func (t *Tenant) fetch(ctx context.Context) error {
 // TODO needs to take un-reconciled RelayLedger entries into account as well 
 func (t *Tenant) canonicalBalance(ctx context.Context) error {
     db := getCanonicalDB()
-    query := `SELECT
-    COALESCE(SUM(case when "transactionType"='CREDIT' then amount else 0 end) -
+    query := `SELECT payment.balance - relay.usage as net FROM
+    (SELECT
+        COALESCE(SUM(case when "transactionType"='CREDIT' then amount else 0 end) -
+            SUM(case when "transactionType"='DEBIT' then amount else 0 end), 0) 
+        AS balance FROM "PaymentLedger" WHERE "tenantId" = $1) as payment,
+    (SELECT
+        COALESCE(SUM(case when "transactionType"='CREDIT' then amount else 0 end) -
     SUM(case when "transactionType"='DEBIT' then amount else 0 end), 0) 
-        AS balance FROM "PaymentLedger" WHERE "tenantId" = $1`
+        AS usage FROM "RelayLedger" WHERE "tenantId" = $1) as relay` 
     row := db.QueryRowContext(ctx, query, t.Id)
     err := row.Scan(&t.Balance)
     if err != nil {

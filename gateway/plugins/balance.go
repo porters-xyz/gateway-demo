@@ -141,7 +141,6 @@ func newUsageUpdater(ctx context.Context, status string) *usageUpdater {
 }
 
 func (u *usageUpdater) Run() {
-    log.Println("updater", u)
     if u.status == "success" {
         ctx := context.Background()
         db.DecrementCounter(ctx, u.bal.Key(), u.product.Weight)
@@ -154,4 +153,9 @@ func (u *usageUpdater) Run() {
     }
     hashedAppId := utils.Hash(u.app.Id)
     common.EndpointUsage.WithLabelValues(hashedAppId, u.product.Name, u.status).Inc()
+}
+
+func (u *usageUpdater) Error() string {
+    return fmt.Sprintf("BAL: unable to write %d relays for %s",
+        u.bal.cachedBalance, u.bal.tenant.Id)
 }

@@ -1,6 +1,7 @@
 package common
 
 import (
+    "errors"
     "log"
     "sync"
     "time"
@@ -9,6 +10,7 @@ import (
 // TODO make it "pluggable" so different types of tasks can operate off queue
 
 type Runnable interface {
+    error
     Run()
 }
 
@@ -23,25 +25,36 @@ type SimpleTask struct {
     runtime time.Time
 }
 
+type RetryTask struct {
+    SimpleTask
+    runWithSuccess func() bool
+    retryCount int
+    retryEvery time.Duration
+    retryGen int
+}
+
 type TaskQueue struct {
+    closed bool
     tasks chan Runnable
     delayed chan Delayable
     errors chan error
 }
 
-var q *TaskQueue
+var qInst *TaskQueue
 var qmutex sync.Once
 
 // Another singleton
 func GetTaskQueue() *TaskQueue {
     qmutex.Do(func() {
         bufferSize := GetConfigInt(JOB_BUFFER_SIZE)
-        q = &TaskQueue{
+        qInst = &TaskQueue{
+            closed: false,
             tasks: make(chan Runnable, bufferSize),
+            delayed: make(chan Delayable, bufferSize),
             errors: make(chan error, bufferSize),
         }
     })
-    return q
+    return qInst
 }
 
 // TODO include workers to clear out error channel
@@ -50,11 +63,16 @@ func (q *TaskQueue) SetupWorkers() {
     for i := 0; i < numWorkers; i++ {
         go worker(q)
     }
+    go delayWorker(q)
+    go errWorker(q)
 }
 
 // use this for graceful shutdown
 func (q *TaskQueue) CloseQueue() {
     close(q.tasks)
+    close(q.delayed)
+    q.closed = true
+
     shutdownTime := time.Duration(GetConfigInt(SHUTDOWN_DELAY)) * time.Second
     ticker := time.NewTicker(100 * time.Millisecond)
     for {
@@ -72,12 +90,17 @@ func (q *TaskQueue) CloseQueue() {
 
 func (q *TaskQueue) Add(runnable Runnable) {
    q.tasks <- runnable
-   JobGauge.Inc()
+   JobGauge.WithLabelValues("task").Inc()
+}
+
+func (q *TaskQueue) Delay(delayable Delayable) {
+    q.delayed <- delayable
+    JobGauge.WithLabelValues("delayed").Inc()
 }
 
 func (q *TaskQueue) ReportError(err error) {
     q.errors <- err
-    ErrGauge.Inc()
+    JobGauge.WithLabelValues("error").Inc()
 }
 
 func worker(q *TaskQueue) {
@@ -90,20 +113,32 @@ func worker(q *TaskQueue) {
         default:
             log.Println("unspecified task", task, t)
         }
-        JobGauge.Set(float64(len(q.tasks)))
+        JobGauge.WithLabelValues("task").Set(float64(len(q.tasks)))
     }
 }
 
 // TODO do more than log
-func errWorkers(q *TaskQueue) {
+func errWorker(q *TaskQueue) {
     for err := range q.errors {
         log.Println("error encountered", err)
-        ErrGauge.Dec()
+        JobGauge.WithLabelValues("error").Dec()
     }
 }
 
 func delayWorker(q *TaskQueue) {
-    for task := range
+    for i:=len(q.delayed); i>0; i-- {
+        task := <- q.delayed
+        if q.closed {
+            // TODO log delayed tasks details for cleanup
+            q.ReportError(errors.New("Shutting down"))
+        } else if task.Ready() {
+            q.Add(task)
+            JobGauge.WithLabelValues("delayed").Dec()
+        } else {
+            q.delayed <- task
+        }
+    }
+    time.Sleep(1 * time.Second)
 }
 
 // SimpleTask can be extended if needed
@@ -112,5 +147,32 @@ func (t *SimpleTask) Run() {
 }
 
 func (t *SimpleTask) Ready() bool {
-    return time.Now() > t.runtime {
+    return time.Now().After(t.runtime)
+}
+
+func (t *SimpleTask) Error() string {
+    // Override to include more details
+    return "error processing async task"
+}
+
+func NewRetryTask(run func() bool, count int, every time.Duration) *RetryTask {
+    return &RetryTask{
+        runWithSuccess: run,
+        retryCount: count,
+        retryEvery: every,
+    }
+}
+
+func (r *RetryTask) Run() {
+    ok := r.runWithSuccess()
+    if !ok {
+        q := GetTaskQueue()
+        if r.retryGen < r.retryCount {
+            r.runtime = time.Now().Add(r.retryEvery)
+            r.retryGen++
+            q.delayed <- r
+        } else {
+            q.errors <- r
+        }
+    }
 }

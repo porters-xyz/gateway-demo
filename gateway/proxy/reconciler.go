@@ -1,7 +1,8 @@
-package plugins
+package proxy
 
 import (
     "context"
+    "log"
     "time"
 
     "porters/common"
@@ -16,8 +17,14 @@ type Reconciler struct {
 }
 
 type reconcileTask struct {
-    common.Runnable
+    *common.RetryTask
     relaytx *db.Relaytx
+}
+
+func NewReconciler(seconds int) *Reconciler {
+    return &Reconciler{
+        runEvery: time.Duration(seconds) * time.Second,
+    }
 }
 
 func (r *Reconciler) Name() string {
@@ -28,6 +35,7 @@ func (r *Reconciler) Key() string {
     return "RECONCILE"
 }
 
+// TODO move this to delayed queue
 func (r *Reconciler) Load() {
     r.ticker = time.NewTicker(r.runEvery)
     go r.spawnTasks()
@@ -49,7 +57,7 @@ func (r *Reconciler) spawnTasks() {
                 task := &reconcileTask{
                     relaytx: rtx, 
                 }
-                queue.Tasks <- task
+                queue.Add(task)
             }
             task := &reconcileTask{
                 relaytx: rtx,
@@ -61,5 +69,12 @@ func (r *Reconciler) spawnTasks() {
 
 func (t *reconcileTask) Run() {
     // TODO In transaction grab from redis, write to postgres, clear redis
-    
+    ctx := context.Background()
+    replayfunc, err := db.ReconcileRelays(ctx, t.relaytx)
+    if err != nil {
+        log.Println("unable to access cached relay use", err)
+    }
+
+    t.RetryTask = common.NewRetryTask(replayfunc, 5, 1 * time.Minute)
+    t.RetryTask.Run()
 }

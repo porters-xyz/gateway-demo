@@ -399,21 +399,26 @@ func DecrementCounter(ctx context.Context, key string, amount int) int {
 // returns false if counter already exists
 func InitCounter(ctx context.Context, key string, initValue int) (bool, error) {
     // TODO no expiration for now
-    return getCache().SetNX(ctx, key, initValue, 0).Result()
+    return getCache().SetNX(ctx, key, initValue, 2 * time.Minute).Result()
 }
 
-func ReconcileRelays(ctx context.Context, rtx *Relaytx) (bool, error) {
-    //rdb := getCache()
-    
-    //cmds, err := rdb.TxPipelined(ctx, func (pipe redis.Pipeliner) error {
-    //    pgerr = rtx.write(ctx)
-    //    if pgerr != nil {
-    //       log.Println("couldn't write relaytx", pgerr)
-    //       pipe.Discard()
-    //    }
-    //    return nil
-    //})
-    return true, nil
+func ReconcileRelays(ctx context.Context, rtx *Relaytx) (func() bool, error) {
+    // Can ignore new value
+    _, err := getCache().DecrBy(ctx, rtx.Key(), int64(rtx.Amount)).Result()
+    if err != nil {
+        return func() bool {return false}, err
+    }
+
+    updateFunc := func() bool {
+        background := context.Background()
+        pgerr := rtx.write(background)
+        if pgerr != nil {
+           log.Println("couldn't write relaytx", pgerr)
+           return false
+        }
+        return true
+    }
+    return updateFunc, nil
 }
 
 func ScanKeys(ctx context.Context, key string) *redis.ScanIterator {

@@ -63,14 +63,14 @@ type Apprule struct {
 // tied to tenant, this isn't cached directly
 // CREDIT increases balance of allowed relays
 // DEBIT decreases balance (uses)
-type Paymenttx struct {
-    Id string
-    Reference string
-    Amount int
-    Tenant Tenant
-    TxType TxType
-    CreatedAt time.Time
-}
+//type Paymenttx struct {
+//    Id string
+//    Reference string
+//    Amount int
+//    Tenant Tenant
+//    TxType TxType
+//    CreatedAt time.Time
+//}
 
 // This gets written back to postgres
 // CREDIT increases number of used relays (uses)
@@ -79,8 +79,8 @@ type Relaytx struct {
     Id string
     Reference string
     Amount int
-    Product Product
-    App App
+    ProductName string
+    AppId string
     TxType TxType
 }
 
@@ -130,7 +130,18 @@ func (ar *Apprule) Key() string {
 
 // TODO sort out how this is used
 func (r *Relaytx) Key() string {
-    return fmt.Sprintf("%s:%s:%s", RELAYTX, r.App.Id, r.Product.Name)
+    return fmt.Sprintf("%s:%s:%s", RELAYTX, r.AppId, r.ProductName)
+}
+
+func reverseRelaytxKey(key string) (*Relaytx) {
+    parts := strings.Split(key, ":")
+    if len(parts) > 2 {
+        return &Relaytx{
+            AppId: parts[1],
+            ProductName: parts[2],
+        }
+    }
+    return &Relaytx{}
 }
 
 func (p *Product) Key() string {

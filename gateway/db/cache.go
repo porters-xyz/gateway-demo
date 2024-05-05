@@ -8,6 +8,7 @@ import (
     "sync"
     "time"
 
+    "github.com/google/uuid"
     "github.com/redis/go-redis/v9"
     rl "github.com/go-redis/redis_rate/v10"
 
@@ -139,24 +140,6 @@ func (p *Product) cache(ctx context.Context) error {
     return nil
 }
 
-func (p *Paymenttx) cache(ctx context.Context) error {
-    var err error = nil
-    if p.TxType == Credit {
-        //err = getCache().HIncrBy(ctx, p.Key(), "cached_remaining", int64(p.amount)).Err()
-        //if err != nil {
-            // TODO handle errors should they happen
-        //}
-        //err = getCache().HIncrBy(ctx, tenant.Key(), "relays_remaining", int64(p.amount)).Err()
-    } else {
-        //err = getCache().HIncrBy(ctx, tenant.Key(), "cached_remaining", -int64(p.amount)).Err()
-    }
-    if err != nil {
-        // TODO handle errors should they happen
-        return err
-    }
-    return nil
-}
-
 // TODO can this be done in single hop? maybe put in lua script?
 // TODO need to count each use within a given scope
 //func (p *productCounter) increment(ctx context.Context) {
@@ -268,6 +251,20 @@ func (p *Product) Lookup(ctx context.Context) error {
         }
     }
     return nil
+}
+
+func RelaytxFromKey(ctx context.Context, key string) (*Relaytx, bool) {
+    relaycount := GetIntVal(ctx, key)
+    rtx := reverseRelaytxKey(key)
+    if relaycount > 0 && rtx.AppId != "" && rtx.ProductName != "" {
+        uuid := uuid.New()
+        rtx.Id = uuid.String()
+        rtx.Reference = uuid.String()
+        rtx.Amount = relaycount
+        rtx.TxType = Credit
+        return rtx, true
+    }
+    return rtx, false
 }
 
 // Refresh does the psql calls to build cache
@@ -402,7 +399,26 @@ func DecrementCounter(ctx context.Context, key string, amount int) int {
 // returns false if counter already exists
 func InitCounter(ctx context.Context, key string, initValue int) (bool, error) {
     // TODO no expiration for now
-    return getCache().SetNX(ctx, key, initValue, 0).Result()
+    return getCache().SetNX(ctx, key, initValue, 2 * time.Minute).Result()
+}
+
+func ReconcileRelays(ctx context.Context, rtx *Relaytx) (func() bool, error) {
+    // Can ignore new value
+    _, err := getCache().DecrBy(ctx, rtx.Key(), int64(rtx.Amount)).Result()
+    if err != nil {
+        return func() bool {return false}, err
+    }
+
+    updateFunc := func() bool {
+        background := context.Background()
+        pgerr := rtx.write(background)
+        if pgerr != nil {
+           log.Println("couldn't write relaytx", pgerr)
+           return false
+        }
+        return true
+    }
+    return updateFunc, nil
 }
 
 func ScanKeys(ctx context.Context, key string) *redis.ScanIterator {

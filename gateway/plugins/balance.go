@@ -88,10 +88,10 @@ func (b *BalanceTracker) HandleResponse(resp *http.Response) error {
 
     if resp.StatusCode < 400 {
         updater := newUsageUpdater(ctx, "success")
-        common.GetTaskQueue().Tasks <- updater
+        common.GetTaskQueue().Add(updater)
     } else {
         updater := newUsageUpdater(ctx, "failure")
-        common.GetTaskQueue().Tasks <- updater
+        common.GetTaskQueue().Add(updater)
     }
     // TODO >= 400 need to return error?
     // TODO log usage in correct way (for analytics)
@@ -141,17 +141,21 @@ func newUsageUpdater(ctx context.Context, status string) *usageUpdater {
 }
 
 func (u *usageUpdater) Run() {
-    log.Println("updater", u)
     if u.status == "success" {
         ctx := context.Background()
         db.DecrementCounter(ctx, u.bal.Key(), u.product.Weight)
-        use := &db.Relaytx{
-            App: *u.app,
-            Product: *u.product,
-        }
 
-        db.IncrementField(ctx, use, u.product.Weight)
+        use := &db.Relaytx{
+            AppId: u.app.Id,
+            ProductName: u.product.Name,
+        }
+        db.IncrementCounter(ctx, use.Key(), u.product.Weight)
     }
     hashedAppId := utils.Hash(u.app.Id)
     common.EndpointUsage.WithLabelValues(hashedAppId, u.product.Name, u.status).Inc()
+}
+
+func (u *usageUpdater) Error() string {
+    return fmt.Sprintf("BAL: unable to write %d relays for %s",
+        u.bal.cachedBalance, u.bal.tenant.Id)
 }

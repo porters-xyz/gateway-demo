@@ -9,6 +9,7 @@ import (
 var FilterBlockError error = fmt.Errorf("filter chain stopped")
 var BalanceExceededError error = fmt.Errorf("balance exceeded: %w", NewHTTPError(http.StatusForbidden))
 var LifecycleIncompleteError error = fmt.Errorf("lifecycle incomplete: %w", NewHTTPError(http.StatusBadGateway))
+var APIKeyInvalidError error = fmt.Errorf("incorrect api key: %w", NewHTTPError(http.StatusUnauthorized))
 
 type HTTPError struct {
     code int

@@ -69,7 +69,7 @@ func (l *LeakyBucketPlugin) getBucketsForScope(ctx context.Context, app *db.App)
         return buckets
     }
     for _, rule := range rules {
-        if rule.RuleType != "rate-limits" {
+        if rule.RuleType != "rate-limits" || !rule.Active {
             continue
         }
         rate, err := utils.ParseRate(rule.Value)

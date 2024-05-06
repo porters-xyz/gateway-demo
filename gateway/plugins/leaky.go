@@ -10,6 +10,7 @@ import (
 
     rl "github.com/go-redis/redis_rate/v10"
 
+    "porters/common"
     "porters/db"
     "porters/proxy"
     "porters/utils"
@@ -57,6 +58,9 @@ func (l *LeakyBucketPlugin) HandleRequest(req *http.Request) error {
             return proxy.NewRateLimitError(v.Rate, v.Period)
         }
     }
+    lifecycle := proxy.SetStageComplete(ctx, proxy.RateLimit)
+    ctx = common.UpdateContext(ctx, lifecycle)
+    *req = *req.WithContext(ctx)
     return nil
 }
 

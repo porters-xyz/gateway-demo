@@ -19,8 +19,8 @@ func main() {
         proxy.Register(&plugins.ApiKeyAuth{"X-API"})
         proxy.Register(&plugins.BalanceTracker{})
         proxy.Register(&plugins.LeakyBucketPlugin{"APP"})
-        proxy.Register(&plugins.NoopFilter{proxy.LifecycleMask(proxy.AccountLookup|proxy.RateLimit|proxy.BalanceCheck)})
         proxy.Register(&plugins.UserAgentFilter{})
+        proxy.Register(&plugins.AllowedOriginFilter{})
         proxy.Register(proxy.NewReconciler(300)) // seconds
 
         gateway()

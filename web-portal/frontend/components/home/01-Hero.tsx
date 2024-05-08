@@ -3,26 +3,46 @@ import {
     Container,
     Title,
     Button,
+    Burger,
     Flex,
     Group,
     Text,
     Box,
-    em,
+    Drawer,
+    Stack,
 } from "@mantine/core";
 import Image from "next/image";
 import logo from "@frontend/public/monochrome_logo.png";
 import heroImage from "@frontend/public/hero_image.png";
 import backgroundOne from "@frontend/public/background_1.png";
 import Link from "next/link";
-import { useViewportSize } from "@mantine/hooks";
+import { useViewportSize, useDisclosure } from "@mantine/hooks";
 import { crimson, redRose } from "@frontend/utils/theme";
 
 export default function HeroSection() {
     const { width } = useViewportSize();
+    const [opened, { open, close }] = useDisclosure(false);
     const isMobile = width < 580;
 
     return (
         <Container size="md" mt={20}>
+            <Drawer opened={opened} onClose={close} size="100%">
+                <Stack align="center" justify="space-evenly" color="umbra.1">
+                    <Title size={24} fw={700}>
+                        Home
+                    </Title>
+
+                    <Title size={24} fw={500}>
+                        Pricing
+                    </Title>
+                    <Title size={24} fw={500}>
+                        Swap
+                    </Title>
+                    <Title size={24} fw={500}>
+                        Documentation
+                    </Title>
+                </Stack>
+            </Drawer>
             <Flex align="center" justify="space-between" gap={100} my={20}>
                 <Image
                     src={logo.src}
@@ -30,7 +50,7 @@ export default function HeroSection() {
                     width={logo.width / 4}
                     height={logo.height / 4}
                 />
-                {!isMobile && (
+                {!isMobile ? (
                     <Flex
                         align="center"
                         justify="space-evenly"
@@ -52,6 +72,8 @@ export default function HeroSection() {
                             Documentation
                         </Title>
                     </Flex>
+                ) : (
+                    <Burger opened={opened} onClick={open} hiddenFrom="sm" />
                 )}
             </Flex>
             <Flex align="center" justify="space-between" gap={100}>

@@ -1,4 +1,4 @@
-name: Fly Deploy Staging Backend
+name: Fly Deploy Staging Proxy
 on:
     push:
         branches:
@@ -7,7 +7,7 @@ on:
             - "gateway/**"
 jobs:
     deploy:
-        name: Deploy Staging Frontend
+        name: Deploy Staging Proxy
         runs-on: ubuntu-latest
         concurrency: deploy-group
         steps:

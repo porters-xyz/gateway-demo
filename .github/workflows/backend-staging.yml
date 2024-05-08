@@ -7,7 +7,7 @@ on:
             - "web-portal/backend/**"
 jobs:
     deploy:
-        name: Deploy Staging Frontend
+        name: Deploy Staging Backend
         runs-on: ubuntu-latest
         concurrency: deploy-group
         steps:

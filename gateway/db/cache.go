@@ -49,6 +49,7 @@ func getCache() *redis.Client {
         // TODO figure out which redis instance to connect to
         opts, err := redis.ParseURL(common.GetConfig(common.REDIS_URL))
         if err != nil {
+            log.Println(err)
             opts = &redis.Options{
                 Addr: common.GetConfig(common.REDIS_ADDR),
                 Username: common.GetConfig(common.REDIS_USER),
@@ -74,8 +75,10 @@ func (c *Cache) Healthcheck() *common.HealthCheckStatus {
     ctx := context.Background()
     status, err := client.Ping(ctx).Result()
     if err != nil {
+        log.Println("health error", err)
         hcs.AddError(REDIS, err)
     } else {
+        log.Println("health success", status)
         hcs.AddHealthy(REDIS, status)
     }
 

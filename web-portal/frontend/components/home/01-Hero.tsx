@@ -19,12 +19,17 @@ import { crimson, redRose } from "@frontend/utils/theme";
 
 export default function HeroSection() {
     const { width } = useViewportSize();
-    const isMobile = width < 768;
+    const isMobile = width < 580;
 
     return (
         <Container size="md" mt={20}>
             <Flex align="center" justify="space-between" gap={100} my={20}>
-                <Image src={logo.src} alt="hello" width={160} height={58} />
+                <Image
+                    src={logo.src}
+                    alt="hello"
+                    width={logo.width / 4}
+                    height={logo.height / 4}
+                />
                 {!isMobile && (
                     <Flex
                         align="center"
@@ -33,19 +38,17 @@ export default function HeroSection() {
                         wrap="wrap"
                         color="umbra.1"
                     >
-                        <Title size={20} fw={700}>
+                        <Title size={18} fw={700}>
                             Home
                         </Title>
-                        <Title size={20} fw={500}>
-                            Tools
-                        </Title>
-                        <Title size={20} fw={500}>
+
+                        <Title size={18} fw={500}>
                             Pricing
                         </Title>
-                        <Title size={20} fw={500}>
+                        <Title size={18} fw={500}>
                             Swap
                         </Title>
-                        <Title size={20} fw={500}>
+                        <Title size={18} fw={500}>
                             Documentation
                         </Title>
                     </Flex>
@@ -69,8 +72,9 @@ export default function HeroSection() {
                         maw={isMobile ? 400 : 500}
                         style={{
                             fontFamily: crimson.style.fontFamily,
-                            fontSize: 20,
+                            fontSize: isMobile ? 18 : 20,
                         }}
+                        lh={1.7}
                     >
                         Accelerate your Web3 journey with our plug-and-play
                         platform offering comprehensive analytics, Web3-native

@@ -5,6 +5,8 @@ import (
     "fmt"
     "strings"
     "time"
+
+    "porters/utils"
 )
 
 const (
@@ -166,4 +168,8 @@ func (p *Product) ContextKey() string {
 
 func (r *Relaytx) Field() string {
     return "amount"
+}
+
+func (a *App) HashId() string {
+    return utils.Hash(a.Id)
 }

@@ -11,7 +11,6 @@ import (
     "porters/common"
     "porters/db"
     "porters/proxy"
-    "porters/utils"
 )
 
 type BalanceTracker struct {
@@ -23,13 +22,6 @@ type balancecache struct {
     app *db.App
     product *db.Product
     cachedBalance int
-}
-
-type usageUpdater struct {
-    status string
-    bal *balancecache
-    app *db.App
-    product *db.Product
 }
 
 const (
@@ -82,22 +74,6 @@ func (b *BalanceTracker) HandleRequest(req *http.Request) error {
     return nil
 }
 
-func (b *BalanceTracker) HandleResponse(resp *http.Response) error {
-    // TODO read pokt docs for if there is better way to check response
-    ctx := resp.Request.Context()
-
-    if resp.StatusCode < 400 {
-        updater := newUsageUpdater(ctx, "success")
-        common.GetTaskQueue().Add(updater)
-    } else {
-        updater := newUsageUpdater(ctx, "failure")
-        common.GetTaskQueue().Add(updater)
-    }
-    // TODO >= 400 need to return error?
-    // TODO log usage in correct way (for analytics)
-    return nil
-}
-
 func (c *balancecache) Key() string {
     return fmt.Sprintf("%s:%s", c.tracker.Key(), c.tenant.Id)
 }
@@ -119,43 +95,3 @@ func (c *balancecache) Lookup(ctx context.Context) error {
     return nil
 }
 
-func newUsageUpdater(ctx context.Context, status string) *usageUpdater {
-    updater := &usageUpdater{
-        status: status,
-    }
-
-    entity, ok := common.FromContext(ctx, BALANCE)
-    if ok {
-        updater.bal = entity.(*balancecache)
-    }
-    entity, ok = common.FromContext(ctx, db.PRODUCT)
-    if ok {
-        updater.product = entity.(*db.Product)
-    }
-    entity, ok = common.FromContext(ctx, db.APP)
-    if ok {
-        updater.app = entity.(*db.App)
-    }
-
-    return updater
-}
-
-func (u *usageUpdater) Run() {
-    if u.status == "success" {
-        ctx := context.Background()
-        db.DecrementCounter(ctx, u.bal.Key(), u.product.Weight)
-
-        use := &db.Relaytx{
-            AppId: u.app.Id,
-            ProductName: u.product.Name,
-        }
-        db.IncrementCounter(ctx, use.Key(), u.product.Weight)
-    }
-    hashedAppId := utils.Hash(u.app.Id)
-    common.EndpointUsage.WithLabelValues(hashedAppId, u.product.Name, u.status).Inc()
-}
-
-func (u *usageUpdater) Error() string {
-    return fmt.Sprintf("BAL: unable to write %d relays for %s",
-        u.bal.cachedBalance, u.bal.tenant.Id)
-}

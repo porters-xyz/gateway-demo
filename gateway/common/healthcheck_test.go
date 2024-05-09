@@ -11,9 +11,9 @@ func TestHealthy(t *testing.T) {
     wantMsg := "all good"
     hcs := NewHealthCheckStatus()
     hcs.AddHealthy("test", "all good")
-    haveState := hcs.status["test"].state
-    haveMsg := hcs.status["test"].msg
-    err := hcs.status["test"].err
+    haveState := hcs.status["test"].State
+    haveMsg := hcs.status["test"].Msg
+    err := hcs.status["test"].Err
     if wantState != haveState {
         t.Fatalf("want %d, got %d", wantState, haveState)
     }
@@ -30,9 +30,9 @@ func TestCaution(t *testing.T) {
     wantMsg := "maybe ok"
     hcs := NewHealthCheckStatus()
     hcs.AddCaution("test", "maybe ok", nil)
-    haveState := hcs.status["test"].state
-    haveMsg := hcs.status["test"].msg
-    err := hcs.status["test"].err
+    haveState := hcs.status["test"].State
+    haveMsg := hcs.status["test"].Msg
+    err := hcs.status["test"].Err
     if wantState != haveState {
         t.Fatalf("want %d, got %d", wantState, haveState)
     }
@@ -49,9 +49,9 @@ func TestError(t *testing.T) {
     wantMsg := "bad"
     hcs := NewHealthCheckStatus()
     hcs.AddError("test", errors.New("bad"))
-    haveState := hcs.status["test"].state
-    haveMsg := hcs.status["test"].msg
-    err := hcs.status["test"].err
+    haveState := hcs.status["test"].State
+    haveMsg := hcs.status["test"].Msg
+    err := hcs.status["test"].Err
     if wantState != haveState {
         t.Fatalf("want %d, got %d", wantState, haveState)
     }
@@ -69,9 +69,9 @@ func TestOverwriteHealthy(t *testing.T) {
     hcs := NewHealthCheckStatus()
     hcs.AddHealthy("test", "all good")
     hcs.AddHealthy("test", "all good2")
-    haveState := hcs.status["test"].state
-    haveMsg := hcs.status["test"].msg
-    err := hcs.status["test"].err
+    haveState := hcs.status["test"].State
+    haveMsg := hcs.status["test"].Msg
+    err := hcs.status["test"].Err
     if wantState != haveState {
         t.Fatalf("want %d, got %d", wantState, haveState)
     }
@@ -89,9 +89,9 @@ func TestOverwriteCaution(t *testing.T) {
     hcs := NewHealthCheckStatus()
     hcs.AddCaution("test", "maybe", nil)
     hcs.AddCaution("test", "maybe2", nil)
-    haveState := hcs.status["test"].state
-    haveMsg := hcs.status["test"].msg
-    err := hcs.status["test"].err
+    haveState := hcs.status["test"].State
+    haveMsg := hcs.status["test"].Msg
+    err := hcs.status["test"].Err
     if wantState != haveState {
         t.Fatalf("want %d, got %d", wantState, haveState)
     }
@@ -109,9 +109,9 @@ func TestOvewriteError(t *testing.T) {
     hcs := NewHealthCheckStatus()
     hcs.AddError("test", errors.New("bad1"))
     hcs.AddError("test", errors.New("bad2"))
-    haveState := hcs.status["test"].state
-    haveMsg := hcs.status["test"].msg
-    err := hcs.status["test"].err
+    haveState := hcs.status["test"].State
+    haveMsg := hcs.status["test"].Msg
+    err := hcs.status["test"].Err
     if wantState != haveState {
         t.Fatalf("want %d, got %d", wantState, haveState)
     }
@@ -131,9 +131,9 @@ func TestAggregate(t *testing.T) {
     child.AddHealthy("test", "all good")
     child.AddHealthy("test2", "all good")
     parent.Aggregate(child)
-    haveState := parent.status["test2"].state
-    haveMsg := parent.status["test2"].msg
-    err := parent.status["test2"].err
+    haveState := parent.status["test2"].State
+    haveMsg := parent.status["test2"].Msg
+    err := parent.status["test2"].Err
     if wantState != haveState {
         t.Fatalf("want %d, got %d", wantState, haveState)
     }
@@ -142,5 +142,15 @@ func TestAggregate(t *testing.T) {
     }
     if err != nil {
         t.Fatal("got error", err)
+    }
+}
+
+func TestJson(t *testing.T) {
+    want := `{"test":{"state":1,"message":"good"}}`
+    hcs := NewHealthCheckStatus()
+    hcs.AddHealthy("test", "good")
+    got := hcs.ToJson()
+    if want != got {
+        t.Fatalf("want %s, got %s", want, got)
     }
 }

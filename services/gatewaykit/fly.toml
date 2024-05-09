@@ -16,6 +16,16 @@ primary_region = 'sea'
   POKT_RPC_TIMEOUT = '5s'
   SESSION_CACHE_TTL = '75m'
 
+[[services]]
+  internal_port = 8080
+  protocol = 'tcp'
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = 1
+  [[services.ports]]
+    handlers = ["http"]
+    port = 8080
+    force_https = false
 [[vm]]
   memory = '1gb'
   cpu_kind = 'shared'

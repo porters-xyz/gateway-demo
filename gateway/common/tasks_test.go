@@ -11,17 +11,15 @@ func TestTask(t *testing.T) {
     queue.SetupWorkers()
 
     for i:=0; i<1000; i++ {
-        j := i
-        queue.Tasks <- &SimpleTask{
+        queue.tasks <- &SimpleTask{
             run: func() {
                 time.Sleep(10 * time.Millisecond)
-                t.Logf("done: %d", j)
             },
         }
     }
 
     time.Sleep(500 * time.Millisecond)
-    if len(queue.Tasks) > 0 {
+    if len(queue.tasks) > 0 {
         t.Fatal("queue should have finished")
     }
 }
@@ -37,7 +35,7 @@ func TestCombiner(t *testing.T) {
 
     for i:=0; i<1000; i++ {
         key := fmt.Sprintf("key:%d", i % 2)
-        queue.Tasks <- &SimpleCombiner{
+        queue.tasks <- &SimpleCombiner{
             keyVal: key,
             intVal: 1,
         }
@@ -46,14 +44,7 @@ func TestCombiner(t *testing.T) {
     queue.SetupWorkers()
 
     time.Sleep(1000 * time.Millisecond)
-    if len(queue.Tasks) > 0 {
+    if len(queue.tasks) > 0 {
         t.Fatal("combining should have finished")
     }
-}
-
-func TestClose(t *testing.T) {
-    queue := GetTaskQueue()
-    queue.SetupWorkers()
-
-    queue.CloseQueue()
 }

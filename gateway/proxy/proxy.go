@@ -119,6 +119,7 @@ func setupProxy(remote *url.URL) *httputil.ReverseProxy {
     }
 
     revProxy.ModifyResponse = func(resp *http.Response) error {
+        ctx := resp.Request.Context()
         var err error
         for _, p := range (*reg).plugins {
             h, ok := p.(PostHandler)
@@ -129,14 +130,25 @@ func setupProxy(remote *url.URL) *httputil.ReverseProxy {
                 }
             }
         }
+        
+        if resp.StatusCode < 400 && err == nil {
+            updater := db.NewUsageUpdater(ctx, "success")
+            common.GetTaskQueue().Add(updater)
+        }
+
+        log.Println("returning", err)
         return err
     }
 
     revProxy.ErrorHandler = func(resp http.ResponseWriter, req *http.Request, err error) {
         // TODO handle errors elegantly
-        log.Println("handling error:", err)
+        ctx := req.Context()
         var httpErr *HTTPError
-        cause := context.Cause(req.Context())
+        cause := context.Cause(ctx)
+
+        updater := db.NewUsageUpdater(ctx, "failure")
+        common.GetTaskQueue().Add(updater)
+        
         log.Println("cancel cause", cause)
         if errors.As(cause, &httpErr) {
             status := httpErr.code

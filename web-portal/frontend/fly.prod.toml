@@ -3,11 +3,13 @@
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
-app = 'porters-frontend-staging'
+app = 'porters-frontend'
 primary_region = 'sea'
 
+[build]
+
 [build.args]
-API_ENDPOINT = 'https://porters-backend-staging.fly.dev/'
+API_ENDPOINT = 'https://porters-backend.fly.dev'
 
 [http_service]
 internal_port = 3000
@@ -18,9 +20,10 @@ min_machines_running = 0
 processes = ['app']
 
 [env]
-# NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID = 'wallet-connect-project-id'
-# NEXT_PUBLIC_RPC_ENDPOINT = 'rpc-endpoint'
-# NEXT_PUBLIC_APP_URL = 'https://staging.porters.xyz'
+  NEXT_PUBLIC_APP_URL = 'https://porters.xyz'
+  ### SECRETS ###
+  # NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID = 'wallet-connect-project-id'
+  # NEXT_PUBLIC_RPC_ENDPOINT = 'rpc-endpoint'
 
 [[vm]]
 memory = '1gb'

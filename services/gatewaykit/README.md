@@ -9,3 +9,10 @@ Find source code [here](https://github.com/pokt-network/gateway-server).
 
 Run `fly postgres attach` to get environment variable to set as
 `DB_CONNECTION_URL`
+
+Secrets required to run this application:
+
+`API_KEY`
+`DB_CONNECTION_URL`
+`POKT_APPLICATIONS_ENCRYPTION_KEY`
+`POKT_RPC_FULL_HOST`

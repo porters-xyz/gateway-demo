@@ -1,0 +1,36 @@
+# fly.toml app configuration file generated for porters-gatewaykit-staging on 2024-04-03T13:55:40-05:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = 'porters-gatewaykit'
+primary_region = 'sea'
+
+[build]
+  image = 'ghcr.io/pokt-network/pocket-gateway-server:0.3.0-BETA'
+
+[env]
+  ALTRUIST_REQUEST_TIMEOUT = '10s'
+  ENVIRONMENT_STAGE = 'production'
+  HTTP_SERVER_PORT = '8080'
+  POKT_RPC_TIMEOUT = '5s'
+  SESSION_CACHE_TTL = '75m'
+
+[[services]]
+  internal_port = 8080
+  protocol = 'tcp'
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = 1
+  [[services.ports]]
+    handlers = ["http"]
+    port = 8080
+    force_https = false
+[[vm]]
+  memory = '1gb'
+  cpu_kind = 'shared'
+  cpus = 1
+
+[[metrics]]
+  port = 8080
+  path = "/metrics"

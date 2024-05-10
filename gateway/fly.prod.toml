@@ -3,7 +3,7 @@
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
-app = 'porters-proxy-staging'
+app = 'porters-proxy'
 primary_region = 'sea'
 
 [build]
@@ -12,7 +12,7 @@ primary_region = 'sea'
   strategy = 'canary'
 
 [env]
-  HOST = 'g.staging.porters.xyz'
+  HOST = 'rpc.porters.xyz'
   ### SECRETS ###
   # DATABASE_URL = ...
   # PROXY_TO = ...

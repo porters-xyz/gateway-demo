@@ -36,6 +36,7 @@
     "cookie-parser": "^1.4.6",
     "iron-session": "^8.0.1",
     "nestjs-prisma": "^0.22.0",
+    "prometheus-query": "^3.4.0",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.1",
     "siwe": "^2.1.4",

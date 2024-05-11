@@ -36,7 +36,9 @@ const AppTabs: React.FC = () => {
         <EndpointList />
       </Tabs.Panel>
       <Tabs.Panel value="usage" py={20}>
-        <UsageChart width={"100%"} />
+        {/* <UsageChart width={"100%"} /> */}
+        {/*  TODO: */}
+        Usage chart to be updated for here
       </Tabs.Panel>
       <Tabs.Panel value="rules" pt={16}>
         {ruleTypes.map((rule: IRuleType) => (

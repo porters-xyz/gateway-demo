@@ -32,11 +32,11 @@ const timeOptions = [
     },
     {
         option: "7d",
-        format: "mm/dd",
+        format: "MM/dd",
     },
     {
         option: "30d",
-        format: "mm/dd",
+        format: "MM/dd",
     },
 ];
 
@@ -65,6 +65,8 @@ const RingCard: React.FC<{
     successData: number;
     failureData: number;
 }> = ({ title, successData, failureData }) => {
+    const successRate = (successData * 100) / successData + failureData;
+    const failureRate = 100 - successRate;
     return (
         <Card shadow="none" padding="lg" radius="md" bg="#fff" w={400}>
             <Title order={3} fw={500}>
@@ -74,15 +76,19 @@ const RingCard: React.FC<{
                 <RingProgress
                     size={200}
                     sections={[
-                        { value: successData || 100, color: "carrot" },
-                        // { value: failureData, color: "red" },
+                        {
+                            value: successRate,
+                            color: "carrot",
+                        },
+                        {
+                            value: failureRate,
+                            color: "red",
+                        },
                     ]}
                     rootColor="white"
                     label={
                         <Title c="umbra.1" fw={700} ta="center" order={2}>
-                            {(successData * 100) /
-                                (successData + failureData) || 100}
-                            %
+                            {successRate}%
                         </Title>
                     }
                 />
@@ -128,8 +134,8 @@ const Insights: React.FC = () => {
     const { data: promUserData } = useTenantUsage(tenantId ?? "", timeOption);
 
     const chartData = path?.startsWith("/apps")
-        ? promData?.data.result[0].values
-        : promUserData?.data.result[0].values;
+        ? promData?.data?.result[0]?.values
+        : promUserData?.data?.result[0]?.values;
 
     const readableChartData = _.map(chartData, ([timestamp, value]) => {
         return {
@@ -142,11 +148,11 @@ const Insights: React.FC = () => {
     });
     const totalRequests =
         readableChartData.length > 0 &&
-        _.toNumber(_.first(readableChartData)?.requests) >
-            _.toNumber(_.last(readableChartData)?.requests)
+        _.toNumber(_.last(readableChartData)?.requests) !==
+            _.toNumber(_.first(readableChartData)?.requests)
             ? _.toNumber(_.first(readableChartData)?.requests) -
               _.toNumber(_.last(readableChartData)?.requests)
-            : 0;
+            : _.toNumber(_.first(readableChartData)?.requests);
 
     const successData = totalRequests;
     const failureData = 0;
@@ -171,15 +177,15 @@ const Insights: React.FC = () => {
                 <UsageChart data={readableChartData} />
                 <Stack gap={8}>
                     <MetricCard
-                        title={"Number of Requests in last " + timeOption}
-                        value={totalRequests.toString()}
+                        title={`Number of Requests (${timeOption})`}
+                        value={String(totalRequests || 0)}
                     />
                     <MetricCard title="Balance" value="3.3M" />
                 </Stack>
                 <RingCard
                     title="Success Rate"
-                    successRate={_.toNumber(successData)}
-                    failureRate={_.toNumber(failureData)}
+                    successData={_.toNumber(successData)}
+                    failureData={_.toNumber(failureData)}
                 />
             </Flex>
         </Stack>

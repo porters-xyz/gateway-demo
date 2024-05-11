@@ -9,7 +9,7 @@ primary_region = 'sea'
 [build]
 
 [build.args]
-API_ENDPOINT = 'https://porters-backend.fly.dev'
+API_ENDPOINT = 'http://porters-backend.flycast:4000'
 
 [http_service]
 internal_port = 3000

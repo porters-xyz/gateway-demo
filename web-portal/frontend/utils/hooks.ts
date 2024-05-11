@@ -395,7 +395,7 @@ export const useAppUsage = (appId: string, period: string) => {
     };
 
     return useQuery({
-        queryKey: ["usage", appId],
+        queryKey: ["usage", appId, period],
         queryFn: fetchTenantUsage,
         enabled: Boolean(appId) && Boolean(period),
     });

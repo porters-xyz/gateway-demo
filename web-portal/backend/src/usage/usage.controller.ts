@@ -5,13 +5,19 @@ import { UsageService } from './usage.service';
 export class UsageController {
   constructor(private readonly usageService: UsageService) {}
 
-  @Get('/app/:appId')
-  async getAppUsage(@Param('appId') appId: string) {
-    return this.usageService.getAppUsage(appId);
+  @Get('/app/:appId/:period')
+  async getAppUsage(
+    @Param('appId') appId: string,
+    @Param('period') period: string,
+  ) {
+    return this.usageService.getAppUsage(appId, period);
   }
 
-  @Get('/tenant/:tenantId')
-  async getTenantUsage(@Param('tenantId') tenantId: string) {
-    return this.usageService.getTenantUsage(tenantId);
+  @Get('/tenant/:tenantId/:period')
+  async getTenantUsage(
+    @Param('tenantId') tenantId: string,
+    @Param('period') period: string,
+  ) {
+    return this.usageService.getTenantUsage(tenantId, period);
   }
 }

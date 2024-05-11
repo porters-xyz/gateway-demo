@@ -150,8 +150,10 @@ const Insights: React.FC = () => {
         readableChartData.length > 0 &&
         _.toNumber(_.last(readableChartData)?.requests) !==
             _.toNumber(_.first(readableChartData)?.requests)
-            ? _.toNumber(_.first(readableChartData)?.requests) -
-              _.toNumber(_.last(readableChartData)?.requests)
+            ? Math.abs(
+                  _.toNumber(_.first(readableChartData)?.requests) -
+                      _.toNumber(_.last(readableChartData)?.requests),
+              )
             : _.toNumber(_.first(readableChartData)?.requests);
 
     const successData = totalRequests;

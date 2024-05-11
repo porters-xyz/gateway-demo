@@ -1,23 +1,28 @@
 package main
 
 import (
-    "fmt"
-    "porters/demo"
-    "porters/proxy"
     "os"
+
+    "porters/plugins"
+    "porters/proxy"
 )
 
 // command line runner
 // TODO handle options and environment vars
 func main() {
+
     arg := os.Args[1]
     if arg == "gateway" {
-        fmt.Println("starting gateway")
-        proxy.Start()
-    }
 
-    if arg == "test" {
-        fmt.Println("starting test server")
-        demo.Serve()
+        // currently registering plugins via main
+        proxy.Register(&plugins.Counter{})
+        proxy.Register(&plugins.ApiKeyAuth{"X-API"})
+        proxy.Register(&plugins.BalanceTracker{})
+        proxy.Register(&plugins.LeakyBucketPlugin{"APP"})
+        proxy.Register(&plugins.UserAgentFilter{})
+        proxy.Register(&plugins.AllowedOriginFilter{})
+        proxy.Register(proxy.NewReconciler(300)) // seconds
+
+        gateway()
     }
 }

@@ -1,0 +1,20 @@
+app = 'porters-redis'
+
+[mounts]
+  destination = "/data"
+  source = "redis_data"
+
+[metrics]
+  port = 9091
+  path = "/metrics"
+
+# Use the Docker image instead of building from source
+
+[[services]]
+  internal_port = 6379
+  protocol      = "tcp"
+  [[services.ports]]
+    port = 6379
+  [[services.tcp_checks]]
+    interval = 10000
+    timeout  = 2000

@@ -1,0 +1,14 @@
+{
+  "index": "Introduction",
+  "advanced": "Advanced",
+  "about": {
+    "title": "About",
+    "type": "page"
+  },
+  "contact": {
+    "title": "Contact ↗",
+    "type": "page",
+    "href": "https://github.com/porters-xyz",
+    "newWindow": true
+  }
+}

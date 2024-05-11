@@ -1,0 +1,36 @@
+# fly.toml app configuration file generated for porters-proxy-staging on 2024-04-03T20:23:41-05:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = 'porters-proxy-staging'
+primary_region = 'sea'
+
+[build]
+
+[deploy]
+  strategy = 'canary'
+
+[env]
+  HOST = 'g.staging.porters.xyz'
+  ### SECRETS ###
+  # DATABASE_URL = ...
+  # PROXY_TO = ...
+  # REDIS_URL = ...
+
+[http_service]
+  internal_port = 9000
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = 1
+  processes = ['app']
+
+[[vm]]
+  memory = '1gb'
+  cpu_kind = 'shared'
+  cpus = 1
+
+[[metrics]]
+  port = 9000
+  path = "/metrics"

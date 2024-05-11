@@ -136,20 +136,3 @@ We are a selected Raiding Party custom built to tackle this unique POP. Raid Gui
 > - Portal accounting reporting and payments
 > - Finalize documentation
 > - Final backend deploys and configuration
-
-
-----
-
-#### Proposal
-
-|                    | Estimate            | Time Estimate |
-| ------------------ | ------------------- | ------------- |
-| DESIGN             | $ 6,000             | 3 weeks       |
-| PORTAL             | $ 20,000            | 10 weeks      |
-| DOCS               | $ 4,000             | 6 weeks       |
-| BACKEND            | $ 25,000            | 10 weeks      |
-| **Total Estimate** | **$55,000** in POKT | **12 weeks**  |
-
-
-*Note: the above figures include administration and project management*
-*Note: Silos above will work concurrently, total time estimate reflects this*

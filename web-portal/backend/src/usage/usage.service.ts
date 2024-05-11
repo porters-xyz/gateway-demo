@@ -1,60 +1,85 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { PrometheusDriver } from 'prometheus-query';
 import { createHash } from 'crypto';
 
 @Injectable()
 export class UsageService {
-  private readonly prom: PrometheusDriver;
+  async getAppUsage(appId: string, period: string): Promise<any> {
+    const hashedAppId = createHash('sha256').update(appId).digest('hex');
+    const stepBack = this.getSeconds(period);
+    const step = this.getStep(period);
+    if (!stepBack || !step) {
+      throw new HttpException('Invalid period', HttpStatus.BAD_REQUEST);
+    }
 
-  constructor() {
-    this.prom = new PrometheusDriver({
-      endpoint:
-        process.env.PROM_URL ??
-        'https://api.fly.io/prometheus/porters-staging/',
-      baseURL: '/api/v1',
+    const start = new Date().getTime() - stepBack;
+    const end = new Date().getTime();
+    const q = `gateway_relay_usage{appId="${hashedAppId}"}`;
+
+    console.log({step, stepBack, start, end, q})
+    const result = await this.fetchData(q, start, end, step);
+    return result.json();
+  }
+
+  async getTenantUsage(tenantId: string, period: string): Promise<any> {
+    const stepBack = this.getSeconds(period);
+    const step = this.getStep(period);
+    if (!stepBack || !step) {
+      throw new HttpException('Invalid period', HttpStatus.BAD_REQUEST);
+    }
+
+    const start = new Date().getTime() - stepBack;
+    const end = new Date().getTime();
+    const q = `gateway_relay_usage{tenant="${tenantId}"}`;
+
+    console.log({step, stepBack, start, end, q})
+
+    const result = await this.fetchData(q, start, end, step);
+    return result.json();
+  }
+
+  private async fetchData(query: string, start: number, end: number, step: number | string): Promise<Response> {
+    const url = `https://api.fly.io/prometheus/porters-staging/api/v1/query_range?query=${query}&start=${start}&end=${end}&step=${step}`;
+    const result = await fetch(url, {
       headers: {
         Authorization: String(process.env.PROM_TOKEN),
       },
     });
-  }
 
-  async getAppUsage(appId: string, period: string) {
-    const hashedAppId = createHash('sha256').update(appId).digest('hex');
-    const q = `gateway_relay_usage{appId="${hashedAppId}"}`;
-    const step = this.getStep(period);
-    if (!step) {
-      throw new HttpException('Unsupported period', HttpStatus.BAD_REQUEST);
+    if (!result.ok) {
+      throw new HttpException('Failed to fetch data', result.status);
     }
-    const start = new Date().getTime() - step;
-    const end = new Date().getTime();
 
-    return await this.prom.rangeQuery(q, start, end, step);
+    return result;
   }
 
-  async getTenantUsage(tenantId: string, period: string) {
-    const q = `gateway_relay_usage{tenant="${tenantId}"}`;
-    const step = this.getStep(period);
-    if (!step) {
-      throw new HttpException('Unsupported period', HttpStatus.BAD_REQUEST);
-    }
-    const start = new Date().getTime() - step;
-    const end = new Date().getTime();
-
-    return await this.prom.rangeQuery(q, start, end, step);
-  }
-
-  getStep(period: string) {
+  private getSeconds(period: string): number | null {
     switch (period) {
       case '1h':
-        return 1 * 60 * 60; // 1 hour = 3600 seconds
+        return 1 * 60 * 60 *1000;  // 1 hour in ms
       case '24h':
-        return 24 * 60 * 60; // 24 hours = 86400 seconds
+        return 24 * 60 * 60 * 1000; // 24 hours in ms
       case '7d':
-        return 7 * 24 * 60 * 60; // 7 days = 604800 seconds
+        return 7 * 24 * 60 * 60 * 1000; // 7 days in ms
       case '30d':
-        return 30 * 24 * 60 * 60; // 30 days = 2592000 seconds
+        return 30 * 24 * 60 * 60 * 1000; // 30 days in ms
       default:
-        return null; // Return null for unsupported periods
+        return null;
     }
   }
+
+  private getStep(period: string): string | null {
+    switch (period) {
+      case '24h':
+        return '1h'
+      case '1h':
+        return  '60s'
+      case '7d':
+        return '1d'
+      case '30d':
+        return '1d'
+      default:
+        return null;
+    }
+  }
+
 }

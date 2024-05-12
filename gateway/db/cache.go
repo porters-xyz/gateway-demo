@@ -177,7 +177,7 @@ func (a *App) Lookup(ctx context.Context) error {
                 a.refresh(ctx)
             }
         } else {
-            log.Debug("got app", a.HashId())
+            log.Debug("got app from cache", "app", a.HashId())
             a.Active, _ = strconv.ParseBool(result["active"])
             a.Tenant.Id = result["tenant"]
             a.Tenant.Lookup(ctx)

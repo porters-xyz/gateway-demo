@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getSession } from "./siwe";
 import { useAccount, useBalance, useReadContract } from "wagmi";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useParams } from "next/navigation";
 import { Address, erc20Abi } from "viem";
 import { supportedChains } from "./consts";
 import _ from "lodash";
@@ -370,6 +370,7 @@ export const useCheckAllowance = ({
 };
 
 export const useTenantUsage = (tenantId: string, period: string) => {
+    const appId = _.get(useParams(), "app");
     const fetchTenantUsage = async () => {
         const response = await fetch(`/api/usage/tenant/${tenantId}/${period}`);
         if (!response.ok) {
@@ -379,13 +380,15 @@ export const useTenantUsage = (tenantId: string, period: string) => {
     };
 
     return useQuery({
-        queryKey: ["usage", tenantId],
+        queryKey: ["usage", tenantId, period],
         queryFn: fetchTenantUsage,
-        enabled: !_.isUndefined(tenantId) && Boolean(period),
+        enabled: !Boolean(appId),
     });
 };
 
-export const useAppUsage = (appId: string, period: string) => {
+export const useAppUsage = (period: string) => {
+    const appId = _.get(useParams(), "app");
+
     const fetchTenantUsage = async () => {
         const response = await fetch(`/api/usage/app/${appId}/${period}`);
         if (!response.ok) {
@@ -397,6 +400,6 @@ export const useAppUsage = (appId: string, period: string) => {
     return useQuery({
         queryKey: ["usage", appId, period],
         queryFn: fetchTenantUsage,
-        enabled: !_.isUndefined(appId) && Boolean(period),
+        enabled: Boolean(appId),
     });
 };

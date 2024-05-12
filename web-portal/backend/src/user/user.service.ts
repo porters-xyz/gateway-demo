@@ -86,8 +86,7 @@ export class UserService {
 
       const tenantId = await this.getTenantIdByEnterpriseId(enterpriseId);
 
-
-      return { id, active, createdAt, orgs, tenantId, netBalance:0 };
+      return { id, active, createdAt, orgs, tenantId, netBalance: 0 };
     }
 
     const { id, active, createdAt, orgs } = existingUser;
@@ -95,7 +94,6 @@ export class UserService {
     const tenantId = await this.getTenantIdByEnterpriseId(orgs[0].enterpriseId);
 
     const netBalance = await this.getTenantBalance(tenantId);
-
 
     return { id, active, createdAt, orgs, tenantId, netBalance };
   }
@@ -117,7 +115,7 @@ export class UserService {
   }
 
   async getTenantBalance(tenantId: string) {
-      const netBalance = await this.prisma.$queryRaw`
+    const netBalance = await this.prisma.client.$queryRaw`
         SELECT payment.balance - relay.usage as net FROM
         (SELECT
             COALESCE(SUM(case when "transactionType"='CREDIT' then amount else 0 end) -
@@ -129,5 +127,6 @@ export class UserService {
             AS usage FROM "RelayLedger" WHERE "tenantId" = ${tenantId}) as relay
       `;
 
-      return netBalance
+    return netBalance;
+  }
 }

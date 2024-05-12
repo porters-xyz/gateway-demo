@@ -29,6 +29,7 @@ export interface ISession {
     deletedAt?: string;
     orgs?: IOrg[] | null;
     tenantId: string;
+    netBalance?: string | number;
 }
 
 export interface IEndpoint {

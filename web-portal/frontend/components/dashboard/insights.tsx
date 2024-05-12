@@ -9,6 +9,7 @@ import {
 import React from "react";
 import classes from "@frontend/styles/insight.module.css";
 import { AreaChart } from "@mantine/charts";
+import numeral from "numeral";
 import {
     useParams,
     usePathname,
@@ -151,14 +152,15 @@ export const UsageChart: React.FC<{
 const Insights: React.FC = () => {
     const params = useSearchParams();
     const path = usePathname();
-    const appId = _.get(useParams(), "app");
     const session = useAtomValue(sessionAtom);
     const tenantId = session?.tenantId;
+    const balance = session?.netBalance[0];
+
     const router = useRouter();
 
-    const timeOption = params?.get("t") || timeOptions[1].option;
+    const timeOption = params?.get("t") ?? timeOptions[1].option;
 
-    const { data: promData } = useAppUsage(String(appId), timeOption);
+    const { data: promData } = useAppUsage(timeOption);
     const { data: promUserData } = useTenantUsage(String(tenantId), timeOption);
 
     const chartData = path?.startsWith("/apps/")
@@ -212,7 +214,10 @@ const Insights: React.FC = () => {
                         title={`Number of Requests (${timeOption})`}
                         value={String(totalRequests || 0)}
                     />
-                    <MetricCard title="Balance" value="3.3M" />
+                    <MetricCard
+                        title="Balance"
+                        value={numeral(balance?.net).format("0.0a") || 0}
+                    />
                 </Stack>
                 <RingCard
                     title="Success Rate"

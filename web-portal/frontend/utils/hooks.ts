@@ -381,7 +381,7 @@ export const useTenantUsage = (tenantId: string, period: string) => {
     return useQuery({
         queryKey: ["usage", tenantId],
         queryFn: fetchTenantUsage,
-        enabled: Boolean(tenantId) && Boolean(period),
+        enabled: !_.isUndefined(tenantId) && Boolean(period),
     });
 };
 
@@ -397,6 +397,6 @@ export const useAppUsage = (appId: string, period: string) => {
     return useQuery({
         queryKey: ["usage", appId, period],
         queryFn: fetchTenantUsage,
-        enabled: Boolean(appId) && Boolean(period),
+        enabled: !_.isUndefined(appId) && Boolean(period),
     });
 };

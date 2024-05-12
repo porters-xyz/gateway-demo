@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { createHash } from 'crypto';
-import { startOfHour, subSeconds, getTime, startOfDay } from 'date-fns';
+import {  subSeconds, getTime } from 'date-fns';
 
 @Injectable()
 export class UsageService {
@@ -8,7 +8,7 @@ export class UsageService {
     const hashedAppId = createHash('sha256').update(appId).digest('hex');
     const stepBack = this.getSeconds(period);
     const step = this.getStep(period);
-    const end = this.getEnd(period);
+    const end = Date.now();
     if (!stepBack || !step || !end) {
       throw new HttpException('Invalid period', HttpStatus.BAD_REQUEST);
     }
@@ -26,7 +26,7 @@ export class UsageService {
   async getTenantUsage(tenantId: string, period: string): Promise<any> {
     const stepBack = this.getSeconds(period);
     const step = this.getStep(period);
-    const end = this.getEnd(period);
+    const end = Date.now();
     if (!stepBack || !step || !end) {
       throw new HttpException('Invalid period', HttpStatus.BAD_REQUEST);
     }
@@ -47,7 +47,8 @@ export class UsageService {
     end: number,
     step: number | string,
   ): Promise<Response> {
-    const url = `https://api.fly.io/prometheus/porters-staging/api/v1/query_range?query=${query}&start=${start}&end=${end}&step=${step}`;
+    const url = `https://api.fly.io/prometheus/porters-staging/api/v1/query_range?query=sum(${query})&start=${start}&end=${end}&step=${step}`;
+
     const result = await fetch(url, {
       headers: {
         Authorization: String(process.env.PROM_TOKEN),
@@ -61,20 +62,6 @@ export class UsageService {
     return result;
   }
 
-  private getEnd(period: string): Date | null {
-    switch (period) {
-      case '1h':
-        return startOfHour(new Date()); // 1 hour in ms
-      case '24h':
-        return startOfHour(new Date()); // 24 hours in ms
-      case '7d':
-        return startOfDay(new Date()); // 7 days in ms
-      case '30d':
-        return startOfDay(new Date()); // 30 days in ms
-      default:
-        return null;
-    }
-  }
 
   private getSeconds(period: string): number | null {
     switch (period) {

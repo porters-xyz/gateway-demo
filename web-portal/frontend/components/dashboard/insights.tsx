@@ -155,14 +155,14 @@ const Insights: React.FC = () => {
     const tenantId = session?.tenantId;
     const router = useRouter();
 
-    const timeOption = params?.get("t") || timeOptions[0].option;
+    const timeOption = params?.get("t") || timeOptions[1].option;
 
     const { data: promData } = useAppUsage(String(appId), timeOption);
-    const { data: promUserData } = useTenantUsage(tenantId ?? "", timeOption);
+    const { data: promUserData } = useTenantUsage(String(tenantId), timeOption);
 
-    const chartData = path?.startsWith("/apps")
-        ? promData?.data?.result[0]?.values
-        : promUserData?.data?.result[0]?.values;
+    const chartData = path?.startsWith("/apps/")
+        ? promData?.data?.result[0].values
+        : promUserData?.data?.result[0].values;
 
     const readableChartData = _.map(chartData, ([timestamp, value]) => {
         return {
@@ -173,6 +173,7 @@ const Insights: React.FC = () => {
             requests: value,
         };
     });
+
     const totalRequests =
         readableChartData.length > 1
             ? Math.abs(

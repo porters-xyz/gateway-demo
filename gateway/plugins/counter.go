@@ -1,9 +1,8 @@
 package plugins
 
 import (
-    "log"
+    log "log/slog"
     "net/http"
-    "strconv"
 
     "porters/db"
 )
@@ -11,7 +10,7 @@ import (
 type Counter struct {}
 
 func (c Counter) Load() {
-    log.Println("loading " + c.Name())
+    log.Debug("loading plugin", "plugin", c.Name())
 }
 
 func (c Counter) Name() string {
@@ -31,7 +30,6 @@ func (c Counter) Field() string {
 // TODO make this asynchronous and remove header set
 func (c Counter) HandleResponse(resp *http.Response) error {
     newCount := db.IncrementCounter(resp.Request.Context(), c.Key(), 1)
-    log.Println("count", newCount)
-    resp.Header.Set("X-Counter", strconv.Itoa(newCount))
+    log.Debug("counting request", "count", newCount)
     return nil
 }

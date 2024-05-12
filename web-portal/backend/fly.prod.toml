@@ -11,13 +11,16 @@ primary_region = 'sea'
   # OX_API_KEY = ...
   # RPC_KEY = ...
 
-[http_service]
+[[services]]
   internal_port = 4000
-  force_https = false
+  protocol = 'tcp'
   auto_stop_machines = true
   auto_start_machines = true
   min_machines_running = 0
-  processes = ['app']
+  [[services.ports]]
+    handlers = ["http"]
+    port = 4000
+    force_https = false
 
 [[vm]]
   memory = '1gb'

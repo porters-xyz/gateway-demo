@@ -2,7 +2,7 @@ package plugins
 
 import (
     "context"
-    "log"
+    log "log/slog"
     "net/http"
 
     "porters/db"
@@ -26,7 +26,7 @@ func (p *ProductFilter) Key() string {
 }
 
 func (p *ProductFilter) Load() {
-    log.Println("loading", p.Name())
+    log.Debug("loading plugin", "plugin", p.Name())
 }
 
 func (p *ProductFilter) HandleRequest(req *http.Request) error {
@@ -60,13 +60,13 @@ func (p *ProductFilter) getRulesForScope(ctx context.Context, app *db.App) []str
     products := make([]string, 0)
     rules, err := app.Rules(ctx)
     if err != nil {
-        log.Println("couldn't read rules", err)
+        log.Error("couldn't read rules", "app", app.HashId(), "err", err)
     } else {
         for _, rule := range rules {
             if rule.RuleType != ALLOWED_PRODUCTS || !rule.Active {
                 continue
             }
-            log.Println("allowing", rule.Value)
+            log.Debug("allowing product", "product", rule.Value)
             products = append(products, rule.Value)
         }
     }

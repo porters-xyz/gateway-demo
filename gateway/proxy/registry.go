@@ -5,7 +5,7 @@ package proxy
 
 import (
     "errors"
-    "log"
+    log "log/slog"
     "sync"
 )
 
@@ -31,7 +31,7 @@ func Register(plugin Plugin) {
     _ = GetRegistry() // init singleton
     err := avoidCollision(plugin)
     if err != nil {
-        log.Println("unable to load plugin", plugin.Name(), "due to", err.Error())
+        log.Error("unable to load plugin", "plugin", plugin.Name(), "err", err.Error())
         return
     }
     plugin.Load()

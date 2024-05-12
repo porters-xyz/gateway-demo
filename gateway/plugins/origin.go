@@ -2,7 +2,7 @@ package plugins
 
 import (
     "context"
-    "log"
+    log "log/slog"
     "net/http"
     "regexp"
 
@@ -28,7 +28,7 @@ func (a *AllowedOriginFilter) Key() string {
 }
 
 func (a *AllowedOriginFilter) Load() {
-    log.Println("loading", a.Name())
+    log.Debug("loading plugin", "plugin", a.Name())
 }
 
 func (a *AllowedOriginFilter) HandleRequest(req *http.Request) error {
@@ -63,7 +63,7 @@ func (a *AllowedOriginFilter) getRulesForScope(ctx context.Context, app *db.App)
     origins := make([]regexp.Regexp, 0)
     rules, err := app.Rules(ctx)
     if err != nil {
-        log.Println("couldn't get rules", err)
+        log.Error("couldn't get rules", "app", app.HashId(), "err", err)
     } else {
         for _, rule := range rules {
             if rule.RuleType != ALLOWED_ORIGIN || !rule.Active {
@@ -71,7 +71,7 @@ func (a *AllowedOriginFilter) getRulesForScope(ctx context.Context, app *db.App)
             }
             matcher, err := regexp.Compile(rule.Value)
             if err != nil {
-                log.Println("error compiling origin regex", err)
+                log.Error("error compiling origin regex", "regex", rule.Value, "err", err)
                 continue
             }
             origins = append(origins, *matcher)

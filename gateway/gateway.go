@@ -1,7 +1,7 @@
 package main
 
 import (
-    "log"
+    log "log/slog"
     "os"
     "os/signal"
     "sync"
@@ -15,7 +15,7 @@ func gateway() {
     // Start job queue
     common.GetTaskQueue().SetupWorkers()
 
-    log.Println("starting gateway")
+    log.Info("starting gateway")
     proxy.Start()
 
     done := make(chan os.Signal, 1)

@@ -29,7 +29,7 @@ primary_region = 'sea'
     port = 8080
     force_https = false
 [[vm]]
-  memory = '1gb'
+  memory = '2gb'
   cpu_kind = 'shared'
   cpus = 1
 

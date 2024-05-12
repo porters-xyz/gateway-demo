@@ -20,7 +20,7 @@ const (
     REDIS_ADDR            = "REDIS_ADDR"
     REDIS_USER            = "REDIS_USER"
     REDIS_PASSWORD        = "REDIS_PASSWORD"
-    
+    INSTRUMENT_ENABLED    = "ENABLE_INSTRUMENT"
 )
 
 // This may evolve to include config outside env, or use .env file for
@@ -42,6 +42,7 @@ func setupConfig() *Config {
         config.defaults[NUM_WORKERS] = "10"
         config.defaults[HOST] = "localhost"
         config.defaults[PORT] = "9000"
+        config.defaults[INSTRUMENT_ENABLED] = "false"
     })
     return config
 }
@@ -70,4 +71,13 @@ func GetConfigInt(key string) int {
         intval = -1
     }
     return intval
+}
+
+func Enabled(key string) bool {
+    configval := GetConfig(key)
+    boolval, err := strconv.ParseBool(configval)
+    if err != nil {
+        boolval = false
+    }
+    return boolval
 }

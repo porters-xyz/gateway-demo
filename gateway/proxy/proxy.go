@@ -113,6 +113,15 @@ func setupProxy(remote *url.URL) *httputil.ReverseProxy {
             log.Debug("lifecycle incomplete", "mask", lifecycle)
             cancel(err)
         }
+
+        if common.Enabled(common.INSTRUMENT_ENABLED) {
+            instr, ok := common.FromContext(req.Context(), common.INSTRUMENT)
+            if ok {
+                start := instr.(*common.Instrument).Timestamp
+                elapsed := time.Now().Sub(start)
+                common.LatencyHistogram.Observe(float64(elapsed))
+            }
+        }
     }
 
     revProxy.ModifyResponse = func(resp *http.Response) error {
@@ -161,8 +170,11 @@ func setupProxy(remote *url.URL) *httputil.ReverseProxy {
 func setupContext(req *http.Request) {
     // TODO read ctx from request and make any modifications
     ctx := req.Context()
-    lifecyclectx := common.UpdateContext(ctx, &Lifecycle{})
-    *req = *req.WithContext(lifecyclectx)
+    ctx = common.UpdateContext(ctx, &Lifecycle{})
+    if common.Enabled(common.INSTRUMENT_ENABLED) {
+        ctx = common.UpdateContext(ctx, common.StartInstrument())
+    }
+    *req = *req.WithContext(ctx)
 }
 
 func lookupPoktId(req *http.Request) string {

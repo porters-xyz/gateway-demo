@@ -113,7 +113,7 @@ const NoRequests = () => {
                 😵
             </Title>
             <Title order={4} c="umbra.1">
-                No requests yet
+                No usage data yet
             </Title>
         </Stack>
     );
@@ -124,6 +124,7 @@ export const UsageChart: React.FC<{
     data: Array<{ time: string; requests: number }>;
     totalRequests: number;
 }> = ({ width = 600, data, totalRequests }) => {
+    console.log(data);
     return (
         <Card shadow="none" padding="lg" radius="md" bg="#fff" w={width}>
             <Title order={3} fw={500}>
@@ -161,8 +162,8 @@ const Insights: React.FC = () => {
     const { data: promUserData } = useTenantUsage(String(tenantId), timeOption);
 
     const chartData = path?.startsWith("/apps/")
-        ? promData?.data?.result[0].values
-        : promUserData?.data?.result[0].values;
+        ? promData?.data?.result[0]?.values
+        : promUserData?.data?.result[0]?.values;
 
     const readableChartData = _.map(chartData, ([timestamp, value]) => {
         return {

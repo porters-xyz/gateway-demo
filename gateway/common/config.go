@@ -1,8 +1,7 @@
 package common
 
 import (
-    "fmt"
-    "log"
+    log "log/slog"
     "os"
     "strconv"
     "sync"
@@ -57,7 +56,7 @@ func GetConfig(key string) string {
         if ok {
             return defaultval
         } else {
-            log.Println(fmt.Sprintf("config not set for %s, no default", key))
+            log.Warn("config not set no default", "key", key)
             return ""
         }
     }
@@ -67,7 +66,7 @@ func GetConfigInt(key string) int {
     configval := GetConfig(key)
     intval, err := strconv.Atoi(configval)
     if err != nil {
-        log.Println("Error parsing config", err)
+        log.Error("Error parsing config", "err", err)
         intval = -1
     }
     return intval

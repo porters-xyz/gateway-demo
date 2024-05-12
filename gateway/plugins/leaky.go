@@ -5,7 +5,7 @@ package plugins
 import (
     "context"
     "fmt"
-    "log"
+    log "log/slog"
     "net/http"
 
     rl "github.com/go-redis/redis_rate/v10"
@@ -39,7 +39,7 @@ func (l *LeakyBucketPlugin) HandleRequest(req *http.Request) error {
     app := &db.App{Id: appId}
     err := app.Lookup(ctx)
     if err != nil {
-        log.Println("err", err)
+        log.Error("unable to lookup app", "app", app.HashId(), "err", err)
     }
     buckets := l.getBucketsForScope(ctx, app)
     limiter := db.Limiter()
@@ -50,7 +50,7 @@ func (l *LeakyBucketPlugin) HandleRequest(req *http.Request) error {
             return proxy.NewHTTPError(http.StatusBadGateway)
         }
 
-        log.Println("rate limit result:", res)
+        log.Debug("rate limit result", "allowed", res.Allowed)
 
         // rate limited
         if res.Allowed == 0 {
@@ -69,7 +69,7 @@ func (l *LeakyBucketPlugin) getBucketsForScope(ctx context.Context, app *db.App)
     rules, err := app.Rules(ctx)
     if err != nil {
         // TODO should this stop all proxying?
-        log.Println("error getting rules", err)
+        log.Error("error getting rules", "app", app.HashId(), "err", err)
         return buckets
     }
     for _, rule := range rules {
@@ -78,7 +78,7 @@ func (l *LeakyBucketPlugin) getBucketsForScope(ctx context.Context, app *db.App)
         }
         rate, err := utils.ParseRate(rule.Value)
         if err != nil {
-            log.Println("Invalid rate")
+            log.Error("Invalid rate found", "rule", rule.Value, "err", err)
             continue
         }
 

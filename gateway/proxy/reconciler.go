@@ -2,7 +2,7 @@ package proxy
 
 import (
     "context"
-    "log"
+    log "log/slog"
     "time"
 
     "porters/common"
@@ -68,7 +68,7 @@ func (t *reconcileTask) Run() {
     ctx := context.Background()
     replayfunc, err := db.ReconcileRelays(ctx, t.relaytx)
     if err != nil {
-        log.Println("unable to access cached relay use", err)
+        log.Error("unable to access cached relay use", "err", err)
     }
 
     t.RetryTask = common.NewRetryTask(replayfunc, 5, 1 * time.Minute)

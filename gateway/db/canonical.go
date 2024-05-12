@@ -4,7 +4,7 @@ import (
     "context"
     "database/sql"
     "errors"
-    "log"
+    log "log/slog"
     "sync"
 
     "github.com/lib/pq"
@@ -36,7 +36,7 @@ func getCanonicalDB() *sql.DB {
         connector, err := pq.NewConnector(connStr)
         if err != nil {
             // TODO handle nicely, maybe retry?
-            log.Fatal(err)
+            log.Error("Cannot connect to postgres", "err", err)
         }
         postgresPool = sql.OpenDB(connector)
     })

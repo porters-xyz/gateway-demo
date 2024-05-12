@@ -5,7 +5,7 @@ package plugins
 
 import (
     "context"
-    "log"
+    log "log/slog"
     "net/http"
 
     "porters/common"
@@ -24,7 +24,7 @@ func (a *ApiKeyAuth) Name() string {
 
 func (a *ApiKeyAuth) Load() {
     // load plugin
-    log.Println("loading", a.Name())
+    log.Debug("loading plugin", "plugin", a.Name())
 }
 
 func (a *ApiKeyAuth) Key() string {
@@ -70,7 +70,7 @@ func (a *ApiKeyAuth) getRulesForScope(ctx context.Context, app *db.App) []string
     apirules := make([]string, 0)
     rules, err := app.Rules(ctx)
     if err != nil {
-        log.Println("error getting rules", err)
+        log.Error("error getting rules", "app", app.HashId(), "err", err)
     } else {
         for _, rule := range rules {
             if rule.RuleType != "secret-key" || !rule.Active {

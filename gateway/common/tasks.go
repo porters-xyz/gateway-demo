@@ -2,7 +2,7 @@ package common
 
 import (
     "errors"
-    "log"
+    log "log/slog"
     "sync"
     "time"
 )
@@ -82,7 +82,7 @@ func (q *TaskQueue) CloseQueue() {
                 return
             }
         case <-time.After(shutdownTime):
-            log.Println("workers not finished, work may be lost")
+            log.Warn("workers not finished, work may be lost")
             return
         }
     }
@@ -111,7 +111,7 @@ func worker(q *TaskQueue) {
         case Runnable:
             task.Run()
         default:
-            log.Println("unspecified task", task, t)
+            log.Debug("unspecified task", "task", task, "type", t)
         }
         JobGauge.WithLabelValues("task").Set(float64(len(q.tasks)))
     }
@@ -120,7 +120,7 @@ func worker(q *TaskQueue) {
 // TODO do more than log
 func errWorker(q *TaskQueue) {
     for err := range q.errors {
-        log.Println("error encountered", err)
+        log.Error("error encountered", "err", err)
         JobGauge.WithLabelValues("error").Dec()
     }
 }

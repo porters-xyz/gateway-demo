@@ -1,6 +1,7 @@
 package common
 
 import (
+    log "log/slog"
 )
 
 // rather than be too chatty, combine multiple tasks into one
@@ -55,6 +56,6 @@ func (c *SimpleCombiner) gen() int { return c.genVal }
 // Simple version only logs, need to extend to push to redis, etc
 func (c *SimpleCombiner) runner() func() {
     return func() {
-        //log.Printf("combined %s to %d", c.keyVal, c.intVal)
+        log.Debug("combining", "key", c.keyVal, "amt", c.intVal)
     }
 }

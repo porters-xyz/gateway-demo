@@ -3,7 +3,7 @@ package db
 import (
     "context"
     "fmt"
-    "log"
+    log "log/slog"
     "strconv"
     "sync"
     "time"
@@ -49,7 +49,7 @@ func getCache() *redis.Client {
         // TODO figure out which redis instance to connect to
         opts, err := redis.ParseURL(common.GetConfig(common.REDIS_URL))
         if err != nil {
-            log.Println(err)
+            log.Warn("valid REDIS_URL not provided", "err", err)
             opts = &redis.Options{
                 Addr: common.GetConfig(common.REDIS_ADDR),
                 Username: common.GetConfig(common.REDIS_USER),
@@ -58,7 +58,6 @@ func getCache() *redis.Client {
             }
         }
         client = redis.NewClient(opts)
-        log.Println("redis client:", client)
     })
     return client
 }
@@ -75,10 +74,8 @@ func (c *Cache) Healthcheck() *common.HealthCheckStatus {
     ctx := context.Background()
     status, err := client.Ping(ctx).Result()
     if err != nil {
-        log.Println("health error", err)
         hcs.AddError(REDIS, err)
     } else {
-        log.Println("health success", status)
         hcs.AddHealthy(REDIS, status)
     }
 
@@ -143,15 +140,6 @@ func (p *Product) cache(ctx context.Context) error {
     return nil
 }
 
-// TODO can this be done in single hop? maybe put in lua script?
-// TODO need to count each use within a given scope
-//func (p *productCounter) increment(ctx context.Context) {
-    //app := p.app
-    //tenant := app.tenant
-    // TODO increment all the right counters
-    // TODO decrement all the right counters
-//}
-
 func (t *Tenant) Lookup(ctx context.Context) error {
     fromContext, ok := common.FromContext(ctx, TENANT)
     if ok {
@@ -161,7 +149,7 @@ func (t *Tenant) Lookup(ctx context.Context) error {
         result, err := getCache().HGetAll(ctx, key).Result()
         // TODO errors should probably cause postgres lookup
         if err != nil || len(result) == 0 || expired(result["cachedAt"]) {
-            log.Println("tenant not found", t)
+            log.Debug("tenant cache expired", "key", key)
             t.refresh(ctx)
         } else {
             t.Active, _ = strconv.ParseBool(result["active"])
@@ -178,19 +166,18 @@ func (a *App) Lookup(ctx context.Context) error {
         *a = *fromContext.(*App)
     } else {
         key := a.Key()
-        log.Println("checking cache for app", key)
         result, err := getCache().HGetAll(ctx, key).Result()
         if err != nil || len(result) == 0 || expired(result["cachedAt"]) {
-            log.Println("missed app", key)
+            log.Debug("missed app", "appkey", key)
             a.refresh(ctx)
         } else if result["missedAt"] != MISSED_FALSE {
             if backoff(result["missedAt"]) {
-                log.Println("missed and backing off")
+                // NOOP
             } else {
                 a.refresh(ctx)
             }
         } else {
-            log.Println("got app", result)
+            log.Debug("got app", a.HashId())
             a.Active, _ = strconv.ParseBool(result["active"])
             a.Tenant.Id = result["tenant"]
             a.Tenant.Lookup(ctx)
@@ -210,7 +197,7 @@ func (a *App) Rules(ctx context.Context) (Apprules, error) {
         key := iter.Val()
         result, err := getCache().HGetAll(ctx, key).Result()
         if err != nil {
-            log.Println("error during scan", err)
+            log.Error("error during scan", "err", err)
             continue
         }
         id := key // TODO extract id from key
@@ -235,19 +222,18 @@ func (p *Product) Lookup(ctx context.Context) error {
         *p = *fromContext.(*Product)
     } else {
         key := p.Key()
-        log.Println("finding product from cache:", key)
+        log.Debug("finding product from cache", "prodkey", key)
         result, err := getCache().HGetAll(ctx, key).Result()
         if err != nil || len(result) == 0 || expired(result["cachedAt"]) {
-            log.Println("missed product", key)
+            log.Debug("missed product", "prodkey", key)
             p.refresh(ctx)
         } else if result["missedAt"] != MISSED_FALSE {
             if backoff(result["missedAt"]) {
-                log.Println("missed and backing off")
+                // NOOP
             } else {
                 p.refresh(ctx)
             }
         } else {
-            log.Println("got product:", result)
             p.PoktId, _ = result["poktId"]
             p.Weight, _ = strconv.Atoi(result["weight"])
             p.Active, _ = strconv.ParseBool(result["active"])
@@ -272,25 +258,23 @@ func RelaytxFromKey(ctx context.Context, key string) (*Relaytx, bool) {
 
 // Refresh does the psql calls to build cache
 func (t *Tenant) refresh(ctx context.Context) {
-    log.Println("refreshing tenant cache", t.Id)
     err := t.fetch(ctx)
     if err != nil {
-        log.Println("tenant missing, something's wrong", err)
+        log.Error("something's wrong", "tenant", t.Id, "err", err)
         // TODO how do we handle this?
     } else {
         err := t.canonicalBalance(ctx)
         if err != nil {
-            log.Println("error getting balance", err)
+            log.Error("error getting balance", "tenant", t.Id, "err", err)
         }
         t.cache(ctx)
     }
 }
 
 func (a *App) refresh(ctx context.Context) {
-    log.Println("refreshing app cache", a.Id)
     err := a.fetch(ctx)
     if err != nil {
-        log.Println("err seen", err)
+        log.Error("err seen refreshing app", "app", a.HashId(), "err", err)
         a.MissedAt = time.Now()
     } else {
         a.Tenant.Lookup(ctx)
@@ -299,7 +283,7 @@ func (a *App) refresh(ctx context.Context) {
 
     rules, err := a.fetchRules(ctx)
     if err != nil {
-        log.Println("error accessing rules", err)
+        log.Error("error accessing rules", "app", a.HashId(), "err", err)
         return
     }
     for _, r := range rules {
@@ -308,10 +292,9 @@ func (a *App) refresh(ctx context.Context) {
 }
 
 func (p *Product) refresh(ctx context.Context) {
-    log.Println("refreshing product cache", p.Id)
     err := p.fetch(ctx)
     if err != nil {
-        log.Println("err getting product", err)
+        log.Error("err getting product", "product", p.Name, "err", err)
         p.MissedAt = time.Now()
     }
     p.cache(ctx)
@@ -416,7 +399,7 @@ func ReconcileRelays(ctx context.Context, rtx *Relaytx) (func() bool, error) {
         background := context.Background()
         pgerr := rtx.write(background)
         if pgerr != nil {
-           log.Println("couldn't write relaytx", pgerr)
+           log.Error("couldn't write relaytx", "pgerr", pgerr)
            return false
         }
         return true

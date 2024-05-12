@@ -73,50 +73,77 @@ const RingCard: React.FC<{
                 {title}
             </Title>
             <Stack align="center" justify="center" h="100%">
-                <RingProgress
-                    size={200}
-                    sections={[
-                        {
-                            value: successRate,
-                            color: "carrot",
-                        },
-                        {
-                            value: failureRate,
-                            color: "red",
-                        },
-                    ]}
-                    rootColor="white"
-                    label={
-                        <Title c="umbra.1" fw={700} ta="center" order={2}>
-                            {successRate}%
-                        </Title>
-                    }
-                />
+                {_.isNaN(successRate) ? (
+                    <NoRequests />
+                ) : (
+                    <RingProgress
+                        size={200}
+                        sections={[
+                            {
+                                value: successRate,
+                                color: "carrot",
+                            },
+                            {
+                                value: failureRate,
+                                color: "red",
+                            },
+                        ]}
+                        rootColor="white"
+                        label={
+                            <Title
+                                c="umbra.1"
+                                fw={700}
+                                ta="center"
+                                order={_.isNaN(successRate) ? 4 : 2}
+                            >
+                                {successRate + `%`}
+                            </Title>
+                        }
+                    />
+                )}
             </Stack>
         </Card>
+    );
+};
+
+const NoRequests = () => {
+    return (
+        <Stack h="100%" w="100%" justify="center" align="center" gap={2}>
+            <Title order={1} c="umbra.1">
+                😵
+            </Title>
+            <Title order={4} c="umbra.1">
+                No requests yet
+            </Title>
+        </Stack>
     );
 };
 
 export const UsageChart: React.FC<{
     width?: number | string;
     data: Array<{ time: string; requests: number }>;
-}> = ({ width = 600, data }) => {
+    totalRequests: number;
+}> = ({ width = 600, data, totalRequests }) => {
     return (
         <Card shadow="none" padding="lg" radius="md" bg="#fff" w={width}>
             <Title order={3} fw={500}>
                 Usage
             </Title>
 
-            <AreaChart
-                mt={20}
-                h={275}
-                data={data}
-                dataKey="time"
-                className={classes.root}
-                strokeWidth={0.5}
-                series={[{ name: "requests", color: "var(--area-color)" }]}
-                withDots={false}
-            />
+            {!totalRequests ? (
+                <NoRequests />
+            ) : (
+                <AreaChart
+                    mt={20}
+                    h={275}
+                    data={data}
+                    dataKey="time"
+                    className={classes.root}
+                    strokeWidth={0.5}
+                    series={[{ name: "requests", color: "var(--area-color)" }]}
+                    withDots={false}
+                />
+            )}
         </Card>
     );
 };
@@ -147,9 +174,7 @@ const Insights: React.FC = () => {
         };
     });
     const totalRequests =
-        readableChartData.length > 0 &&
-        _.toNumber(_.last(readableChartData)?.requests) !==
-            _.toNumber(_.first(readableChartData)?.requests)
+        readableChartData.length > 1
             ? Math.abs(
                   _.toNumber(_.first(readableChartData)?.requests) -
                       _.toNumber(_.last(readableChartData)?.requests),
@@ -176,7 +201,10 @@ const Insights: React.FC = () => {
                 />
             </Flex>
             <Flex gap={8}>
-                <UsageChart data={readableChartData} />
+                <UsageChart
+                    data={readableChartData}
+                    totalRequests={totalRequests}
+                />
                 <Stack gap={8}>
                     <MetricCard
                         title={`Number of Requests (${timeOption})`}

@@ -83,7 +83,7 @@ export class UsageService {
       case '24h':
         return '1h';
       case '1h':
-        return '60';
+        return '300';
       case '7d':
         return '1d';
       case '30d':

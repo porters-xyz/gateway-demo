@@ -113,10 +113,33 @@ func setupProxy(remote *url.URL) *httputil.ReverseProxy {
             log.Debug("lifecycle incomplete", "mask", lifecycle)
             cancel(err)
         }
+
+        if common.Enabled(common.INSTRUMENT_ENABLED) {
+            ctx := req.Context()
+            instr, ok := common.FromContext(ctx, common.INSTRUMENT)
+            if ok {
+                start := instr.(*common.Instrument).Timestamp
+                elapsed := time.Now().Sub(start)
+                common.LatencyHistogram.WithLabelValues("setup").Observe(float64(elapsed))
+
+                ctx = common.UpdateContext(ctx, common.StartInstrument())
+                *req = *req.WithContext(ctx)
+            }
+        }
     }
 
     revProxy.ModifyResponse = func(resp *http.Response) error {
         ctx := resp.Request.Context()
+
+        if common.Enabled(common.INSTRUMENT_ENABLED) {
+            instr, ok := common.FromContext(ctx, common.INSTRUMENT)
+            if ok {
+                start := instr.(*common.Instrument).Timestamp
+                elapsed := time.Now().Sub(start)
+                common.LatencyHistogram.WithLabelValues("serve").Observe(float64(elapsed))
+            }
+        }
+
         var err error
         for _, p := range (*reg).plugins {
             h, ok := p.(PostHandler)
@@ -161,8 +184,11 @@ func setupProxy(remote *url.URL) *httputil.ReverseProxy {
 func setupContext(req *http.Request) {
     // TODO read ctx from request and make any modifications
     ctx := req.Context()
-    lifecyclectx := common.UpdateContext(ctx, &Lifecycle{})
-    *req = *req.WithContext(lifecyclectx)
+    ctx = common.UpdateContext(ctx, &Lifecycle{})
+    if common.Enabled(common.INSTRUMENT_ENABLED) {
+        ctx = common.UpdateContext(ctx, common.StartInstrument())
+    }
+    *req = *req.WithContext(ctx)
 }
 
 func lookupPoktId(req *http.Request) string {

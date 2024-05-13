@@ -5,42 +5,40 @@ import { createHash } from 'crypto';
 export class UsageService {
   async getAppUsage(appId: string, period: string): Promise<any> {
     const hashedAppId = createHash('sha256').update(appId).digest('hex');
-    const step = this.getStep(period);
-    const end = Date.now();
-    if (!step || !end) {
-      throw new HttpException('Invalid period', HttpStatus.BAD_REQUEST);
-    }
 
-
+    const start = period
+    const step = this.getStep(period)
     const q = `gateway_relay_usage{appId="${hashedAppId}"}`;
 
-    console.log({ step, end, q, appId });
+    if (!step || !period) {
+      throw new HttpException(`Couldn't get tenant data`, HttpStatus.BAD_REQUEST)
+    }
 
-    const result = await this.fetchData(q,  end, step);
+    const result = await this.fetchUsageData(q, start, step);
     return result.json();
   }
 
   async getTenantUsage(tenantId: string, period: string): Promise<any> {
-    const step = this.getStep(period);
-    const end = Date.now();
-    if (!step || !end) {
-      throw new HttpException('Invalid period', HttpStatus.BAD_REQUEST);
-    }
 
     const q = `gateway_relay_usage{tenant="${tenantId}"}`;
+    const start = period
+    const step = this.getStep(period)
 
-    console.log({ step, end, q, tenantId });
+    if (!step || !period) {
+      throw new HttpException(`Couldn't get tenant data`, HttpStatus.BAD_REQUEST)
+    }
 
-    const result = await this.fetchData(q,  end, step);
+    const result = await this.fetchUsageData(q, start, step);
     return result.json();
   }
 
-  private async fetchData(
+  private async fetchUsageData(
     query: string,
-    end: number,
+    start: string,
     step: number | string,
   ): Promise<Response> {
-    const url = `https://api.fly.io/prometheus/porters-staging/api/v1/query_range?query=sum(${query})&end=${end}&step=${step}`;
+
+    const url = `https://api.fly.io/prometheus/porters-staging/api/v1/query_range?query=sum(${query})&start=${start}&end=now&step=${step}`;
 
     const result = await fetch(url, {
       headers: {
@@ -55,12 +53,13 @@ export class UsageService {
     return result;
   }
 
+
   private getStep(period: string): string | null {
     switch (period) {
       case '24h':
         return '1h';
       case '1h':
-        return '300';
+        return '1m';
       case '7d':
         return '1d';
       case '30d':
@@ -69,4 +68,5 @@ export class UsageService {
         return null;
     }
   }
+
 }

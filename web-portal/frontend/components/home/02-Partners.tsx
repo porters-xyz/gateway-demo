@@ -11,7 +11,7 @@ export default function Partners() {
         <Container size="md" mt={"xl"}>
             <SectionTitle title="Our Partners" />
             <Flex wrap='wrap' mt={80} gap={10} rowGap={10} align='center' justify='center'>
-                <Card bg='#fff' p={16} h={70} ml={20} style={{
+                <Card bg='#F6EEE6' p={16} h={70} ml={20} style={{
                     alignItems: 'center',
                     justifyContent: 'center',
                     borderRadius: 10
@@ -23,7 +23,7 @@ export default function Partners() {
                         height={raidguildLogo.height / 3}
                     />
                 </Card>
-                <Card bg='#fff' p={16} h={70} ml={20} style={{
+                <Card bg='#F6EEE6' p={16} h={70} ml={20} style={{
                     alignItems: 'center',
                     justifyContent: 'center',
                     borderRadius: 10
@@ -35,7 +35,7 @@ export default function Partners() {
                         height={poktLogo.height / 3}
                     />
                 </Card>
-                <Card bg='#fff' p={16} h={70} ml={20} style={{
+                <Card bg='#F6EEE6' p={16} h={70} ml={20} style={{
                     alignItems: 'center',
                     justifyContent: 'center',
                     borderRadius: 10

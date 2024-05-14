@@ -23,7 +23,9 @@ export default function HeroSection() {
     const { width } = useViewportSize();
     const [opened, { open, close }] = useDisclosure(false);
     const isMobile = width < 580;
-
+    const heroWidth = width > 1100 ? 1000 :
+        width < 1100 && width > 800 ? width * 0.75 :
+            width * 0.8
     return (
         <Container size="xl" mt={20}>
             <Drawer opened={opened} onClose={close} size="100%">
@@ -76,11 +78,15 @@ export default function HeroSection() {
                     <Burger opened={opened} onClick={open} />
                 )}
             </Flex>
-            <Flex align={width <= 900 ? 'center' : 'flex-start'} mt={30} justify="flex-start" p={30} h={500} pos='relative' bg='white' style={{
-                borderRadius: 30,
-                overflow: 'clip'
-            }}>
-                <Box p={30} mt={!isMobile ? 30 : 0}>
+            <Flex align={width <= 900 ? 'center' : 'flex-start'} mt={30}
+                justify="flex-start" p={30} h={500} pos='relative' bg='white' style={{
+                    borderRadius: 30,
+                    overflow: 'clip',
+                }}>
+                <Box p={30} mt={!isMobile ? 30 : 0} style={{
+                    zIndex: 100,
+                    width: heroWidth
+                }}>
                     <Title
                         style={{
                             fontFamily: redRose.style.fontFamily,
@@ -115,16 +121,16 @@ export default function HeroSection() {
                     </Group>
                 </Box>
                 {width > 900 && (
-                    <Box>
+                    <Box right={-100} ml={20} pos={'absolute'}>
                         <Image
                             src={heroImage.src}
                             alt="Porters Gateway"
-                            width={heroImage.width / 4.5}
-                            height={heroImage.height / 4.5}
+                            width={heroImage.width / 3}
+                            height={heroImage.height / 3}
                         />
                     </Box>
                 )}
             </Flex>
-        </Container>
+        </Container >
     );
 }

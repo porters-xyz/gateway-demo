@@ -23,7 +23,7 @@ export default function Partners() {
                         height={raidguildLogo.height / 3}
                     />
                 </Card>
-                <Card span={3.75} bg='#fff' p={16} h={70} ml={20} style={{
+                <Card bg='#fff' p={16} h={70} ml={20} style={{
                     alignItems: 'center',
                     justifyContent: 'center',
                     borderRadius: 10

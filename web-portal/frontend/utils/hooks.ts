@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient, useQueries } from "@tanstack/react-query";
 import { getSession } from "./siwe";
 import { useAccount, useBalance, useReadContract } from "wagmi";
 import { usePathname, useRouter, useParams } from "next/navigation";
@@ -6,6 +6,9 @@ import { Address, erc20Abi } from "viem";
 import { supportedChains } from "./consts";
 import _ from "lodash";
 import { IToken } from "./types";
+import { timeOptions } from "./consts";
+import { useAtomValue } from "jotai";
+import { sessionAtom } from "./atoms";
 
 export const useSession = () => {
     const { address, isConnected } = useAccount();
@@ -369,37 +372,74 @@ export const useCheckAllowance = ({
     });
 };
 
-export const useTenantUsage = (tenantId: string, period: string) => {
-    const appId = _.get(useParams(), "app");
-    const fetchTenantUsage = async () => {
+export const useTenantUsage = () => {
+
+    const session = useAtomValue(sessionAtom)
+    const tenantId = _.get(session, 'tenantId')
+
+    const fetchTenantUsage = async (period: string) => {
         const response = await fetch(`/api/usage/tenant/${tenantId}/${period}`);
         if (!response.ok) {
             throw new Error("Failed to fetch tenant usage");
         }
-        return response.json();
+        return response.json()
     };
 
-    return useQuery({
-        queryKey: ["usage", tenantId, period],
-        queryFn: fetchTenantUsage,
-        enabled: !Boolean(appId),
+    const tenantUsageData = useQueries({
+        queries: timeOptions.map(({ option }) => ({
+            queryKey: ['usage', 'tenant', tenantId, option],
+            queryFn: () => fetchTenantUsage(option),
+            enabled: !!tenantId,
+        })),
+        combine: (results) => {
+            return {
+                data: results.map((result, index) => {
+                    return {
+                        period: [timeOptions[index].option],
+                        data: result?.data?.data?.result[0]?.values ?? []
+                    }
+                }),
+                pending: results.some((result) => result.isPending),
+                isFetched: results.some((result) => result.isPending),
+            }
+        },
     });
+
+    return tenantUsageData
 };
 
-export const useAppUsage = (period: string) => {
-    const appId = _.get(useParams(), "app");
+export const useAppUsage = () => {
+    const appId = _.get(useParams(), "app", '');
 
-    const fetchTenantUsage = async () => {
+    const fetchAppUsage = async (period: string) => {
         const response = await fetch(`/api/usage/app/${appId}/${period}`);
         if (!response.ok) {
-            throw new Error("Failed to fetch tenant usage");
+            throw new Error("Failed to fetch app usage");
         }
         return response.json();
     };
 
-    return useQuery({
-        queryKey: ["usage", appId, period],
-        queryFn: fetchTenantUsage,
-        enabled: Boolean(appId),
+
+    const appUsage = useQueries({
+        queries: timeOptions.map(({ option }) => ({
+            queryKey: ['usage', 'app', appId, option],
+            queryFn: () => fetchAppUsage(option),
+            enabled: Boolean(appId),
+        })),
+        combine: (results) => {
+            return {
+                data: results.map((result, index) => {
+                    return {
+                        period: [timeOptions[index].option],
+                        data: result?.data?.data?.result[0]?.values ?? []
+                    }
+                }),
+                pending: results.some((result) => result.isPending),
+                isFetched: results.some((result) => result.isPending),
+            }
+        },
     });
+
+    return appUsage
+
 };

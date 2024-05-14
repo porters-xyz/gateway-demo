@@ -93,3 +93,23 @@ export const chainLogos = [
     vlx,
     xrd,
 ];
+
+
+export const timeOptions = [
+    {
+        option: "1h",
+        format: "HH:mm",
+    },
+    {
+        option: "24h",
+        format: "HH:mm",
+    },
+    {
+        option: "7d",
+        format: "MM/dd",
+    },
+    {
+        option: "30d",
+        format: "MM/dd",
+    },
+];

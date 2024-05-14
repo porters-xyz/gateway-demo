@@ -21,25 +21,8 @@ import _ from "lodash";
 import { format } from "date-fns";
 import { useAtomValue } from "jotai";
 import { sessionAtom } from "@frontend/utils/atoms";
+import { timeOptions } from "@frontend/utils/consts";
 
-const timeOptions = [
-    {
-        option: "1h",
-        format: "HH:mm",
-    },
-    {
-        option: "24h",
-        format: "HH:mm",
-    },
-    {
-        option: "7d",
-        format: "MM/dd",
-    },
-    {
-        option: "30d",
-        format: "MM/dd",
-    },
-];
 
 const MetricCard: React.FC<{ title: string; value: string }> = ({
     title,
@@ -122,19 +105,22 @@ const NoRequests = () => {
 
 export const UsageChart: React.FC<{
     width?: number | string;
-    data: Array<{ time: string; requests: number }>;
+    data: Array<{ time: string | number; requests: number }>;
     totalRequests: number;
+    appId?: string
+    tenantId?: string
 }> = ({ width = 600, data, totalRequests }) => {
-    console.log(data);
+
+
+
+
     return (
         <Card shadow="none" padding="lg" radius="md" bg="#fff" w={width}>
             <Title order={3} fw={500}>
                 Usage
             </Title>
 
-            {!totalRequests ? (
-                <NoRequests />
-            ) : (
+            {totalRequests ?
                 <AreaChart
                     mt={20}
                     h={275}
@@ -144,8 +130,8 @@ export const UsageChart: React.FC<{
                     strokeWidth={0.5}
                     series={[{ name: "requests", color: "var(--area-color)" }]}
                     withDots={false}
-                />
-            )}
+                /> : <NoRequests />}
+
         </Card>
     );
 };
@@ -153,37 +139,40 @@ const Insights: React.FC = () => {
     const params = useSearchParams();
     const path = usePathname();
     const session = useAtomValue(sessionAtom);
-    const tenantId = session?.tenantId;
-    const balance = session?.netBalance[0];
+    const balance = _.get(_.first(_.get(session, 'netBalance')), 'net', 0)
+
+
 
     const router = useRouter();
 
-    const timeOption = params?.get("t") ?? timeOptions[1].option;
+    const timeOption = params?.get("t") || timeOptions[1].option;
 
-    const { data: promData } = useAppUsage(timeOption);
-    const { data: promUserData } = useTenantUsage(String(tenantId), timeOption);
+    const { data: appUsageData } = useAppUsage();
+    const { data: tenantUsageData } = useTenantUsage();
 
     const chartData = path?.startsWith("/apps/")
-        ? promData?.data?.result[0]?.values
-        : promUserData?.data?.result[0]?.values;
+        ? appUsageData
+        : tenantUsageData
 
-    const readableChartData = _.map(chartData, ([timestamp, value]) => {
-        return {
-            time: format(
-                timestamp * 1000,
-                _.filter(timeOptions, { option: timeOption })[0].format,
-            ),
-            requests: value,
-        };
-    });
+
+
+    const readableChartData = _.find(chartData, ({ period }) => _.toLower(period.toString()) === _.toLower(timeOption));
+
+    const formattedData = _.map(readableChartData?.data, ([time, requests]) => ({
+        time: format(
+            time * 1000,
+            _.filter(timeOptions, { option: timeOption })[0].format,
+        ),
+        requests: Number(requests)
+    }));
+
 
     const totalRequests =
-        readableChartData.length > 1
-            ? Math.abs(
-                  _.toNumber(_.first(readableChartData)?.requests) -
-                      _.toNumber(_.last(readableChartData)?.requests),
-              )
-            : _.toNumber(_.first(readableChartData)?.requests);
+        Math.abs(
+            _.get(_.first(formattedData), 'requests', 0) -
+            _.get(_.last(formattedData), 'requests', 0),
+        )
+
 
     const successData = totalRequests;
     const failureData = 0;
@@ -206,17 +195,17 @@ const Insights: React.FC = () => {
             </Flex>
             <Flex gap={8}>
                 <UsageChart
-                    data={readableChartData}
+                    data={formattedData}
                     totalRequests={totalRequests}
                 />
                 <Stack gap={8}>
                     <MetricCard
-                        title={`Number of Requests (${timeOption})`}
+                        title={`Total Requests (${timeOption})`}
                         value={String(totalRequests || 0)}
                     />
                     <MetricCard
                         title="Balance"
-                        value={numeral(balance?.net).format("0.0a") || 0}
+                        value={numeral(balance).format("0.0a") || 0}
                     />
                 </Stack>
                 <RingCard

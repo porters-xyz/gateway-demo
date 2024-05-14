@@ -42,7 +42,7 @@ export default function HeroSection() {
                     </Title>
                 </Stack>
             </Drawer>
-            <Flex align="center" justify="space-between" gap={100} my={15} px={20} >
+            <Flex align="center" justify="space-between" gap={100} mt={10} px={20} >
                 <Image
                     src={logo.src}
                     alt="Porters"
@@ -76,11 +76,11 @@ export default function HeroSection() {
                     <Burger opened={opened} onClick={open} />
                 )}
             </Flex>
-            <Flex align={width <= 900 ? 'center' : 'flex-start'} justify="flex-start" p={30} h={500} pos='relative' bg='white' style={{
+            <Flex align={width <= 900 ? 'center' : 'flex-start'} mt={30} justify="flex-start" p={30} h={500} pos='relative' bg='white' style={{
                 borderRadius: 30,
                 overflow: 'clip'
             }}>
-                <Box p={30} mt={!isMobile ? 50 : 0}>
+                <Box p={30} mt={!isMobile ? 30 : 0}>
                     <Title
                         style={{
                             fontFamily: redRose.style.fontFamily,

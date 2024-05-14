@@ -17,6 +17,7 @@ export default function SectionTitle({ title }: { title: string }) {
                         fontFamily: redRose.style.fontFamily,
                         fontWeight: 600,
                         fontSize: 40,
+                        textAlign: 'center'
                     }}
                 >
                     {title}

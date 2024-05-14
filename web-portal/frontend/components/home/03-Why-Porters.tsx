@@ -9,13 +9,13 @@ import noRamp from "@frontend/public/no-ramp.png";
 
 export default function WhyOurRPC() {
     return (
-        <Container size="md" mt={"xl"}>
+        <Container size="xl" mt={"xl"}>
             <SectionTitle title="Why Our RPC?" />
-            <Grid align="center" justify="center" m={40}>
+            <Grid align="center" justify="center" mt={20}>
                 <FeatureBlock
                     image={depin}
                     title="DePIN Made Easy"
-                    description="Connect your project to POKT’s powerful DePIN network. The PORTERS gateway abstracts away the Protocol enabling easy access to unstoppable decentralized data."
+                    description="Connect your project to POKT's powerful DePIN network. The PORTERS gateway abstracts away the Protocol enabling easy access to unstoppable decentralized data."
                 />
                 <FeatureBlock
                     image={devCentricity}

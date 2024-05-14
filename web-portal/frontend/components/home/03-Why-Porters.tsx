@@ -9,7 +9,7 @@ import noRamp from "@frontend/public/no-ramp.png";
 
 export default function WhyOurRPC() {
     return (
-        <Container size="xl" mt={"xl"}>
+        <Container size="md" mt={"xl"}>
             <SectionTitle title="Why Our RPC?" />
             <Grid align="center" justify="center" mt={20}>
                 <FeatureBlock

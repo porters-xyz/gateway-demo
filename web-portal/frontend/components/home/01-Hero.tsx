@@ -25,13 +25,12 @@ export default function HeroSection() {
     const isMobile = width < 580;
 
     return (
-        <Container size="md" mt={20}>
+        <Container size="xl" mt={20}>
             <Drawer opened={opened} onClose={close} size="100%">
-                <Stack align="center" justify="space-evenly" color="umbra.1">
+                <Stack align="center" justify="space-evenly" color="cream.0" >
                     <Title size={24} fw={700}>
                         Home
                     </Title>
-
                     <Title size={24} fw={500}>
                         Pricing
                     </Title>
@@ -43,20 +42,21 @@ export default function HeroSection() {
                     </Title>
                 </Stack>
             </Drawer>
-            <Flex align="center" justify="space-between" gap={100} my={20}>
+            <Flex align="center" justify="space-between" gap={100} my={15} px={20} >
                 <Image
                     src={logo.src}
-                    alt="hello"
+                    alt="Porters"
                     width={logo.width / 4}
                     height={logo.height / 4}
                 />
-                {!isMobile ? (
+                {width >= 800 ? (
                     <Flex
                         align="center"
-                        justify="space-evenly"
-                        w={800}
+                        justify="flex-end"
+                        gap={60}
                         wrap="wrap"
                         color="umbra.1"
+                        w={'100%'}
                     >
                         <Title size={18} fw={700}>
                             Home
@@ -73,11 +73,14 @@ export default function HeroSection() {
                         </Title>
                     </Flex>
                 ) : (
-                    <Burger opened={opened} onClick={open} hiddenFrom="sm" />
+                    <Burger opened={opened} onClick={open} />
                 )}
             </Flex>
-            <Flex align="center" justify="space-between" gap={100}>
-                <Box>
+            <Flex align={width <= 900 ? 'center' : 'flex-start'} justify="flex-start" p={30} h={500} pos='relative' bg='white' style={{
+                borderRadius: 30,
+                overflow: 'clip'
+            }}>
+                <Box p={30} mt={!isMobile ? 50 : 0}>
                     <Title
                         style={{
                             fontFamily: redRose.style.fontFamily,
@@ -91,18 +94,18 @@ export default function HeroSection() {
                         c="umbra"
                         opacity={0.9}
                         mt="md"
-                        maw={isMobile ? 400 : 500}
+                        maw={isMobile ? 400 : 450}
                         style={{
                             fontFamily: crimson.style.fontFamily,
-                            fontSize: isMobile ? 18 : 20,
+                            fontSize: isMobile ? 18 : 19,
                         }}
                         lh={1.7}
                     >
-                        Accelerate your Web3 journey with our plug-and-play
+                        {`Accelerate your Web3 journey with our plug-and-play
                         platform offering comprehensive analytics, Web3-native
-                        developer suite and hassle-free access to POKT’s
+                        developer suite and hassle-free access to POKT's
                         Decentralised RPC Service – simplifying your build from
-                        concept to execution.
+                        concept to execution.`}
                     </Text>
 
                     <Group mt={30}>
@@ -111,14 +114,13 @@ export default function HeroSection() {
                         </Link>
                     </Group>
                 </Box>
-                {!isMobile && (
+                {width > 900 && (
                     <Box>
-                        {/* TODO: Add backgroundOne image */}
                         <Image
                             src={heroImage.src}
-                            alt="hello"
-                            width={400}
-                            height={400}
+                            alt="Porters Gateway"
+                            width={heroImage.width / 4.5}
+                            height={heroImage.height / 4.5}
                         />
                     </Box>
                 )}

@@ -9,7 +9,7 @@ import { Stack } from "@mantine/core";
 
 export default function HomePage() {
     return (
-        <Stack bg="cream.1" gap={160}>
+        <Stack bg="cream.0" gap={160}>
             <HeroSection />
             <Partners />
             <WhyOurRPC />

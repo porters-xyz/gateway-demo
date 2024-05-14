@@ -205,7 +205,7 @@ const Insights: React.FC = () => {
                     />
                     <MetricCard
                         title="Balance"
-                        value={numeral(balance).format("0.0a") || 0}
+                        value={numeral(balance).format("0.0a")}
                     />
                 </Stack>
                 <RingCard

@@ -1,10 +1,11 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Controller, Get, Param, UseGuards, } from '@nestjs/common';
 import { UsageService } from './usage.service';
+import { AuthGuard } from '../guards/auth.guard';
 
+@UseGuards(AuthGuard)
 @Controller('usage')
 export class UsageController {
-  constructor(private readonly usageService: UsageService) {}
-
+  constructor(private readonly usageService: UsageService) { }
   @Get('/app/:appId/:period')
   async getAppUsage(
     @Param('appId') appId: string,

@@ -9,16 +9,16 @@ export default function FeatureBlock({
     description,
 }: {
     title: string;
-    image: string;
+    image: any;
     description: string;
 }) {
     return (
         <Card
-            bg="umbra.1"
+            bg="#45311D"
             c="white"
             m={30}
-            h={420}
-            w={320}
+            h={407}
+            w={312}
             style={{
                 position: "relative",
                 fontFamily: crimson.style.fontFamily,
@@ -29,8 +29,8 @@ export default function FeatureBlock({
                 style={{
                     zIndex: 0,
                     position: "absolute",
-                    left: 10.5,
-                    right: 11,
+                    left: 7,
+                    top: 9,
                 }}
             >
                 <SVGBlock />
@@ -40,20 +40,18 @@ export default function FeatureBlock({
                     zIndex: 10,
                     alignItems: "center",
                     justifyContent: "center",
+                    color: '#3B2B27'
                 }}
             >
                 <Title order={2} p={20}>
                     {title}
                 </Title>
                 <Card.Section>
-                    <Image src={image} alt={title} width={100} height={100} />
+                    <Image src={image.src} alt={title} width={image.width * 0.4} height={image.height * 0.4} />
                 </Card.Section>
                 <Text
-                    px={12}
                     lh={1.25}
-                    style={{
-                        textAlign: "center",
-                    }}
+                    w={image.width * 0.4}
                 >
                     {description}
                 </Text>

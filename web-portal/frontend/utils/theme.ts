@@ -25,7 +25,7 @@ export const theme = createTheme({
   primaryColor: "carrot",
   colors: {
     umbra: Array(10).fill("#3C2B27") as any,
-    cream: Array(10).fill("#F6EEE6") as any,
+    cream: ['#EAD9CA', "#F6EEE6", "#F6EEE6", "#F6EEE6", "#F6EEE6", "#F6EEE6", "#F6EEE6", "#F6EEE6", "#F6EEE6", "#F6EEE6"],
     brown: Array(10).fill("#F0E3D7") as any,
     gray: Array(10).fill("#00000020") as any,
     blue: Array(10).fill("#22559B") as any,

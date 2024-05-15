@@ -11,7 +11,6 @@ import classes from "@frontend/styles/insight.module.css";
 import { AreaChart } from "@mantine/charts";
 import numeral from "numeral";
 import {
-    useParams,
     usePathname,
     useRouter,
     useSearchParams,
@@ -110,9 +109,6 @@ export const UsageChart: React.FC<{
     appId?: string
     tenantId?: string
 }> = ({ width = 600, data, totalRequests }) => {
-
-
-
 
     return (
         <Card shadow="none" padding="lg" radius="md" bg="#fff" w={width}>

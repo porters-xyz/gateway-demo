@@ -4,6 +4,9 @@ primary_region = 'sea'
 [build]
   dockerfile = 'Dockerfile.fly'
 
+[build.args]
+  SCHEMA_VERSION = '0.0.1'
+
 [env]
   ### SECRETS ###
   # DATABASE_URL = ...

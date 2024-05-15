@@ -1,5 +1,6 @@
 # This file is used to specifically build portal backend image
-FROM registry.fly.io/porters-schema As build
+ARG SCHEMA_VERSION=latest
+FROM registry.fly.io/porters-schema:${SCHEMA_VERSION} As build
 
 WORKDIR /usr/src/app
 

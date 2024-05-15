@@ -24,9 +24,8 @@ primary_region = 'sea'
 [[services]]
   internal_port = 8080
   protocol = 'tcp'
-  auto_stop_machines = true
-  auto_start_machines = true
-  min_machines_running = 1
+  auto_stop_machines = false
+  auto_start_machines = false
   [[services.ports]]
     handlers = ["http"]
     port = 8080

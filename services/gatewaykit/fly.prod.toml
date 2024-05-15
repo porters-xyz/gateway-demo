@@ -9,6 +9,9 @@ primary_region = 'sea'
 [build]
   image = 'ghcr.io/pokt-network/pocket-gateway-server:0.3.0'
 
+[deploy]
+  strategy = 'canary'
+
 [env]
   ALTRUIST_REQUEST_TIMEOUT = '10s'
   ENVIRONMENT_STAGE = 'production'
@@ -28,6 +31,14 @@ primary_region = 'sea'
     handlers = ["http"]
     port = 8080
     force_https = false
+  [[services.http_checks]]
+    interval = 5000
+    grace_period = '10s'
+    method = 'get'
+    path = '/metrics'
+    protocol = 'http'
+    timeout = 1000
+
 [[vm]]
   memory = '2gb'
   cpu_kind = 'shared'

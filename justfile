@@ -24,3 +24,8 @@ build-frontend:
     cd ./web-portal/frontend && pnpm install && pnpm build
 serve-frontend:
     cd ./web-portal/frontend && pnpm install && pnpm start
+
+deploy-prod:
+    @just gateway/prod-deploy
+    @just services/gatewaykit/prod-deploy
+    @just services/redis/prod-deploy

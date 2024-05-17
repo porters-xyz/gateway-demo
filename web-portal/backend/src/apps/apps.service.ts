@@ -10,17 +10,17 @@ export class AppsService {
     @Inject('Postgres')
     private prisma: CustomPrismaService<PrismaClient>, // <-- Inject the PrismaClient
     private userService: UserService,
-  ) {}
+  ) { }
 
   async getRuleType(ruleName: string) {
     const ruleType = await this.prisma.client.ruleType.findFirst({
       where: { name: ruleName },
     });
 
-    console.log({ruleType})
+    console.log({ ruleType })
 
-    if(!ruleType) {
-        throw new HttpException(`Trying to get invalid ruleType`, HttpStatus.BAD_REQUEST)
+    if (!ruleType) {
+      throw new HttpException(`Trying to get invalid ruleType`, HttpStatus.BAD_REQUEST)
     }
 
     return ruleType;
@@ -59,9 +59,9 @@ export class AppsService {
       },
       include: {
         appRules: {
-            where: {
-                deletedAt: null
-            }
+          where: {
+            deletedAt: null
+          }
         }
       },
     });
@@ -69,8 +69,6 @@ export class AppsService {
     if (!apps || apps?.length === 0) {
       throw new HttpException('No apps found', HttpStatus.NOT_FOUND);
     }
-
-    console.log({appsRule1: apps[0]?.appRules, appsRule2: apps[1]?.appRules })
 
     return apps;
   }
@@ -217,12 +215,12 @@ export class AppsService {
     updateAppRuleDto: { ruleName: string; data: string[] },
   ) {
     // only support one ruleName at this time
-    const {ruleName} = updateAppRuleDto
+    const { ruleName } = updateAppRuleDto
     const { data: updateData } = updateAppRuleDto;
 
     const ruleType = await this.getRuleType(ruleName);
 
-    console.log({ruleName, ruleType, appId})
+    console.log({ ruleName, ruleType, appId })
 
     if (!ruleType || ruleName === 'secret-key' || !ruleName) {
       throw new HttpException(

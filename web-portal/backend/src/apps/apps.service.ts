@@ -13,9 +13,15 @@ export class AppsService {
   ) {}
 
   async getRuleType(ruleName: string) {
-    const ruleType = await this.prisma.client.ruleType.findUniqueOrThrow({
+    const ruleType = await this.prisma.client.ruleType.findFirst({
       where: { name: ruleName },
     });
+
+    console.log({ruleType})
+
+    if(!ruleType) {
+        throw new HttpException(`Trying to get invalid ruleType`, HttpStatus.BAD_REQUEST)
+    }
 
     return ruleType;
   }
@@ -52,7 +58,11 @@ export class AppsService {
         deletedAt: null,
       },
       include: {
-        appRules: true
+        appRules: {
+            where: {
+                deletedAt: null
+            }
+        }
       },
     });
 

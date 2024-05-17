@@ -56,7 +56,7 @@ export class AppsController {
     @Param('appId') appId: string,
     @Body()
     createAppRuleDto: {
-      ruleId: string;
+      ruleName: string;
       data: string[];
     },
   ) {
@@ -64,29 +64,29 @@ export class AppsController {
     return this.appsService.createAppRule(appId, createAppRuleDto);
   }
 
-  @Patch(':appId/rule/:ruleId')
+  @Patch(':appId/rule/:ruleName')
   async updateAppRule(
     @Param('appId') appId: string,
-    @Param('ruleId') ruleId: string,
+    @Param('ruleName') ruleName: string,
     @Body() updateAppRuleDto: string[],
   ) {
-    // @note: This action updates app rule for given appId and ruleId;
-    return this.appsService.updateAppRule(appId, ruleId, updateAppRuleDto);
+    // @note: This action updates app rule for given appId and ruleName;
+    return this.appsService.updateAppRule(appId, ruleName, updateAppRuleDto);
   }
 
-  @Delete(':appId/rule/:ruleId')
+  @Delete(':appId/rule/:ruleName')
   async deleteAppRule(
     @Param('appId') appId: string,
-    @Param('ruleId') ruleId: string,
+    @Param('ruleName') ruleName: string,
   ) {
-    // @note: This action deletes app rule for given appId and ruleId;
-    return this.appsService.deleteAppRule(appId, ruleId);
+    // @note: This action deletes app rule for given appId and ruleName;
+    return this.appsService.deleteAppRule(appId, ruleName);
   }
 
   @Patch(':appId/rules')
   async batchUpdateAppRules(
     @Param('appId') appId: string,
-    @Body() updateRulesDto: { ruleId: string; data: string[] }[],
+    @Body() updateRulesDto: { ruleName: string; data: string[] }[],
   ) {
     // @note: This action updates app rules in bulk for given appId;
     return this.appsService.batchUpdateAppRules(appId, updateRulesDto);

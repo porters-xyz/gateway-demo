@@ -115,11 +115,18 @@ export class AppsService {
         return deletedApp;
     }
 
-    async createAppRule(appId: string, createAppRuleDto: any) {
+    async createAppRule(appId: string, createAppRuleDto: {
+        ruleName: string;
+        data: string[];
+      }) {
+
+        const ruleType = await this.getRuleType(createAppRuleDto.ruleName);
+
         const newAppRule = await this.prisma.client.appRule.create({
             data: {
                 appId,
                 ...createAppRuleDto,
+                ruleId: ruleType.id
             },
         });
         if (!newAppRule) {
@@ -131,9 +138,12 @@ export class AppsService {
         return newAppRule;
     }
 
-    async updateAppRule(appId: string, ruleId: string, updateAppRuleDto: any) {
+    async updateAppRule(appId: string, ruleName: string, updateAppRuleDto: string[]) {
+
+        const ruleType = await this.getRuleType(ruleName);
+
         const updatedAppRule = await this.prisma.client.appRule.update({
-            where: { id: ruleId, appId },
+            where: { id: ruleType.id, appId },
             data: updateAppRuleDto,
         });
 
@@ -147,9 +157,12 @@ export class AppsService {
         return updatedAppRule;
     }
 
-    async deleteAppRule(appId: string, ruleId: string) {
+    async deleteAppRule(appId: string, ruleName: string) {
+
+        const ruleType = await this.getRuleType(ruleName);
+
         const deletedAppRule = await this.prisma.client.appRule.update({
-            where: { id: ruleId, appId },
+            where: { id: ruleType.id, appId },
             data: {
                 deletedAt: new Date(),
             },
@@ -166,14 +179,12 @@ export class AppsService {
 
     async batchUpdateAppRules(
         appId: string,
-        updateAppRuleDto: { ruleId: string; data: string[] }[],
+        updateAppRuleDto: { ruleName: string; data: string[] }[],
     ) {
-        // only support one ruleId at this time
-        const { ruleId, data: updateData } = updateAppRuleDto[0];
+        // only support one ruleName at this time
+        const { ruleName, data: updateData } = updateAppRuleDto[0];
 
-        const ruleType = await this.prisma.client.ruleType.findFirstOrThrow({
-            where: { id: ruleId },
-        });
+        const ruleType = await this.getRuleType(ruleName)
 
         if (
             !ruleType ||
@@ -186,15 +197,8 @@ export class AppsService {
             );
         }
 
-        if (ruleType.id !== ruleId) {
-            throw new HttpException(
-                'Rule type does not match ruleId',
-                HttpStatus.BAD_REQUEST,
-            );
-        }
-
         const existingAppRules = await this.prisma.client.appRule.findMany({
-            where: { appId, ruleId },
+            where: { appId, ruleId: ruleType.id },
         });
 
         // Filter out new rules that are not in existingAppRules
@@ -217,7 +221,7 @@ export class AppsService {
 
         const ruleDataToCreate = newAppRules.map((newRule) => ({
             appId,
-            ruleId,
+            ruleId: ruleType.id,
             value: newRule,
         }));
 
@@ -237,7 +241,7 @@ export class AppsService {
         await this.prisma.client.appRule.updateMany({
             where: {
                 appId: appId,
-                ruleId: ruleId,
+                ruleId: ruleType.id,
                 id: {
                     in: ruleIdsToDelete,
                 },
@@ -255,9 +259,8 @@ export class AppsService {
     }
 
     async updateSecretKeyRule(appId: string, action: 'generate' | 'delete') {
-        const ruleType = await this.prisma.client.ruleType.findFirstOrThrow({
-            where: { id: 'secret-key' },
-        });
+        
+        const ruleType = await this.getRuleType('secret-key')
 
         const secretIdExists = await this.prisma.client.appRule.findFirst({
             where: { appId, ruleId: ruleType.id },
@@ -304,4 +307,15 @@ export class AppsService {
             }
         }
     }
+
+
+    async getRuleType(ruleName: string){
+        const ruleType = await this.prisma.client.ruleType.findFirstOrThrow({
+            where: { name: ruleName },
+        });
+
+        return ruleType
+
+    }
+
 }

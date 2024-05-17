@@ -1,6 +1,6 @@
 import { Injectable, Inject, HttpException, HttpStatus } from '@nestjs/common';
 import { CustomPrismaService } from 'nestjs-prisma';
-import { AppRule, PrismaClient } from '@/.generated/client';
+import { AppRule, PrismaClient, Tenant } from '@/.generated/client';
 import { UserService } from '../user/user.service';
 import { createHash, randomBytes } from 'crypto';
 
@@ -13,7 +13,7 @@ export class AppsService {
   ) {}
 
   async getRuleType(ruleName: string) {
-    const ruleType = await this.prisma.client.ruleType.findFirstOrThrow({
+    const ruleType = await this.prisma.client.ruleType.findUniqueOrThrow({
       where: { name: ruleName },
     });
 
@@ -42,25 +42,26 @@ export class AppsService {
 
   async getAppsByUser(userAddress: string) {
     const tenants = await this.getTenantsByUser(userAddress);
+
+    const tenantIds = tenants.map((tenant: Tenant) => tenant.id)
     const apps = await this.prisma.client.app.findMany({
       where: {
         tenantId: {
-          in: tenants.map((tenant) => tenant.id),
+          in: tenantIds,
         },
         deletedAt: null,
       },
       include: {
-        appRules: {
-          where: {
-            deletedAt: null,
-          },
-        },
+        appRules: true
       },
     });
 
     if (!apps || apps?.length === 0) {
       throw new HttpException('No apps found', HttpStatus.NOT_FOUND);
     }
+
+    console.log({appsRule1: apps[0]?.appRules, appsRule2: apps[1]?.appRules })
+
     return apps;
   }
 
@@ -203,18 +204,17 @@ export class AppsService {
 
   async batchUpdateAppRules(
     appId: string,
-    updateAppRuleDto: { ruleName: string; data: string[] }[],
+    updateAppRuleDto: { ruleName: string; data: string[] },
   ) {
     // only support one ruleName at this time
-    const { ruleName, data: updateData } = updateAppRuleDto[0];
+    const {ruleName} = updateAppRuleDto
+    const { data: updateData } = updateAppRuleDto;
 
     const ruleType = await this.getRuleType(ruleName);
 
-    if (
-      !ruleType ||
-      ruleType.id === 'secret-key' ||
-      ruleType.name === 'secret-key'
-    ) {
+    console.log({ruleName, ruleType, appId})
+
+    if (!ruleType || ruleName === 'secret-key' || !ruleName) {
       throw new HttpException(
         'Attempted to update invalid rule type',
         HttpStatus.BAD_REQUEST,
@@ -226,7 +226,7 @@ export class AppsService {
     });
 
     // Filter out new rules that are not in existingAppRules
-    const newAppRules = updateData.filter(
+    const newAppRules = updateData?.filter(
       (updateRule) =>
         !existingAppRules.some(
           (existingRule: AppRule) => existingRule.value === updateRule,
@@ -234,7 +234,7 @@ export class AppsService {
     );
 
     // Filter out existing rules that are not in updateData
-    const deleteAppRules = existingAppRules.filter(
+    const deleteAppRules = existingAppRules?.filter(
       (existingRule: AppRule) =>
         !updateData.some(
           (updateRule: string) => existingRule.value === updateRule,

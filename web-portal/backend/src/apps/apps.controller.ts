@@ -86,7 +86,7 @@ export class AppsController {
   @Patch(':appId/rules')
   async batchUpdateAppRules(
     @Param('appId') appId: string,
-    @Body() updateRulesDto: { ruleName: string; data: string[] }[],
+    @Body() updateRulesDto: { ruleName: string; data: string[] },
   ) {
     // @note: This action updates app rules in bulk for given appId;
     return this.appsService.batchUpdateAppRules(appId, updateRulesDto);

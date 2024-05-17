@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
 import { CustomPrismaModule } from 'nestjs-prisma';
 import { PrismaClient } from '@/.generated/client';
@@ -30,7 +29,6 @@ import { UsageModule } from './usage/usage.module';
     UtilsModule,
     UsageModule,
   ],
-  providers: [AppService],
   controllers: [AppController],
 })
 export class AppModule {}

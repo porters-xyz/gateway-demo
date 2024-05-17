@@ -30,7 +30,7 @@ import { UsageModule } from './usage/usage.module';
     UtilsModule,
     UsageModule,
   ],
-  providers: [AppService],
+  // providers: [AppService],
   controllers: [AppController],
 })
-export class AppModule {}
+export class AppModule { }

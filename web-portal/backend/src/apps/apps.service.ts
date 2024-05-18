@@ -1,6 +1,6 @@
 import { Injectable, Inject, HttpException, HttpStatus } from '@nestjs/common';
 import { CustomPrismaService } from 'nestjs-prisma';
-import { AppRule, PrismaClient, Tenant } from '@/.generated/client';
+import { AppRule, PrismaClient, Tenant, RuleType } from '@/.generated/client';
 import { UserService } from '../user/user.service';
 import { createHash, randomBytes } from 'crypto';
 
@@ -17,13 +17,11 @@ export class AppsService {
             where: { name: ruleName, deletedAt: null },
         });
 
-        console.log({ ruleType })
-
         if (!ruleType) {
             throw new HttpException(`Trying to get invalid ruleType`, HttpStatus.BAD_REQUEST)
         }
 
-        return ruleType;
+        return ruleType as RuleType;
     }
 
     async getTenantsByUser(userAddress: string) {
@@ -274,7 +272,7 @@ export class AppsService {
     }
 
     async updateSecretKeyRule(appId: string, action: 'generate' | 'delete') {
-        const ruleId = await this.getRuleType('secret-key');
+        const { id: ruleId } = await this.getRuleType('secret-key');
 
 
         const secretIdExists = await this.prisma.client.appRule.findFirst({

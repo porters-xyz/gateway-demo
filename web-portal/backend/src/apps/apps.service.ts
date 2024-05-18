@@ -1,6 +1,6 @@
 import { Injectable, Inject, HttpException, HttpStatus } from '@nestjs/common';
 import { CustomPrismaService } from 'nestjs-prisma';
-import { AppRule, PrismaClient } from '@/.generated/client';
+import { AppRule, PrismaClient, Tenant, RuleType } from '@/.generated/client';
 import { UserService } from '../user/user.service';
 import { createHash, randomBytes } from 'crypto';
 
@@ -11,6 +11,18 @@ export class AppsService {
         private prisma: CustomPrismaService<PrismaClient>, // <-- Inject the PrismaClient
         private userService: UserService,
     ) { }
+
+    async getRuleType(ruleName: string) {
+        const ruleType = await this.prisma.client.ruleType.findFirst({
+            where: { name: ruleName, deletedAt: null },
+        });
+
+        if (!ruleType) {
+            throw new HttpException(`Trying to get invalid ruleType`, HttpStatus.BAD_REQUEST)
+        }
+
+        return ruleType as RuleType;
+    }
 
     async getTenantsByUser(userAddress: string) {
         const user = await this.userService.getOrCreate(userAddress);
@@ -34,17 +46,19 @@ export class AppsService {
 
     async getAppsByUser(userAddress: string) {
         const tenants = await this.getTenantsByUser(userAddress);
+
+        const tenantIds = tenants.map((tenant: Tenant) => tenant.id)
         const apps = await this.prisma.client.app.findMany({
             where: {
                 tenantId: {
-                    in: tenants.map((tenant) => tenant.id),
+                    in: tenantIds,
                 },
                 deletedAt: null,
             },
             include: {
                 appRules: {
                     where: {
-                        deletedAt: null,
+                        deletedAt: null
                     }
                 }
             },
@@ -53,6 +67,7 @@ export class AppsService {
         if (!apps || apps?.length === 0) {
             throw new HttpException('No apps found', HttpStatus.NOT_FOUND);
         }
+
         return apps;
     }
 
@@ -84,7 +99,11 @@ export class AppsService {
 
     async updateApp(appId: string, updateAppDto: any) {
         const updatedApp = await this.prisma.client.app.update({
-            where: { id: appId },
+            where: {
+                id: appId, deletedAt: {
+                    not: null
+                }
+            },
             data: updateAppDto,
         });
 
@@ -99,11 +118,11 @@ export class AppsService {
     }
 
     async deleteApp(appId: string) {
+        const deletedAt = new Date()
+
         const deletedApp = await this.prisma.client.app.update({
             where: { id: appId },
-            data: {
-                deletedAt: new Date(),
-            },
+            data: { deletedAt },
         });
 
         if (!deletedApp) {
@@ -115,13 +134,17 @@ export class AppsService {
         return deletedApp;
     }
 
-    async createAppRule(appId: string, createAppRuleDto: any) {
-        const newAppRule = await this.prisma.client.appRule.create({
-            data: {
-                appId,
-                ...createAppRuleDto,
-            },
-        });
+    async createAppRule(
+        appId: string,
+        ruleName: string,
+        createData: string[]
+    ) {
+        const { id: ruleId } = await this.getRuleType(ruleName);
+
+        const data = createData.map((value: string) => ({ appId, ruleId, value }));
+
+        const newAppRule = await this.prisma.client.appRule.createMany({ data });
+
         if (!newAppRule) {
             return new HttpException(
                 `Could not create app rule for this app`,
@@ -131,10 +154,18 @@ export class AppsService {
         return newAppRule;
     }
 
-    async updateAppRule(appId: string, ruleId: string, updateAppRuleDto: any) {
-        const updatedAppRule = await this.prisma.client.appRule.update({
-            where: { id: ruleId, appId },
-            data: updateAppRuleDto,
+    async updateAppRule(
+        appId: string,
+        ruleName: string,
+        updateData: string[],
+    ) {
+        const { id: ruleId } = await this.getRuleType(ruleName);
+
+        const data = updateData.map((value) => ({ value }));
+
+        const updatedAppRule = await this.prisma.client.appRule.updateMany({
+            where: { ruleId, appId, deletedAt: { not: null } },
+            data,
         });
 
         if (!updatedAppRule) {
@@ -147,12 +178,13 @@ export class AppsService {
         return updatedAppRule;
     }
 
-    async deleteAppRule(appId: string, ruleId: string) {
-        const deletedAppRule = await this.prisma.client.appRule.update({
-            where: { id: ruleId, appId },
-            data: {
-                deletedAt: new Date(),
-            },
+    async deleteAppRule(appId: string, ruleName: string) {
+        const { id: ruleId } = await this.getRuleType(ruleName);
+        const deletedAt = new Date();
+
+        const deletedAppRule = await this.prisma.client.appRule.updateMany({
+            where: { ruleId, appId, deletedAt: { not: null } },
+            data: { deletedAt },
         });
 
         if (!deletedAppRule) {
@@ -166,29 +198,15 @@ export class AppsService {
 
     async batchUpdateAppRules(
         appId: string,
-        updateAppRuleDto: { ruleId: string; data: string[] }[],
+        ruleName: string,
+        updateAppRuleDto: string[],
     ) {
-        // only support one ruleId at this time
-        const { ruleId, data: updateData } = updateAppRuleDto[0];
 
-        const ruleType = await this.prisma.client.ruleType.findFirstOrThrow({
-            where: { id: ruleId },
-        });
+        const { id: ruleId, validationType, validationValue } = await this.getRuleType(ruleName);
 
-        if (
-            !ruleType ||
-            ruleType.id === 'secret-key' ||
-            ruleType.name === 'secret-key'
-        ) {
+        if (!ruleId || ruleName === 'secret-key' || !ruleName) {
             throw new HttpException(
                 'Attempted to update invalid rule type',
-                HttpStatus.BAD_REQUEST,
-            );
-        }
-
-        if (ruleType.id !== ruleId) {
-            throw new HttpException(
-                'Rule type does not match ruleId',
                 HttpStatus.BAD_REQUEST,
             );
         }
@@ -198,7 +216,7 @@ export class AppsService {
         });
 
         // Filter out new rules that are not in existingAppRules
-        const newAppRules = updateData.filter(
+        const newAppRules = updateAppRuleDto?.filter(
             (updateRule) =>
                 !existingAppRules.some(
                     (existingRule: AppRule) => existingRule.value === updateRule,
@@ -206,23 +224,22 @@ export class AppsService {
         );
 
         // Filter out existing rules that are not in updateData
-        const deleteAppRules = existingAppRules.filter(
+        const deleteAppRules = existingAppRules?.filter(
             (existingRule: AppRule) =>
-                !updateData.some(
+                !updateAppRuleDto.some(
                     (updateRule: string) => existingRule.value === updateRule,
                 ),
         );
 
         const ruleIdsToDelete = deleteAppRules.map((rule: any) => rule.id);
-
         const ruleDataToCreate = newAppRules.map((newRule) => ({
             appId,
             ruleId,
             value: newRule,
         }));
 
-        if (ruleType.validationType === 'regex') {
-            const regexExp = new RegExp(ruleType.validationValue);
+        if (validationType === 'regex') {
+            const regexExp = new RegExp(validationValue);
             ruleDataToCreate.forEach((rule) => {
                 const matchResult = regexExp.test(rule.value);
                 if (!matchResult) {
@@ -236,8 +253,8 @@ export class AppsService {
 
         await this.prisma.client.appRule.updateMany({
             where: {
-                appId: appId,
-                ruleId: ruleId,
+                appId,
+                ruleId,
                 id: {
                     in: ruleIdsToDelete,
                 },
@@ -255,12 +272,11 @@ export class AppsService {
     }
 
     async updateSecretKeyRule(appId: string, action: 'generate' | 'delete') {
-        const ruleType = await this.prisma.client.ruleType.findFirstOrThrow({
-            where: { id: 'secret-key' },
-        });
+        const { id: ruleId } = await this.getRuleType('secret-key');
+
 
         const secretIdExists = await this.prisma.client.appRule.findFirst({
-            where: { appId, ruleId: ruleType.id },
+            where: { appId, ruleId },
         });
 
         if (action === 'delete' && secretIdExists) {
@@ -274,8 +290,8 @@ export class AppsService {
         }
 
         if (secretIdExists && action === 'generate') {
-            const secretKey = randomBytes(8).toString('hex');
-            const hashedKey = createHash('sha256').update(secretKey).digest('hex');
+
+            const { secretKey, hashedKey } = this.generateSecretKey()
 
             const updateSecretKey = await this.prisma.client.appRule.update({
                 where: { id: secretIdExists.id },
@@ -288,13 +304,13 @@ export class AppsService {
                 return { key: secretKey };
             }
         } else if (!secretIdExists && action === 'generate') {
-            const secretKey = randomBytes(8).toString('hex');
-            const hashedKey = createHash('sha256').update(secretKey).digest('hex');
+
+            const { secretKey, hashedKey } = this.generateSecretKey()
 
             const newSecretKey = await this.prisma.client.appRule.create({
                 data: {
                     appId,
-                    ruleId: ruleType.id,
+                    ruleId,
                     value: hashedKey,
                 },
             });
@@ -303,5 +319,12 @@ export class AppsService {
                 return { key: secretKey };
             }
         }
+    }
+
+    private generateSecretKey() {
+        const secretKey = randomBytes(8).toString('hex');
+        const hashedKey = createHash('sha256').update(secretKey).digest('hex');
+
+        return { secretKey, hashedKey }
     }
 }

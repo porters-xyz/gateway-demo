@@ -167,7 +167,7 @@ export const useUpdateRuleMutation = (appId: string, ruleName: string) => {
             headers: {
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify([{ ruleId: ruleName, data }]),
+            body: JSON.stringify({ ruleName, data }),
         });
         if (!response.ok) {
             throw new Error("Failed to update app rule");

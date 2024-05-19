@@ -1,12 +1,10 @@
-import { Controller, Get, Post, Param, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Param, Query } from '@nestjs/common';
 
 import { TenantService } from './tenant.service';
-import { AuthGuard } from '../guards/auth.guard';
 
 @Controller('tenant')
-@UseGuards(AuthGuard)
 export class TenantController {
-  constructor(private readonly tenantService: TenantService) {}
+  constructor(private readonly tenantService: TenantService) { }
 
   @Post()
   async createTenant() {
@@ -21,15 +19,15 @@ export class TenantController {
     return validation;
   }
 
-  @Get(':id')
-  async getTenantById(@Param('id') id: string) {
+  @Get(':tenantId')
+  async getTenantById(@Param('tenantId') tenantId: string) {
     // @note: This action returns a tenant by its id
-    return this.tenantService.getTenantById(id);
+    return this.tenantService.getTenantById(tenantId);
   }
 
-  @Get(':id/billing')
-  async getTenantBillingHistory(@Param('id') id: string) {
+  @Get(':tenantId/billing')
+  async getTenantBillingHistory(@Param('tenantId') tenantId: string) {
     // @note: This action returns billing history for a tenant
-    return this.tenantService.getTenantBillingHistory(id);
+    return this.tenantService.getTenantBillingHistory(tenantId);
   }
 }

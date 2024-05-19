@@ -7,14 +7,15 @@ import {
   Res,
   HttpStatus,
   Delete,
-  UseGuards,
 } from '@nestjs/common';
 import { SiweService } from './siwe.service';
 import { Request, Response } from 'express';
-import { AuthGuard } from '../guards/auth.guard';
+import { Public } from '../decorator/public.decorator';
+
 @Controller('siwe')
+@Public()
 export class SiweController {
-  constructor(private readonly siweService: SiweService) {}
+  constructor(private readonly siweService: SiweService) { }
 
   @Get()
   async getSession(
@@ -65,7 +66,6 @@ export class SiweController {
   }
 
   @Delete()
-  @UseGuards(AuthGuard)
   async signOut(@Req() request: Request, @Res() response: Response) {
     const sessionCookie = request?.cookies['session'];
     if (sessionCookie) {

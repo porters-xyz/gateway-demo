@@ -276,7 +276,7 @@ export class AppsService {
       },
     });
 
-    console.log({ ruleDataToCreate })
+
 
     const updatedAppRules = await this.prisma.client.appRule.createMany({
       data: ruleDataToCreate,

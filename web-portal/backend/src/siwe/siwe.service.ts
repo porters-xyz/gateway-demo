@@ -20,7 +20,7 @@ export const SESSION_OPTIONS = {
 
 @Injectable()
 export class SiweService {
-  constructor(private readonly userService: UserService) {}
+  constructor(private readonly userService: UserService) { }
 
   async getSession(sessionCookie: string) {
     const { address, chainId } = await unsealData<ISession>(

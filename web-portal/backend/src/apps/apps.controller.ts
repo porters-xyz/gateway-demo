@@ -1,106 +1,114 @@
 import {
-    Controller,
-    Get,
-    Param,
-    UseGuards,
-    Body,
-    Post,
-    Put,
-    Patch,
+  Controller,
+  Get,
+  Param,
+  Body,
+  Post,
+  Put,
+  Patch,
+  Req,
 } from '@nestjs/common';
+import { Request } from 'express';
 import { AppsService } from './apps.service';
-import { AuthGuard } from '../guards/auth.guard';
 import { Delete } from '@nestjs/common';
+import { UserService } from '../user/user.service';
 
 // TODO: create a centralised interface file?
 interface CreateAppDto {
-    name: string;
-    description?: string;
+  name: string;
+  description?: string;
 }
 
 @Controller('apps')
-@UseGuards(AuthGuard)
 export class AppsController {
-    constructor(private readonly appsService: AppsService) { }
+  constructor(
+    private readonly appsService: AppsService,
+    private readonly userService: UserService) { }
 
-    @Get(':userAddress')
-    async getUserApps(@Param('userAddress') userAddress: string) {
-        // @note: This action fetches apps by userAddress;
-        return this.appsService.getAppsByUser(userAddress);
-    }
+  @Get()
+  async getUserApps(@Req() req: Request) {
+    // @note: This action fetches apps by userAddress retrieved from cookie;
+    const userAddress = await this.userService.getUserAddress(req);
+    return this.appsService.getAppsByUser(userAddress);
+  }
 
-    @Post(':userAddress')
-    async createApp(
-        @Param('userAddress') userAddress: string,
-        @Body() createAppDto: CreateAppDto,
-    ) {
-        // @note: This action creates app for given userAddress;
-        const { name, description } = createAppDto;
-        return this.appsService.createApp(userAddress, name, description);
-    }
+  @Post()
+  async createApp(
+    @Req() req: Request,
+    @Body() createAppDto: CreateAppDto,
+  ) {
+    // @note: This action creates app for retrived userAddress from cookie;
+    const userAddress = await this.userService.getUserAddress(req);
+    const { name, description } = createAppDto;
+    return this.appsService.createApp(userAddress, name, description);
+  }
 
-    @Delete(':appId')
-    async deleteApp(@Param('appId') appId: string) {
-        // @note: This action deletes app for given appId;
-        return this.appsService.deleteApp(appId);
-    }
+  @Delete(':appId')
+  async deleteApp(
+    @Param('appId') appId: string) {
+    // @note: This action deletes app for given appId;
+    return this.appsService.deleteApp(appId);
+  }
 
-    @Patch(':appId')
-    async updateApp(@Param('appId') appId: string, @Body() updateAppDto: any) {
-        // @note: This action updates app for given appId;
-        return this.appsService.updateApp(appId, updateAppDto);
-    }
+  @Patch(':appId')
+  async updateApp(
+    @Param('appId') appId: string, @Body() updateAppDto: any) {
+    // @note: This action updates app for given appId;
+    return this.appsService.updateApp(appId, updateAppDto);
+  }
 
-    @Post(':appId/rule')
-    async createAppRule(
-        @Param('appId') appId: string,
-        @Body()
-        createAppRuleDto: {
-            ruleName: string;
-            data: string[];
-        },
-    ) {
-        // @note: This action creates app rule given appId;
-        return this.appsService.createAppRule(appId, createAppRuleDto.ruleName, createAppRuleDto.data);
-    }
+  @Post(':appId/rule')
+  async createAppRule(
+    @Param('appId') appId: string,
+    @Body()
+    createAppRuleDto: {
+      ruleName: string;
+      data: string[];
+    },
+  ) {
+    // @note: This action creates app rule given appId;
+    return this.appsService.createAppRule(appId, createAppRuleDto.ruleName, createAppRuleDto.data);
+  }
 
-    @Patch(':appId/rule/:ruleName')
-    async updateAppRule(
-        @Param('appId') appId: string,
-        @Param('ruleName') ruleName: string,
-        @Body() updateAppRuleDto: string[],
-    ) {
-        // @note: This action updates app rule for given appId and ruleName;
-        return this.appsService.updateAppRule(appId, ruleName, updateAppRuleDto);
-    }
+  @Patch(':appId/rule/:ruleName')
+  async updateAppRule(
+    @Param('appId') appId: string,
+    @Param('ruleName') ruleName: string,
+    @Body() updateAppRuleDto: string[],
+  ) {
+    // @note: This action updates app rule for given appId and ruleName;
+    return this.appsService.updateAppRule(appId, ruleName, updateAppRuleDto);
+  }
 
-    @Delete(':appId/rule/:ruleName')
-    async deleteAppRule(
-        @Param('appId') appId: string,
-        @Param('ruleName') ruleName: string,
-    ) {
-        // @note: This action deletes app rule for given appId and ruleName;
-        return this.appsService.deleteAppRule(appId, ruleName);
-    }
+  @Delete(':appId/rule/:ruleName')
+  async deleteAppRule(
+    @Param('appId') appId: string,
+    @Param('ruleName') ruleName: string,
+  ) {
+    // @note: This action deletes app rule for given appId and ruleName;
+    return this.appsService.deleteAppRule(appId, ruleName);
+  }
 
-    @Patch(':appId/rules')
-    async batchUpdateAppRules(
-        @Param('appId') appId: string,
-        @Body() updateRulesDto: { ruleName: string; data: string[] },
-    ) {
-        // @note: This action updates app rules in bulk for given appId;
-        return this.appsService.batchUpdateAppRules(appId, updateRulesDto.ruleName, updateRulesDto.data);
-    }
+  @Patch(':appId/rules')
+  async batchUpdateAppRules(
+    @Param('appId') appId: string,
+    @Body() updateRulesDto: { ruleName: string; data: string[] },
+  ) {
+    // @note: This action updates app rules in bulk for given appId;
+    return this.appsService.batchUpdateAppRules(appId, updateRulesDto.ruleName, updateRulesDto.data);
+  }
 
-    @Put(':appId/secret')
-    async updateAppSecret(@Param('appId') appId: string) {
-        // @note: This action updates app secret for given appId;
-        return this.appsService.updateSecretKeyRule(appId, 'generate');
-    }
+  @Put(':appId/secret')
+  async updateAppSecret(
+    @Param('appId') appId: string) {
+    // @note: This action updates app secret for given appId;
+    return this.appsService.updateSecretKeyRule(appId, 'generate');
+  }
 
-    @Delete(':appId/secret')
-    async deleteAppSecret(@Param('appId') appId: string) {
-        // @note: This action deletes app secret for given appId;
-        return this.appsService.updateSecretKeyRule(appId, 'delete');
-    }
+  @Delete(':appId/secret')
+  async deleteAppSecret(
+    @Param('appId') appId: string) {
+    // @note: This action deletes app secret for given appId;
+    return this.appsService.updateSecretKeyRule(appId, 'delete');
+  }
 }

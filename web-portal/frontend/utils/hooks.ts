@@ -1,4 +1,9 @@
-import { useQuery, useMutation, useQueryClient, useQueries } from "@tanstack/react-query";
+import {
+    useQuery,
+    useMutation,
+    useQueryClient,
+    useQueries,
+} from "@tanstack/react-query";
 import { getSession } from "./siwe";
 import { useAccount, useBalance, useReadContract } from "wagmi";
 import { usePathname, useRouter, useParams } from "next/navigation";
@@ -69,7 +74,7 @@ export const useRuleTypes = () => {
 
 export const useUserApps = (userAddress: string) => {
     const fetchApps = async () => {
-        const response = await fetch(`/api/apps/${userAddress}`);
+        const response = await fetch(`/api/apps`);
         if (!response.ok) {
             throw new Error("Failed to validate tenant");
         }
@@ -83,19 +88,16 @@ export const useUserApps = (userAddress: string) => {
     });
 };
 
-export const useCreateAppMutation = (
-    address: string,
-    data: {
-        name: string;
-        description?: string;
-    },
-) => {
+export const useCreateAppMutation = (data: {
+    name: string;
+    description?: string;
+}) => {
     const { name, description } = data;
     const router = useRouter();
     const queryClient = useQueryClient();
 
     const createAppMutation = async () => {
-        const response = await fetch(`/api/apps/${address}`, {
+        const response = await fetch(`/api/apps`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -373,21 +375,20 @@ export const useCheckAllowance = ({
 };
 
 export const useTenantUsage = () => {
-
-    const session = useAtomValue(sessionAtom)
-    const tenantId = _.get(session, 'tenantId')
+    const session = useAtomValue(sessionAtom);
+    const tenantId = _.get(session, "tenantId");
 
     const fetchTenantUsage = async (period: string) => {
         const response = await fetch(`/api/usage/tenant/${tenantId}/${period}`);
         if (!response.ok) {
             throw new Error("Failed to fetch tenant usage");
         }
-        return response.json()
+        return response.json();
     };
 
     const tenantUsageData = useQueries({
         queries: timeOptions.map(({ option }) => ({
-            queryKey: ['usage', 'tenant', tenantId, option],
+            queryKey: ["usage", "tenant", tenantId, option],
             queryFn: () => fetchTenantUsage(option),
             enabled: !!tenantId,
         })),
@@ -396,20 +397,20 @@ export const useTenantUsage = () => {
                 data: results.map((result, index) => {
                     return {
                         period: [timeOptions[index].option],
-                        data: result?.data?.data?.result[0]?.values ?? []
-                    }
+                        data: result?.data?.data?.result[0]?.values ?? [],
+                    };
                 }),
                 pending: results.some((result) => result.isPending),
                 isFetched: results.some((result) => result.isPending),
-            }
+            };
         },
     });
 
-    return tenantUsageData
+    return tenantUsageData;
 };
 
 export const useAppUsage = () => {
-    const appId = _.get(useParams(), "app", '');
+    const appId = _.get(useParams(), "app", "");
 
     const fetchAppUsage = async (period: string) => {
         const response = await fetch(`/api/usage/app/${appId}/${period}`);
@@ -419,10 +420,9 @@ export const useAppUsage = () => {
         return response.json();
     };
 
-
     const appUsage = useQueries({
         queries: timeOptions.map(({ option }) => ({
-            queryKey: ['usage', 'app', appId, option],
+            queryKey: ["usage", "app", appId, option],
             queryFn: () => fetchAppUsage(option),
             enabled: Boolean(appId),
         })),
@@ -431,15 +431,14 @@ export const useAppUsage = () => {
                 data: results.map((result, index) => {
                     return {
                         period: [timeOptions[index].option],
-                        data: result?.data?.data?.result[0]?.values ?? []
-                    }
+                        data: result?.data?.data?.result[0]?.values ?? [],
+                    };
                 }),
                 pending: results.some((result) => result.isPending),
                 isFetched: results.some((result) => result.isPending),
-            }
+            };
         },
     });
 
-    return appUsage
-
+    return appUsage;
 };

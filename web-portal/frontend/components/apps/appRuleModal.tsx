@@ -30,7 +30,7 @@ export default function CreateAppRuleModal() {
       {shouldOpen === "secret-key" && <SecretKeyForm />}
       {shouldOpen === "approved-chains" && <ApprovedChainForm />}
       {shouldOpen === "allowed-user-agents" && <AllowedUserAgentsForm />}
-      {shouldOpen === "rate-limit" && <RateLimitForm />}
+      {shouldOpen === "rate-limits" && <RateLimitForm />}
     </Modal>
   );
 }

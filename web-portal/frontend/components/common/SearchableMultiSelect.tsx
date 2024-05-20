@@ -61,9 +61,10 @@ export function SearchableMultiSelect({
       store={combobox}
       onOptionSubmit={handleValueSelect}
       withinPortal={true}
+      size="md"
     >
       <Combobox.DropdownTarget>
-        <PillsInput onClick={() => combobox.openDropdown()}>
+        <PillsInput onClick={() => combobox.openDropdown()} size="md">
           <Pill.Group>
             {values}
 

@@ -25,7 +25,7 @@ primary_region = 'sea'
   internal_port = 8080
   protocol = 'tcp'
   auto_stop_machines = false
-  auto_start_machines = false
+  auto_start_machines = true
   [[services.ports]]
     handlers = ["http"]
     port = 8080
@@ -39,9 +39,9 @@ primary_region = 'sea'
     timeout = 1000
 
 [[vm]]
-  memory = '2gb'
+  memory = '4gb'
   cpu_kind = 'shared'
-  cpus = 1
+  cpus = 2
 
 [[metrics]]
   port = 8080

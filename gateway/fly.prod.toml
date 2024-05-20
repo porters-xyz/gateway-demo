@@ -22,7 +22,7 @@ primary_region = 'sea'
   internal_port = 9000
   force_https = true
   auto_stop_machines = false 
-  auto_start_machines = false
+  auto_start_machines = true
   processes = ['app']
   [[http_service.checks]]
     grace_period = '2s'

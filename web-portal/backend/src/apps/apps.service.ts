@@ -101,12 +101,8 @@ export class AppsService {
 
   async updateApp(appId: string, updateAppDto: any) {
     const updatedApp = await this.prisma.client.app.update({
-      where: {
-        id: appId, deletedAt: {
-          not: null
-        }
-      },
-      data: updateAppDto,
+      where: {id: appId, deletedAt: { not : null }},
+      data: {...updateAppDto},
     });
 
     if (!updatedApp) {
@@ -123,7 +119,7 @@ export class AppsService {
     const deletedAt = new Date()
 
     const deletedApp = await this.prisma.client.app.update({
-      where: { id: appId },
+      where: { id: appId, deletedAt: { not: null } },
       data: { deletedAt },
     });
 

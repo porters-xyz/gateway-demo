@@ -77,7 +77,6 @@ export interface IBill {
     createdAt?: string;
     transactionType?: string;
     productId?: string;
-    network?: string;
 }
 
 export interface IToken {

@@ -75,12 +75,7 @@ export default function RateLimitForm() {
       key={val}
       withRemoveButton
       onRemove={() => handleValueRemove(val)}
-      size="lg"
       m={2}
-      bg="blue"
-      style={{
-        color: "white",
-      }}
     >
       {val
         ?.replace("P1D", "Daily")

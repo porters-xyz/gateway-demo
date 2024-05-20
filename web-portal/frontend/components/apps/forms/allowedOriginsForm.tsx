@@ -65,11 +65,9 @@ export default function AllowedOriginsForm() {
           placeholder="Enter a valid Url"
           type="url"
           inputWrapperOrder={["label", "input", "description"]}
-          style={{ width: "100%" }}
           {...form.getInputProps("url")}
         />
         <Button
-          h={36}
           onClick={() => {
             if (formValidation().hasErrors) return;
             setValue((current: any) => [form.values.url, ...current]),

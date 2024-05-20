@@ -44,12 +44,7 @@ export default function AllowedUserAgentsForm() {
       key={item}
       withRemoveButton
       onRemove={() => handleValueRemove(item)}
-      size="lg"
       m={2}
-      bg={"blue"}
-      style={{
-        color: "white",
-      }}
     >
       {item}
     </Pill>

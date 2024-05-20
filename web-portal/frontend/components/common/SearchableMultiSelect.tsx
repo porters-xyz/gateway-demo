@@ -39,9 +39,6 @@ export function SearchableMultiSelect({
       key={item}
       withRemoveButton
       onRemove={() => handleValueRemove(item)}
-      bg="blue"
-      c="#fff"
-      size="lg"
     >
       {item}
     </Pill>

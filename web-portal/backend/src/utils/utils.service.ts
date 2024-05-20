@@ -10,7 +10,6 @@ interface IParsedLog {
   amount: number;
   referenceId: string;
   transactionType: TransactionType;
-  network: string;
 }
 
 const portrAddress = '0x54d5f8a0e0f06991e63e46420bcee1af7d9fe944';
@@ -222,10 +221,9 @@ export class UtilsService {
   parseLogs(logs: any[], network: string): IParsedLog[] {
     return logs.map((log: any) => ({
       tenantId: fromHex(log?.args?._identifier, 'string').replaceAll(`\x00`, ''),
-      amount: Number(log?.args?._amount),
-      referenceId: log.transactionHash!,
+      amount: Number(log?.args?._amount * 10 ** -12),
+      referenceId: network + `:` + log.transactionHash!,
       transactionType: TransactionType.CREDIT!,
-      network
     }));
   }
 

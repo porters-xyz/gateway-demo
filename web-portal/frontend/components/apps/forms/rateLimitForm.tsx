@@ -115,7 +115,6 @@ export default function RateLimitForm() {
           {...form.getInputProps("period")}
         />
         <Button
-          h={36}
           onClick={() => {
             if (formValidation().hasErrors) return;
             if (value.some((v) => v.includes(form.values.period))) {

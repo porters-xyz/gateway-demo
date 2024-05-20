@@ -66,7 +66,6 @@ export default function AllowedUserAgentsForm() {
           {...form.getInputProps("userAgent")}
         />
         <Button
-          h={36}
           onClick={() => {
             if (formValidation().hasErrors) return;
             setValue((current: any) => [form.values.userAgent, ...current]),

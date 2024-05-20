@@ -3,7 +3,7 @@ import { CustomPrismaService } from 'nestjs-prisma';
 import { PrismaClient, TransactionType } from '@/.generated/client';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { parseAbiItem, fromHex, isAddress } from 'viem';
-import { viemClient } from './viemClient';
+import { opClient, baseClient, gnosisClient } from './viemClient';
 
 interface IParsedLog {
   tenantId: string;
@@ -22,7 +22,7 @@ export class UtilsService {
   constructor(
     @Inject('Postgres')
     private prisma: CustomPrismaService<PrismaClient>, // <-- Inject the PrismaClient
-  ) {}
+  ) { }
 
   async getChains() {
     const chains = this.prisma.client.products.findMany({
@@ -168,39 +168,64 @@ export class UtilsService {
 
   @Cron(CronExpression.EVERY_MINUTE)
   async watchEvent() {
-    console.log('Getting Event Logs');
-    const blockNumber = await viemClient.getBlockNumber();
-    const logs = await viemClient.getLogs({
-      event,
-      address: portrAddress,
-      fromBlock: blockNumber - BigInt(1000),
-      toBlock: blockNumber,
-    });
+    console.log('Getting Event Logs from all clients');
 
-    const parsedLogs: IParsedLog[] = logs.map((log: any) => ({
-      tenantId: fromHex(log?.args?._identifier, 'string').replaceAll(
-        `\x00`,
-        '',
-      ),
-      amount: Number(log?.args?._amount),
-      referenceId: log.transactionHash!,
-      transactionType: TransactionType.CREDIT!,
-    }));
+    // Define clients and their respective names
+    const clients = [
+      { client: opClient, name: 'optimism' },
+      { client: gnosisClient, name: 'gnosis' },
+      { client: baseClient, name: 'base' }
+    ];
 
-    console.log({ parsedLogs });
+    // Fetch and parse logs for all clients
+    const allParsedLogs = await Promise.all(
+      clients.map(async ({ client, name }) => {
+        console.log(`Getting Event Logs from ${name}`);
+        const blockNumber = await client.getBlockNumber();
+        const logs = await client.getLogs({
+          event,
+          address: portrAddress,
+          fromBlock: blockNumber - BigInt(1000),
+          toBlock: blockNumber,
+        });
 
-    if (!parsedLogs) console.log('No New Redemptions');
+        return this.parseLogs(logs, name);
+      })
+    );
+
+    const [parsedLogsOP, parsedLogsGnosis, parsedLogsBase] = allParsedLogs;
+
+    console.log({ parsedLogsOP, parsedLogsGnosis, parsedLogsBase });
+
+    if (!parsedLogsOP.length && !parsedLogsGnosis.length && !parsedLogsBase.length) {
+      console.log('No New Redemptions');
+      return;
+    }
 
     // Create records for unique logs
     const appliedLogs = await this.prisma.client.paymentLedger.createMany({
       skipDuplicates: true,
-      data: parsedLogs,
+      data: [...parsedLogsOP, ...parsedLogsGnosis, ...parsedLogsBase],
     });
 
     console.log({ appliedLogs });
 
-    if (!appliedLogs) console.log('Error Applying logs');
-
-    console.log('Applied New logs');
+    if (!appliedLogs) {
+      console.log('Error Applying logs');
+    } else {
+      console.log('Applied New logs');
+    }
   }
+
+  // Helper function to parse logs
+  parseLogs(logs: any[], network: string): IParsedLog[] {
+    return logs.map((log: any) => ({
+      tenantId: fromHex(log?.args?._identifier, 'string').replaceAll(`\x00`, ''),
+      amount: Number(log?.args?._amount * 10 ** -12),
+      // 10 ** -18 (to parse to human readable) * 10 ** 3 (for 1000 relay per token) * 10 ** 3 for chain weight = 10 ** -12
+      referenceId: network + `:` + log.transactionHash!,
+      transactionType: TransactionType.CREDIT!,
+    }));
+  }
+
 }

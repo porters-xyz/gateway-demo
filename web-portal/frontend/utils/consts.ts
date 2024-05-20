@@ -58,7 +58,7 @@ export const supportedChains = [
         id: "8543",
         name: "base",
         exchangeProxy: `0xdef1c0ded9bec7f1a1670819833240f027b25eff` as Address,
-        portrAddress: "to-be-deployed",
+        portrAddress: "0x54d5f8a0e0f06991e63e46420bcee1af7d9fe944",
     },
 ];
 

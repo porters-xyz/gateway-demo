@@ -164,10 +164,7 @@ const Insights: React.FC = () => {
 
 
     const totalRequests =
-        Math.abs(
-            _.get(_.first(formattedData), 'requests', 0) -
-            _.get(_.last(formattedData), 'requests', 0),
-        )
+      _.sumBy(formattedData, 'requests')
 
 
     const successData = totalRequests;

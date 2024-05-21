@@ -24,7 +24,7 @@ func TestTask(t *testing.T) {
     }
 }
 
-// TODO use this test to figure out the right blend
+// this test can be tweaked to figure out the right blend
 // combining is meant to compact multiple updates to redis into one
 // rather than incr + incr + incr just do incrBy 3
 // This costs a bit of compute and complicates the job queue

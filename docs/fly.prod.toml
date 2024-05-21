@@ -6,11 +6,8 @@
 app = 'porters-docs'
 primary_region = 'sea'
 
-[build]
-  build-target = 'production' 
-
 [http_service]
-  internal_port = 3005
+  internal_port = 3000
   auto_stop_machines = true
   auto_start_machines = true
   min_machines_running = 0

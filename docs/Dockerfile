@@ -1,9 +1,7 @@
-FROM node:21-alpine AS build
+FROM node:18 AS build
 
 ENV NEXT_TELEMETRY_DISABLED 1
 
-
-RUN apk add --no-cache libc6-compat
 WORKDIR /app
 COPY . .
 RUN yarn

@@ -17,23 +17,13 @@ import { sessionAtom } from "./atoms";
 
 export const useSession = () => {
     const { address, isConnected } = useAccount();
-    const router = useRouter();
-    const path = usePathname();
     const { data, isLoading, isFetched } = useQuery({
         queryKey: ["session"],
         queryFn: getSession,
-        enabled: !!address && isConnected,
-        refetchInterval: 1000 * 60 * 2,
-        refetchOnMount: true,
+        enabled: address && isConnected,
+        refetchInterval:  60 * 60 * 1000,
+        refetchOnMount: false,
     });
-
-    if (data?.address && path === "/login") {
-        router.push("/dashboard");
-    }
-
-    if (!data?.address && !isLoading && isFetched) {
-        router.push("/login");
-    }
 
     return { data, isLoading, isFetched };
 };

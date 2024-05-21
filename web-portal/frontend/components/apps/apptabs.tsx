@@ -25,7 +25,7 @@ const AppTabs: React.FC = () => {
       <Tabs.List>
         <Tabs.Tab value="insights">Insights</Tabs.Tab>
         <Tabs.Tab value="endpoints">Endpoints</Tabs.Tab>
-        <Tabs.Tab value="usage">Usage</Tabs.Tab>
+        {/*  TOOD: Future- add logs */}
         <Tabs.Tab value="rules">Rules</Tabs.Tab>
       </Tabs.List>
 
@@ -34,9 +34,6 @@ const AppTabs: React.FC = () => {
       </Tabs.Panel>
       <Tabs.Panel value="endpoints" py={20}>
         <EndpointList />
-      </Tabs.Panel>
-      <Tabs.Panel value="usage" py={20}>
-        <UsageChart width={"100%"} />
       </Tabs.Panel>
       <Tabs.Panel value="rules" pt={16}>
         {ruleTypes.map((rule: IRuleType) => (

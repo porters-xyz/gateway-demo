@@ -11,28 +11,28 @@ export default function WhyOurRPC() {
     return (
         <Container size="md" mt={"xl"}>
             <SectionTitle title="Why Our RPC?" />
-            <Grid align="center" justify="center" m={40}>
+            <Grid align="center" justify="center" mt={20}>
                 <FeatureBlock
-                    image={depin.src}
+                    image={depin}
                     title="DePIN Made Easy"
-                    description="Connect your project to POKT’s powerful DePIN network. The PORTERS gateway abstracts away the Protocol enabling easy access to unstoppable decentralized data."
+                    description="Connect your project to POKT's powerful DePIN network. The PORTERS gateway abstracts away the Protocol enabling easy access to unstoppable decentralized data."
                 />
                 <FeatureBlock
-                    image={devCentricity.src}
+                    image={devCentricity}
                     title="Developer Centricity"
                     description="PORTERS offers a plug-and-play developer experience.
                     We make collaboration and sharing easy for everyone without sacrificing security and permissions management."
                 />
 
                 <FeatureBlock
-                    image={scale.src}
+                    image={scale}
                     title="Scalable Tooling"
                     description="PORTERS provides scalable and robust developer tooling.
                     Adjusting RPC usage to your needs when you need it. Never worry about data availability or API key permissions again."
                 />
 
                 <FeatureBlock
-                    image={noRamp.src}
+                    image={noRamp}
                     title="No Ramps Needed"
                     description="At PORTERS we want you to be flexible. You can simply swap your favourite token to PORTERS and get your RPC endpoint funded instantly.
           No credit card needed, no hidden fees, and no vendor lock-in."

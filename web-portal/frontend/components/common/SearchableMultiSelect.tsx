@@ -6,6 +6,8 @@ import {
   Pill,
   PillsInput,
   useCombobox,
+  ScrollArea,
+  Text
 } from "@mantine/core";
 
 export function SearchableMultiSelect({
@@ -37,9 +39,6 @@ export function SearchableMultiSelect({
       key={item}
       withRemoveButton
       onRemove={() => handleValueRemove(item)}
-      bg="blue"
-      c="#fff"
-      size="lg"
     >
       {item}
     </Pill>
@@ -61,9 +60,15 @@ export function SearchableMultiSelect({
       store={combobox}
       onOptionSubmit={handleValueSelect}
       withinPortal={true}
+      size="md"
     >
-      <Combobox.DropdownTarget>
-        <PillsInput onClick={() => combobox.openDropdown()}>
+      <Combobox.DropdownTarget >
+        <PillsInput onClick={() => combobox.openDropdown()} size="md" styles={{
+          input: {
+            backgroundColor:'#FEFCFA'
+          },
+
+        }}>
           <Pill.Group>
             {values}
 
@@ -89,14 +94,21 @@ export function SearchableMultiSelect({
         </PillsInput>
       </Combobox.DropdownTarget>
 
-      <Combobox.Dropdown>
+      <Combobox.Dropdown style={{
+        backgroundColor:'#FEFCFA'
+      }}>
+      <ScrollArea.Autosize mah={200} type="scroll">
         <Combobox.Options>
+        <Combobox.Header>
+                    <Text fz="xs">Scroll to see more networks</Text>
+                  </Combobox.Header>
           {options.length > 0 ? (
             options
           ) : (
             <Combobox.Empty>Nothing found...</Combobox.Empty>
           )}
         </Combobox.Options>
+        </ScrollArea.Autosize>
       </Combobox.Dropdown>
     </Combobox>
   );

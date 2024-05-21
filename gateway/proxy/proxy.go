@@ -4,7 +4,7 @@ import (
     "context"
     "errors"
     "fmt"
-    "log"
+    log "log/slog"
     "net/url"
     "net/http"
     "net/http/httputil"
@@ -23,15 +23,14 @@ func Start() {
     // TODO grab url for gateway kit
     proxyUrl := common.GetConfig(common.PROXY_TO)
     remote, err := url.Parse(proxyUrl)
-    log.Println("remote", remote)
     if err != nil {
-        // TODO probably panic here, can't proxy anywhere
-        log.Println(err)
+        log.Error("unable to parse proxy to", "err", err)
+        panic("unable to start with invalid remote url")
     }
+    log.Debug("proxying to remote", "url", remote)
 
     handler := func(proxy *httputil.ReverseProxy) func(http.ResponseWriter, *http.Request) {
         return func(resp http.ResponseWriter, req *http.Request) {
-            log.Println(req.URL)
             setupContext(req)
             proxy.ServeHTTP(resp, req)
         }
@@ -51,7 +50,7 @@ func Start() {
     go func() {
         err := server.ListenAndServe()
         if err != nil {
-            log.Println("server error", err)
+            log.Error("server error encountered", "err", err)
         }
     }()
 }
@@ -64,9 +63,9 @@ func Stop() {
 
     err := server.Shutdown(ctx)
     if err != nil {
-        log.Println("error shutting down", err)
+        log.Error("error shutting down", "err", err)
     } else {
-        log.Println("shutdown successful")
+        log.Info("shutdown successful")
     }
 }
 
@@ -89,14 +88,12 @@ func setupProxy(remote *url.URL) *httputil.ReverseProxy {
         poktId := lookupPoktId(req)
         target := utils.NewTarget(remote, poktId)
         req.URL = target.URL()
-        log.Println("proxying to", target.URL())
 
         cancel := RequestCanceler(req)
 
         for _, p := range (*reg).plugins {
             h, ok := p.(PreHandler)
             if ok {
-                log.Println("encountered", p.Name())
                 select {
                 case <-req.Context().Done():
                     return
@@ -113,13 +110,36 @@ func setupProxy(remote *url.URL) *httputil.ReverseProxy {
         lifecycle := lifecycleFromContext(req.Context())
         if !lifecycle.checkComplete() {
             err := LifecycleIncompleteError
-            log.Println("lifecycle incomplete", lifecycle)
+            log.Debug("lifecycle incomplete", "mask", lifecycle)
             cancel(err)
+        }
+
+        if common.Enabled(common.INSTRUMENT_ENABLED) {
+            ctx := req.Context()
+            instr, ok := common.FromContext(ctx, common.INSTRUMENT)
+            if ok {
+                start := instr.(*common.Instrument).Timestamp
+                elapsed := time.Now().Sub(start)
+                common.LatencyHistogram.WithLabelValues("setup").Observe(float64(elapsed))
+
+                ctx = common.UpdateContext(ctx, common.StartInstrument())
+                *req = *req.WithContext(ctx)
+            }
         }
     }
 
     revProxy.ModifyResponse = func(resp *http.Response) error {
         ctx := resp.Request.Context()
+
+        if common.Enabled(common.INSTRUMENT_ENABLED) {
+            instr, ok := common.FromContext(ctx, common.INSTRUMENT)
+            if ok {
+                start := instr.(*common.Instrument).Timestamp
+                elapsed := time.Now().Sub(start)
+                common.LatencyHistogram.WithLabelValues("serve").Observe(float64(elapsed))
+            }
+        }
+
         var err error
         for _, p := range (*reg).plugins {
             h, ok := p.(PostHandler)
@@ -136,7 +156,6 @@ func setupProxy(remote *url.URL) *httputil.ReverseProxy {
             common.GetTaskQueue().Add(updater)
         }
 
-        log.Println("returning", err)
         return err
     }
 
@@ -149,7 +168,7 @@ func setupProxy(remote *url.URL) *httputil.ReverseProxy {
         updater := db.NewUsageUpdater(ctx, "failure")
         common.GetTaskQueue().Add(updater)
         
-        log.Println("cancel cause", cause)
+        log.Debug("cancel cause", "cause", cause)
         if errors.As(cause, &httpErr) {
             status := httpErr.code
             http.Error(resp, http.StatusText(status), status)
@@ -165,8 +184,11 @@ func setupProxy(remote *url.URL) *httputil.ReverseProxy {
 func setupContext(req *http.Request) {
     // TODO read ctx from request and make any modifications
     ctx := req.Context()
-    lifecyclectx := common.UpdateContext(ctx, &Lifecycle{})
-    *req = *req.WithContext(lifecyclectx)
+    ctx = common.UpdateContext(ctx, &Lifecycle{})
+    if common.Enabled(common.INSTRUMENT_ENABLED) {
+        ctx = common.UpdateContext(ctx, common.StartInstrument())
+    }
+    *req = *req.WithContext(ctx)
 }
 
 func lookupPoktId(req *http.Request) string {
@@ -176,7 +198,7 @@ func lookupPoktId(req *http.Request) string {
     err := product.Lookup(ctx)
     if err != nil {
         // TODO pick appropriate HTTP code
-        log.Println("product not found", err)
+        log.Error("product not found", "product", product.Name, "err", err)
     }
     productCtx := common.UpdateContext(ctx, product) 
     *req = *req.WithContext(productCtx)

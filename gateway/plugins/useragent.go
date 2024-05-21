@@ -2,7 +2,7 @@ package plugins
 
 import (
     "context"
-    "log"
+    log "log/slog"
     "net/http"
     "regexp"
 
@@ -27,7 +27,7 @@ func (u *UserAgentFilter) Key() string {
 }
 
 func (u *UserAgentFilter) Load() {
-    log.Println("Loading", u.Name())
+    log.Debug("Loading plugin", "plugin", u.Name())
 }
 
 func (u *UserAgentFilter) HandleRequest(req *http.Request) error {
@@ -60,7 +60,7 @@ func (u *UserAgentFilter) getRulesForScope(ctx context.Context, app *db.App) []r
     useragents := make([]regexp.Regexp, 0)
     rules, err := app.Rules(ctx)
     if err != nil {
-        log.Println("couldn't get rules", err)
+        log.Error("couldn't get rules", "err", err)
     } else {
         for _, rule := range rules {
             if rule.RuleType != UA_TYPE_ID || !rule.Active {
@@ -68,7 +68,7 @@ func (u *UserAgentFilter) getRulesForScope(ctx context.Context, app *db.App) []r
             }
             matcher, err := regexp.Compile(rule.Value)
             if err != nil {
-                log.Println("unable to compile regexp", err)
+                log.Error("unable to compile regexp", "regex", rule.Value, "err", err)
             } else {
                 useragents = append(useragents, *matcher)
             }

@@ -1,7 +1,7 @@
 package plugins
 
 import (
-    "log"
+    log "log/slog"
     "net/http"
 
     "porters/common"
@@ -14,7 +14,7 @@ type NoopFilter struct {
 }
 
 func (n NoopFilter) Load() {
-    log.Println("loading " + n.Name())
+    log.Debug("loading plugin", "plugin", n.Name())
 }
 
 func (n NoopFilter) Name() string {

@@ -75,12 +75,7 @@ export default function RateLimitForm() {
       key={val}
       withRemoveButton
       onRemove={() => handleValueRemove(val)}
-      size="lg"
       m={2}
-      bg="blue"
-      style={{
-        color: "white",
-      }}
     >
       {val
         ?.replace("P1D", "Daily")
@@ -115,7 +110,6 @@ export default function RateLimitForm() {
           {...form.getInputProps("period")}
         />
         <Button
-          h={36}
           onClick={() => {
             if (formValidation().hasErrors) return;
             if (value.some((v) => v.includes(form.values.period))) {

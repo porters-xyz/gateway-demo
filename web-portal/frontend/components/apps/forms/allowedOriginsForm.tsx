@@ -46,12 +46,7 @@ export default function AllowedOriginsForm() {
       key={item}
       withRemoveButton
       onRemove={() => handleValueRemove(item)}
-      size="lg"
       m={2}
-      bg={"blue"}
-      style={{
-        color: "white",
-      }}
     >
       {item}
     </Pill>
@@ -65,11 +60,9 @@ export default function AllowedOriginsForm() {
           placeholder="Enter a valid Url"
           type="url"
           inputWrapperOrder={["label", "input", "description"]}
-          style={{ width: "100%" }}
           {...form.getInputProps("url")}
         />
         <Button
-          h={36}
           onClick={() => {
             if (formValidation().hasErrors) return;
             setValue((current: any) => [form.values.url, ...current]),

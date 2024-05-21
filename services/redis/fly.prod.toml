@@ -1,4 +1,5 @@
 app = 'porters-redis'
+primary_region = 'sea'
 
 [mounts]
   destination = "/data"

@@ -23,12 +23,7 @@ const AppRules: React.FC<{ rule: Partial<IRuleType> }> = ({ rule }) => {
   const values = existingData?.map((item) => (
     <Pill
       key={item.ruleId}
-      size="lg"
       m={2}
-      bg={"blue"}
-      style={{
-        color: "white",
-      }}
     >
       {item.value
         ?.replace("P1D", "Daily")

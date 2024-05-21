@@ -1,6 +1,6 @@
 module porters
 
-go 1.21
+go 1.21.9
 
 require (
 	github.com/go-redis/redis_rate/v10 v10.0.1

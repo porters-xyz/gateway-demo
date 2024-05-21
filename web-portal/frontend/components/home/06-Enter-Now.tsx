@@ -7,6 +7,7 @@ import { useViewportSize } from "@mantine/hooks";
 export default function EnterNow() {
     const { width } = useViewportSize();
     const isMobile = width < 580;
+    const isSuperSmall = width < 400
     return (
         <Container
             style={{
@@ -15,8 +16,8 @@ export default function EnterNow() {
         >
             <Image
                 src={enterNow.src}
-                width={isMobile ? enterNow.width / 4 : enterNow.width / 3}
-                height={isMobile ? enterNow.height / 4 : enterNow.height / 3}
+                width={enterNow.width / (isMobile ? isSuperSmall ? 4.5 : 5 : 3)}
+                height={enterNow.height / (isMobile ? isSuperSmall ? 4.5 : 5 : 3)}
                 alt="Enter the Porters Gateway"
             />
             <Flex

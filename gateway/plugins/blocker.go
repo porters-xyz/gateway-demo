@@ -3,14 +3,14 @@ package plugins
 import (
     "errors"
     "fmt"
-    "log"
+    log "log/slog"
     "net/http"
 )
 
 type Blocker struct {}
 
 func (b Blocker) Load() {
-    log.Println("loading " + b.Name())
+    log.Debug("loading plugin", "plugin", b.Name())
 }
 
 func (b Blocker) Name() string {
@@ -22,11 +22,11 @@ func (b Blocker) Key() string {
 }
 
 func (b Blocker) HandleRequest(req *http.Request) error {
-    log.Println("logging block")
+    log.Debug("logging block, used for testing")
     return errors.New(fmt.Sprint("blocked by prehandler", b.Name()))
 }
 
 func (b Blocker) HandleResponse(resp *http.Response) error {
-    log.Println("logging block (post)")
+    log.Debug("logging block after proxy, used for testing")
     return errors.New(fmt.Sprint("blocked by posthandler", b.Name()))
 }

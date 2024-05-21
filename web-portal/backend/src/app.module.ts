@@ -1,5 +1,5 @@
+import { APP_GUARD } from '@nestjs/core'
 import { Module } from '@nestjs/common';
-import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
 import { CustomPrismaModule } from 'nestjs-prisma';
 import { PrismaClient } from '@/.generated/client';
@@ -10,6 +10,10 @@ import { UserModule } from './user/user.module';
 import { AppsModule } from './apps/apps.module';
 import { OrgModule } from './org/org.module';
 import { UtilsModule } from './utils/utils.module';
+import { UsageModule } from './usage/usage.module';
+import { SiweService } from './siwe/siwe.service';
+import { AuthGuard } from './guards/auth.guard';
+import { AppsService } from './apps/apps.service';
 
 @Module({
   imports: [
@@ -27,8 +31,16 @@ import { UtilsModule } from './utils/utils.module';
     AppsModule,
     OrgModule,
     UtilsModule,
+    UsageModule,
   ],
-  providers: [AppService],
+  providers: [
+    SiweService,
+    AppsService,
+    {
+      provide: APP_GUARD,
+      useClass: AuthGuard,
+    }
+  ],
   controllers: [AppController],
 })
-export class AppModule {}
+export class AppModule { }

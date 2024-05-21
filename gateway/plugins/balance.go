@@ -5,7 +5,7 @@ package plugins
 import (
     "context"
     "fmt"
-    "log"
+    log "log/slog"
     "net/http"
 
     "porters/common"
@@ -38,7 +38,7 @@ func (b *BalanceTracker) Key() string {
 
 func (b *BalanceTracker) Load() {
     // Setup any plugin state
-    log.Println("Loading", b.Name())
+    log.Debug("Loading plugin", "plugin", b.Name())
 }
 
 // TODO optim: script this to avoid multi-hops
@@ -47,7 +47,6 @@ func (b *BalanceTracker) HandleRequest(req *http.Request) error {
     appId := proxy.PluckAppId(req)
     app := &db.App{Id: appId}
     err := app.Lookup(ctx)
-    log.Println("app:", app)
     if err != nil {
         return proxy.NewHTTPError(http.StatusNotFound)
     }
@@ -63,12 +62,11 @@ func (b *BalanceTracker) HandleRequest(req *http.Request) error {
     ctx = common.UpdateContext(ctx, app)
     // TODO Check that balance is greater than or equal to req weight
     if bal.cachedBalance > 0 {
-        log.Println("balance remaining")
         lifecycle := proxy.SetStageComplete(ctx, proxy.BalanceCheck|proxy.AccountLookup)
         ctx = common.UpdateContext(ctx, lifecycle)
         *req = *req.WithContext(ctx)
     } else {
-        log.Println("none remaining", appId)
+        log.Debug("no balance remaining", "app", app.HashId())
         return proxy.BalanceExceededError
     }
     return nil

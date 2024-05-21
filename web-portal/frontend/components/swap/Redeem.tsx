@@ -11,6 +11,8 @@ import { useChainId, useWriteContract, useSwitchChain } from "wagmi";
 import { toHex, zeroAddress } from "viem";
 
 import { abi } from "@frontend/utils/abi";
+import { useAtomValue } from "jotai";
+import { sessionAtom } from "@frontend/utils/atoms";
 
 // Common styles for TextInput and Select components
 const commonStyles = {
@@ -31,6 +33,8 @@ const chainOptions = _.map(chains, "name").filter(
 );
 
 export default function Redeem() {
+    const session = useAtomValue(sessionAtom)
+    const balance = _.get(_.first(_.get(session, 'netBalance')), 'net', 0)
     const [selectedChainId, setSelectedChainId] = useState(10);
     const selectedChain = _.find(
         chains,
@@ -44,7 +48,7 @@ export default function Redeem() {
 
     const { data: selectedTokenBalance } = useTokenBalance({
         token: portrTokenData.address,
-        chainId: portrTokenData?.chainId,
+        chainId: selectedChainId,
     });
 
     const { values, getInputProps, setFieldValue } = useForm({
@@ -54,7 +58,7 @@ export default function Redeem() {
                 val > Number(_.get(selectedTokenBalance, "formatted", 0)),
         },
         initialValues: {
-            accountId: "",
+            accountId: _.get(session, 'tenantId'),
             redeemValue: 0,
         },
     });
@@ -90,15 +94,10 @@ export default function Redeem() {
             args: [hexAccountId, bigNumberRedeem],
         });
 
-        console.log("Attempt was made");
+        console.log("Redeem Attempt was made");
     };
 
-    console.log({
-        handleRedeem,
-        writeContractAsync,
-        hexAccountId,
-        bigNumberRedeem,
-    });
+
 
     return (
         <Stack p={8} mt={10}>
@@ -209,8 +208,7 @@ export default function Redeem() {
                     alignItems: "flex-end",
                     justifyContent: "space-between",
                     border: "1px solid #00000010",
-                    paddingLeft: 8,
-                    paddingTop: 8,
+                    padding: 8,
                     backgroundColor: "#F6EEE6",
                 }}
             >
@@ -235,11 +233,14 @@ export default function Redeem() {
                 }}
             >
                 <TextInput
-                    label="New Balance"
+                    label={
+                    redeemValue ? "New Balance" : "Current Balance"}
                     styles={{
                         ...commonStyles,
                         input: { ...commonStyles.input, fill: "#fff" },
                     }}
+                    value={
+                      balance + (redeemValue * 10 ** 6)}
                     readOnly
                 />
             </Flex>

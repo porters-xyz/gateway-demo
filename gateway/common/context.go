@@ -2,10 +2,19 @@ package common
 
 import (
     "context"
+    "time"
+)
+
+const (
+    INSTRUMENT string = "INSTRUMENT_START"
 )
 
 type Contextable interface {
     ContextKey() string
+}
+
+type Instrument struct {
+    Timestamp time.Time
 }
 
 func UpdateContext(ctx context.Context, entity Contextable) context.Context {
@@ -19,4 +28,14 @@ func FromContext(ctx context.Context, contextkey string) (any, bool) {
     } else {
         return nil, false
     }
+}
+
+func StartInstrument() *Instrument {
+    return &Instrument{
+        Timestamp: time.Now(),
+    }
+}
+
+func (i *Instrument) ContextKey() string {
+    return INSTRUMENT
 }

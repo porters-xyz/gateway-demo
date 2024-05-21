@@ -29,7 +29,7 @@ import sui from "@frontend/public/chains/sui.png";
 import tia from "@frontend/public/chains/tia.png";
 import vlx from "@frontend/public/chains/vlx.png";
 import xrd from "@frontend/public/chains/xrd.png";
-
+import portersIcon from '@frontend/public/favicon.ico'
 export const portrAddress = "0x54d5f8a0e0f06991e63e46420bcee1af7d9fe944";
 
 export const APP_NAME = "Porters Frontend";
@@ -44,7 +44,7 @@ export const portrTokenData: IToken = {
     name: "PORTER Gateway",
     symbol: "PORTR",
     decimals: 18,
-    logoURI: "/favicon.ico",
+    logoURI: portersIcon.src,
 };
 
 export const supportedChains = [
@@ -58,7 +58,13 @@ export const supportedChains = [
         id: "8543",
         name: "base",
         exchangeProxy: `0xdef1c0ded9bec7f1a1670819833240f027b25eff` as Address,
-        portrAddress: "to-be-deployed",
+        portrAddress: "0x54d5f8a0e0f06991e63e46420bcee1af7d9fe944",
+    },
+    {
+        id: "100",
+        name: "gnosis",
+        // exchangeProxy: `0xdef1c0ded9bec7f1a1670819833240f027b25eff` as Address,
+        portrAddress: "0x54d5f8a0e0f06991e63e46420bcee1af7d9fe944",
     },
 ];
 
@@ -92,4 +98,24 @@ export const chainLogos = [
     tia,
     vlx,
     xrd,
+];
+
+
+export const timeOptions = [
+    {
+        option: "1h",
+        format: "HH:mm",
+    },
+    {
+        option: "24h",
+        format: "HH:mm",
+    },
+    {
+        option: "7d",
+        format: "MM/dd",
+    },
+    {
+        option: "30d",
+        format: "MM/dd",
+    },
 ];

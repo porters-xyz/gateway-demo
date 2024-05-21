@@ -1,4 +1,4 @@
-import { createTheme, rem, Button, Input } from "@mantine/core";
+import { createTheme, rem, Button, Modal, TextInput, Select, NumberInput, Textarea, Stack, Pill } from "@mantine/core";
 import { Crimson_Text, Karla, Red_Rose } from "next/font/google";
 export const crimson = Crimson_Text({
   subsets: ["latin"],
@@ -19,13 +19,31 @@ export const redRose = Red_Rose({
   weight: ["400", "600", "500", "700"],
 });
 
+
+const InputProps =  {
+  size: 'md',
+  radius: 'xs',
+  style: {
+    width: '100%',
+    fontFamily: karla.style.fontFamily,
+  },
+  styles:{
+    input: {
+      fontSize: rem(15),
+      height: rem(36),
+      backgroundColor: '#FEFCFA',
+    },
+
+  }
+}
+
 export const theme = createTheme({
   white: "#F6EEE6",
   black: "#3C2B27",
   primaryColor: "carrot",
   colors: {
     umbra: Array(10).fill("#3C2B27") as any,
-    cream: Array(10).fill("#F6EEE6") as any,
+    cream: ['#EAD9CA', "#F6EEE6", "#F6EEE6", "#F6EEE6", "#F6EEE6", "#F6EEE6", "#F6EEE6", "#F6EEE6", "#F6EEE6", "#F6EEE6"],
     brown: Array(10).fill("#F0E3D7") as any,
     gray: Array(10).fill("#00000020") as any,
     blue: Array(10).fill("#22559B") as any,
@@ -68,5 +86,75 @@ export const theme = createTheme({
         },
       },
     }),
+    TextInput: TextInput.extend({
+        defaultProps:InputProps
+    }),
+    Textarea: Textarea.extend({
+        defaultProps: {
+          size: 'md',
+          radius: 'xs',
+          style: {
+            width: '100%',
+            fontFamily: karla.style.fontFamily,
+          },
+          styles:{
+            input: {
+              fontSize: rem(15),
+              backgroundColor: '#FEFCFA',
+              height: 100,
+            },
+          }
+        }
+    }),
+    NumberInput: NumberInput.extend({
+        defaultProps:InputProps
+    }),
+    Select: Select.extend({
+        defaultProps:{
+          size: 'md',
+          radius: 'xs',
+          styles:{
+            input:{
+              backgroundColor: '#FEFCFA',
+            },
+            dropdown: {
+              backgroundColor: '#FEFCFA',
+            }
+          }
+        }
+    }),
+    Pill: Pill.extend({
+      defaultProps:{
+        size: 'xl',
+        bg:"#F9DCBF",
+        style:{
+          color: "#3C2B27",
+          fontFamily: karla.style.fontFamily,
+          fontSize: rem(15),
+          fontWeight: 500
+        }
+      }
+    }),
+    Modal: Modal.extend({
+      defaultProps: {
+        size:'lg',
+        padding: '28 44 28 44',
+        style: {
+          position: 'relative',
+          fontFamily: karla.style.fontFamily,
+        },
+        styles:{
+          title: {
+            fontWeight: 700,
+            fontSize: rem(18),
+          },
+          close: {
+            position: 'fixed',
+            top: 12,
+            right: 12
+          }
+        }
+      }
+    })
   },
 });

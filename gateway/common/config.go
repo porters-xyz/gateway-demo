@@ -1,8 +1,7 @@
 package common
 
 import (
-    "fmt"
-    "log"
+    log "log/slog"
     "os"
     "strconv"
     "sync"
@@ -21,7 +20,7 @@ const (
     REDIS_ADDR            = "REDIS_ADDR"
     REDIS_USER            = "REDIS_USER"
     REDIS_PASSWORD        = "REDIS_PASSWORD"
-    
+    INSTRUMENT_ENABLED    = "ENABLE_INSTRUMENT"
 )
 
 // This may evolve to include config outside env, or use .env file for
@@ -43,6 +42,7 @@ func setupConfig() *Config {
         config.defaults[NUM_WORKERS] = "10"
         config.defaults[HOST] = "localhost"
         config.defaults[PORT] = "9000"
+        config.defaults[INSTRUMENT_ENABLED] = "false"
     })
     return config
 }
@@ -57,7 +57,7 @@ func GetConfig(key string) string {
         if ok {
             return defaultval
         } else {
-            log.Println(fmt.Sprintf("config not set for %s, no default", key))
+            log.Warn("config not set no default", "key", key)
             return ""
         }
     }
@@ -67,8 +67,17 @@ func GetConfigInt(key string) int {
     configval := GetConfig(key)
     intval, err := strconv.Atoi(configval)
     if err != nil {
-        log.Println("Error parsing config", err)
+        log.Error("Error parsing config", "err", err)
         intval = -1
     }
     return intval
+}
+
+func Enabled(key string) bool {
+    configval := GetConfig(key)
+    boolval, err := strconv.ParseBool(configval)
+    if err != nil {
+        boolval = false
+    }
+    return boolval
 }

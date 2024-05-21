@@ -10,7 +10,8 @@ export default function OurStory() {
     const isMobile = width < 580;
     return (
         <Container
-            mt={"xl"}
+            mt="xl"
+            size='xl'
             style={{
                 alignItems: "center",
                 justifyContent: "center",
@@ -22,15 +23,15 @@ export default function OurStory() {
                 <Image
                     src={textDecor.src}
                     alt="porters-origin"
-                    width={textDecor.width / (isMobile ? 4 : 3)}
-                    height={textDecor.height / (isMobile ? 4 : 3)}
+                    width={textDecor.width / (isMobile ? 4.5 : 3)}
+                    height={textDecor.height / (isMobile ? 4.5 : 3)}
                     style={{ transform: `rotate(180deg)`, marginTop: 48 }}
                 />
 
-                <Group align="center" justify="center">
+                <Stack align="center" justify="center" >
                     <Text
                         p={isMobile ? 12 : 16}
-                        w={textDecor.width / (isMobile ? 4 : 3)}
+                        w={textDecor.width / (isMobile ? 4.5 : 3)}
                         style={{
                             fontFamily: crimson.style.fontFamily,
                             fontSize: isMobile ? 18 : 20,
@@ -43,7 +44,7 @@ export default function OurStory() {
                         – a sovereign RPC gateway on POKT.
                     </Text>
                     <Text
-                        w={textDecor.width / (isMobile ? 4 : 3)}
+                        w={textDecor.width / (isMobile ? 4.5 : 3)}
                         p={isMobile ? 12 : 16}
                         style={{
                             fontFamily: crimson.style.fontFamily,
@@ -56,12 +57,12 @@ export default function OurStory() {
                         developers. We carry on the torch RaidGuild once
                         lightened for leading Web3 out of the dark ages.
                     </Text>
-                </Group>
+                </Stack>
                 <Image
                     src={textDecor.src}
                     alt="porters-origin"
-                    width={textDecor.width / (isMobile ? 4 : 3)}
-                    height={textDecor.height / (isMobile ? 4 : 3)}
+                    width={textDecor.width / (isMobile ? 4.5 : 3)}
+                    height={textDecor.height / (isMobile ? 4.5 : 3)}
                 />
             </Stack>
         </Container>

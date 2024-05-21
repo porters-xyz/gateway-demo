@@ -44,12 +44,7 @@ export default function AllowedUserAgentsForm() {
       key={item}
       withRemoveButton
       onRemove={() => handleValueRemove(item)}
-      size="lg"
       m={2}
-      bg={"blue"}
-      style={{
-        color: "white",
-      }}
     >
       {item}
     </Pill>
@@ -66,7 +61,6 @@ export default function AllowedUserAgentsForm() {
           {...form.getInputProps("userAgent")}
         />
         <Button
-          h={36}
           onClick={() => {
             if (formValidation().hasErrors) return;
             setValue((current: any) => [form.values.userAgent, ...current]),

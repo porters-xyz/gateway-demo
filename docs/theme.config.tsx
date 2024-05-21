@@ -12,7 +12,7 @@ const config: DocsThemeConfig = {
   docsRepositoryBase:
     "https://github.com/porters-xyz/gateway-demo/tree/master/docs",
   footer: {
-    text: "Open Gateway Documentation",
+    text: "Porters RPC Gateway Documentation",
   },
 };
 

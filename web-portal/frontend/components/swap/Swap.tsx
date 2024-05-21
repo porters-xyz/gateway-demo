@@ -100,7 +100,7 @@ export default function Swap() {
             selectedTokenData?.address === defaultToken?.address
                 ? undefined
                 : selectedTokenData?.address!,
-        chainId: selectedTokenData?.chainId!,
+        chainId: selectedChainId,
     });
 
     const { data: selectedTokenPrice } = useTokenPrice({

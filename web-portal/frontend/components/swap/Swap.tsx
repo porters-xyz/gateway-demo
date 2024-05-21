@@ -48,7 +48,7 @@ const commonStyles = {
     },
 };
 
-const chainOptions = _.map(chains, "name").filter((c) => !c.includes("Eth"));
+const chainOptions = _.map(chains, "name").filter((c) => !c.includes("Eth") && !c.includes('Gno'));
 
 export default function Swap() {
     // Network/Token data

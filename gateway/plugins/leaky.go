@@ -30,7 +30,7 @@ func (l *LeakyBucketPlugin) Key() string {
 }
 
 func (l *LeakyBucketPlugin) Load() {
-    // TODO initialize
+    // Nothing to do
 }
 
 func (l *LeakyBucketPlugin) HandleRequest(req *http.Request) error {
@@ -46,7 +46,6 @@ func (l *LeakyBucketPlugin) HandleRequest(req *http.Request) error {
     for k, v := range buckets {
         res, err := limiter.Allow(ctx, k, v)
         if err != nil {
-            // TODO make into appropriate http code
             return proxy.NewHTTPError(http.StatusBadGateway)
         }
 
@@ -54,7 +53,6 @@ func (l *LeakyBucketPlugin) HandleRequest(req *http.Request) error {
 
         // rate limited
         if res.Allowed == 0 {
-            // TODO set retry-after header
             return proxy.NewRateLimitError(v.Rate, v.Period)
         }
     }
@@ -68,7 +66,6 @@ func (l *LeakyBucketPlugin) getBucketsForScope(ctx context.Context, app *db.App)
     buckets := make(map[string]rl.Limit)
     rules, err := app.Rules(ctx)
     if err != nil {
-        // TODO should this stop all proxying?
         log.Error("error getting rules", "app", app.HashId(), "err", err)
         return buckets
     }

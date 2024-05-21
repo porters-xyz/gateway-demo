@@ -38,8 +38,8 @@ export class UsageService {
     step: number | string,
   ): Promise<Response> {
 
-    const url = `https://api.fly.io/prometheus/porters-staging/api/v1/query_range?query=sum(${query})&start=${start}&end=now&step=${step}`;
-
+    const url = process.env.PROM_URL +`query_range?query=sum(increase(${query}))&start=${start}&end=now&step=${step}`;
+    // do include `/` into url
     const result = await fetch(url, {
       headers: {
         Authorization: String(process.env.PROM_TOKEN),
@@ -59,7 +59,7 @@ export class UsageService {
       case '24h':
         return '1h';
       case '1h':
-        return '1m';
+        return '5m';
       case '7d':
         return '1d';
       case '30d':

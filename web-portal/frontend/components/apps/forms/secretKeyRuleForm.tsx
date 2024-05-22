@@ -127,7 +127,7 @@ export default function SecretKeyForm() {
             router.push(`/apps/${appId}?i=rules`);
           }}
           variant="outline"
-          color="black"
+          color="#856853"
           loading={isPending && !isSuccess && action === "delete"}
           mt={16}
         >

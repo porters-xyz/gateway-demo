@@ -96,9 +96,9 @@ export default function App() {
                     <Button
                         onClick={() => router.replace(`${path}?edit=1`)}
                         variant="outline"
-                        color="umbra.1"
+                        color="#856853"
                     >
-                        Update
+                        Edit
                     </Button>
                 </Flex>
                 <Tooltip.Floating

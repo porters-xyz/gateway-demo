@@ -26,8 +26,6 @@ func (c Counter) Field() string {
 }
 
 // Just count all requests
-// and add header for now
-// TODO make this asynchronous and remove header set
 func (c Counter) HandleResponse(resp *http.Response) error {
     newCount := db.IncrementCounter(resp.Request.Context(), c.Key(), 1)
     log.Debug("counting request", "count", newCount)

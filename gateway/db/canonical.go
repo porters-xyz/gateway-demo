@@ -35,8 +35,8 @@ func getCanonicalDB() *sql.DB {
         connStr := common.GetConfig(common.DATABASE_URL)
         connector, err := pq.NewConnector(connStr)
         if err != nil {
-            // TODO handle nicely, maybe retry?
             log.Error("Cannot connect to postgres", "err", err)
+            panic("database required")
         }
         postgresPool = sql.OpenDB(connector)
     })
@@ -47,12 +47,6 @@ func getCanonicalDB() *sql.DB {
 func (c *Canonical) Conn(ctx context.Context) (*sql.Conn, error) {
     db := getCanonicalDB()
     return db.Conn(ctx)
-}
-
-// TODO switch this to send to prometheus
-func (c *Canonical) Report() sql.DBStats {
-    db := getCanonicalDB()
-    return db.Stats()
 }
 
 func (c *Canonical) Healthcheck() *common.HealthCheckStatus {
@@ -82,7 +76,6 @@ func (t *Tenant) fetch(ctx context.Context) error {
 // cached balance is counted down as relays are used
 // cached balance is incremented on new CREDIT txns and and needs to track last
 // "createdAt"
-// TODO needs to take un-reconciled RelayLedger entries into account as well 
 func (t *Tenant) canonicalBalance(ctx context.Context) error {
     db := getCanonicalDB()
     query := `SELECT payment.balance - relay.usage as net FROM
@@ -115,7 +108,6 @@ func (a *App) fetch(ctx context.Context) error {
 func (a *App) fetchRules(ctx context.Context) (Apprules, error) {
     rules := make([]Apprule, 0)
     db := getCanonicalDB()
-    // TODO join with rule types
     rows, err := db.QueryContext(ctx, `SELECT "AppRule".id, "AppRule".value, "AppRule".active, "RuleType".name FROM "AppRule", "RuleType" WHERE "AppRule"."appId" = $1 AND "AppRule"."deletedAt" IS NULL AND "RuleType".active = '1' AND "AppRule"."ruleId" = "RuleType"."id"`, a.Id)
     if err != nil {
         return nil, err
@@ -145,9 +137,7 @@ func (p *Product) fetch(ctx context.Context) error {
 }
 
 func (rtx *Relaytx) write(ctx context.Context) error {
-    // TODO write CREDITS to postgres
     db := getCanonicalDB()
-    // TODO change schema to include app id
     res, err := db.ExecContext(ctx, `INSERT INTO "RelayLedger"
         ("id", "tenantId", "referenceId", "amount", "productId", "transactionType")
         VALUES

@@ -86,7 +86,6 @@ type Relaytx struct {
     TxType TxType
 }
 
-// TODO this needs to be added to postgres schema
 // Allow multiple names for same underlying product
 // product miss means subdomain on endpoint doesn't match known product
 type Product struct {
@@ -130,7 +129,6 @@ func (ar *Apprule) Key() string {
     return fmt.Sprintf("%s:%s:%s", APPRULE, ar.App.Id, ar.Id)
 }
 
-// TODO sort out how this is used
 func (r *Relaytx) Key() string {
     return fmt.Sprintf("%s:%s:%s", RELAYTX, r.AppId, r.ProductName)
 }

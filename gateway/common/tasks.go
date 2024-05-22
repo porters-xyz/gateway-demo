@@ -7,8 +7,6 @@ import (
     "time"
 )
 
-// TODO make it "pluggable" so different types of tasks can operate off queue
-
 type Runnable interface {
     error
     Run()
@@ -57,7 +55,6 @@ func GetTaskQueue() *TaskQueue {
     return qInst
 }
 
-// TODO include workers to clear out error channel
 func (q *TaskQueue) SetupWorkers() {
     numWorkers := GetConfigInt(NUM_WORKERS)
     for i := 0; i < numWorkers; i++ {
@@ -117,7 +114,6 @@ func worker(q *TaskQueue) {
     }
 }
 
-// TODO do more than log
 func errWorker(q *TaskQueue) {
     for err := range q.errors {
         log.Error("error encountered", "err", err)
@@ -129,7 +125,6 @@ func delayWorker(q *TaskQueue) {
     for i:=len(q.delayed); i>0; i-- {
         task := <- q.delayed
         if q.closed {
-            // TODO log delayed tasks details for cleanup
             q.ReportError(errors.New("Shutting down"))
         } else if task.Ready() {
             q.Add(task)
@@ -139,6 +134,13 @@ func delayWorker(q *TaskQueue) {
         }
     }
     time.Sleep(1 * time.Second)
+}
+
+func NewSimpleTask(run func()) *SimpleTask {
+    return &SimpleTask{
+        run: run,
+        runtime: time.Now(),
+    }
 }
 
 // SimpleTask can be extended if needed

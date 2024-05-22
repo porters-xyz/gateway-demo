@@ -72,7 +72,7 @@ export default function UpdateAppModal({
             router.replace("/dashboard");
           }}
           variant="outline"
-          color="black"
+          color="#856853"
           fullWidth
         >
           Delete App

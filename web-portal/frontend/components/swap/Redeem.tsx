@@ -166,11 +166,12 @@ export default function Redeem() {
                     </Stack>
                 </Flex>
                 <Flex justify="space-between" dir="row" mx={10}>
-                    <Text size="sm">
-                        {`$` +
-                            (isNaN(redeemValue) ? 0 : redeemValue * 5).toFixed(
-                                6,
-                            )}
+                <Text
+                    size="sm"
+                    style={{ fontWeight: 600 }}
+                    c='blue'
+                >
+                        Number of Relays ≈ {redeemValue * 1000}
                     </Text>
                     <Flex align={"center"} gap={4}>
                         <Text size="sm">
@@ -240,7 +241,7 @@ export default function Redeem() {
                         input: { ...commonStyles.input, fill: "#fff" },
                     }}
                     value={
-                      balance + (redeemValue * 10 ** 6)}
+                      Number(balance/1000) + Number(redeemValue * 10 ** 3)}
                     readOnly
                 />
             </Flex>

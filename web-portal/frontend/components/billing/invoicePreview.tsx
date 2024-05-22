@@ -8,16 +8,31 @@ import {
   Page,
   Text,
   Image,
+  Font,
   View,
   StyleSheet,
   PDFViewer,
   Link,
 } from "@react-pdf/renderer";
 import logo from "@frontend/public/porter-footer-logo.png";
+import karlaMedium from "@frontend/public/assets/Karla-Medium.ttf";
+import karlaRegular from "@frontend/public/assets/Karla-Regular.ttf";
+
+Font.register({
+  family: "Karla-Medium",
+  src: karlaMedium,
+});
+
+Font.register({
+  family: "Karla-Regular",
+  src: karlaRegular,
+});
+
 // Create styles
 const styles = StyleSheet.create({
   page: {
     flexDirection: "row",
+    fontFamily: "Karla-Regular",
   },
   section: {
     flexGrow: 1,
@@ -66,6 +81,7 @@ export default function InvoicePreview() {
                     fontSize: 22,
                     color: "#3C2B27",
                     marginTop: 32,
+                    fontFamily: "Karla-Medium",
                   }}
                 >
                   Invoice
@@ -95,7 +111,8 @@ export default function InvoicePreview() {
                     flexDirection: "column",
                     gap: 5,
                     fontWeight: 500,
-                    fontSize: 12,
+                    fontSize: 14,
+                    fontFamily: "Karla-Medium",
                   }}
                 >
                   <Text>Invoice Number</Text>
@@ -109,7 +126,7 @@ export default function InvoicePreview() {
                     flexDirection: "column",
                     gap: 5,
                     fontWeight: 500,
-                    fontSize: 12,
+                    fontSize: 14,
                     marginLeft: 24,
                   }}
                 >
@@ -134,7 +151,7 @@ export default function InvoicePreview() {
               <View
                 style={{
                   marginHorizontal: 32,
-                  fontSize: 10,
+                  fontSize: 12,
                   fontWeight: 400,
                   gap: 3,
                 }}
@@ -157,19 +174,25 @@ export default function InvoicePreview() {
               >
                 <View style={{ gap: 10 }}>
                   <Text>Description</Text>
-                  <Text>RPC Relays</Text>
+                  <Text style={{ fontFamily: "Karla-Medium" }}>RPC Relays</Text>
                 </View>
                 <View style={{ gap: 10 }}>
                   <Text>Qty</Text>
-                  <Text>{Number(currentInvoice?.amount) / 1000}</Text>
+                  <Text style={{ fontFamily: "Karla-Medium" }}>
+                    {Number(currentInvoice?.amount) / 1000}
+                  </Text>
                 </View>
                 <View style={{ gap: 10 }}>
                   <Text>Amount (Token spent)</Text>
-                  <Text>PORTR {Number(currentInvoice?.amount) * 10 ** -6}</Text>
+                  <Text style={{ fontFamily: "Karla-Medium" }}>
+                    PORTR {Number(currentInvoice?.amount) * 10 ** -6}
+                  </Text>
                 </View>
                 <View style={{ gap: 10 }}>
                   <Text>Amount (USD)</Text>
-                  <Text>{`$` + Number(currentInvoice?.amount) / 10 ** 9}</Text>
+                  <Text style={{ fontFamily: "Karla-Medium" }}>
+                    {`$` + Number(currentInvoice?.amount) / 10 ** 9}
+                  </Text>
                 </View>
               </View>
               <View
@@ -193,15 +216,17 @@ export default function InvoicePreview() {
               >
                 <View
                   style={{
+                    borderTop: 0.5,
                     justifyContent: "space-between",
                     flexDirection: "row",
-                    borderTop: 0.5,
                     paddingTop: 10,
                     paddingRight: 8,
                   }}
                 >
                   <Text>Subtotal</Text>
-                  <Text>{`$` + Number(currentInvoice?.amount) / 10 ** 9}</Text>
+                  <Text style={{ fontFamily: "Karla-Medium" }}>
+                    {`$` + Number(currentInvoice?.amount) / 10 ** 9}
+                  </Text>
                 </View>
 
                 <View
@@ -214,7 +239,9 @@ export default function InvoicePreview() {
                   }}
                 >
                   <Text>Total</Text>
-                  <Text>{`$` + Number(currentInvoice?.amount) / 10 ** 9}</Text>
+                  <Text style={{ fontFamily: "Karla-Medium" }}>
+                    {`$` + Number(currentInvoice?.amount) / 10 ** 9}
+                  </Text>
                 </View>
 
                 <View
@@ -224,6 +251,7 @@ export default function InvoicePreview() {
                     borderTop: 0.5,
                     paddingTop: 10,
                     paddingRight: 8,
+                    fontFamily: "Karla-Medium",
                   }}
                 >
                   <Text style={{ fontWeight: "bold" }}>Amount Paid</Text>

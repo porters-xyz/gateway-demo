@@ -7,6 +7,7 @@ import { unsealData } from 'iron-session';
 import { Request } from 'express';
 import { ISession, SESSION_OPTIONS } from '../siwe/siwe.service';
 import { nanoid } from 'nanoid';
+import { NANO_ID_LENGTH } from '../utils/const';
 
 @Injectable()
 export class UserService {
@@ -65,7 +66,7 @@ export class UserService {
             }
             const newUser = await this.prisma.client.user.create({
                 data: {
-                    id: nanoid(10),
+                    id: nanoid(NANO_ID_LENGTH),
                     ethAddress: createHash('sha256').update(ethAddress).digest('hex'),
                     orgs: {
                         create: {

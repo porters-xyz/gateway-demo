@@ -2,6 +2,7 @@ import { Injectable, Inject, HttpException, HttpStatus } from '@nestjs/common';
 import { CustomPrismaService } from 'nestjs-prisma';
 import { PrismaClient } from '@/.generated/client';
 import { createHash, randomBytes } from 'crypto';
+import { nanoid } from 'nanoid'
 
 @Injectable()
 export class TenantService {
@@ -26,6 +27,7 @@ export class TenantService {
 
     const tenant = await this.prisma.client.tenant.create({
       data: {
+        id: nanoid(10),
         enterpriseId: enterprise.id,
         secretKey: hashedKey,
       },

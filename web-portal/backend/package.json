@@ -37,6 +37,7 @@
     "cookie-parser": "^1.4.6",
     "date-fns": "^3.6.0",
     "iron-session": "^8.0.1",
+    "nanoid": "^5.0.7",
     "nestjs-prisma": "^0.22.0",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.1",

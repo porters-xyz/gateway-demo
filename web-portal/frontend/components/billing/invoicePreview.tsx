@@ -11,6 +11,7 @@ import {
   View,
   StyleSheet,
   PDFViewer,
+  Link,
 } from "@react-pdf/renderer";
 import logo from "@frontend/public/porter-footer-logo.png";
 // Create styles
@@ -69,7 +70,13 @@ export default function InvoicePreview() {
                 >
                   Invoice
                 </Text>
-                <Image style={styles.image} src={logo.src} alt="Porters Logo" />
+                <Link href="https://porters.xyz">
+                  <Image
+                    style={styles.image}
+                    src={logo.src}
+                    alt="Porters Logo"
+                  />
+                </Link>
               </View>
 
               <View
@@ -110,7 +117,7 @@ export default function InvoicePreview() {
                   <Text>{currentInvoice?.referenceId}</Text>
                   <Text>Porters.xyz</Text>
                   <Text>
-                    {new Date(currentInvoice?.createdAt).toLocaleDateString()}
+                    {new Date(currentInvoice?.createdAt!).toLocaleDateString()}
                   </Text>
                 </View>
               </View>
@@ -158,7 +165,7 @@ export default function InvoicePreview() {
                 </View>
                 <View style={{ gap: 10 }}>
                   <Text>Amount (Token spent)</Text>
-                  <Text>{Number(currentInvoice?.amount) * 10 ** -6}</Text>
+                  <Text>PORTR {Number(currentInvoice?.amount) * 10 ** -6}</Text>
                 </View>
                 <View style={{ gap: 10 }}>
                   <Text>Amount (USD)</Text>
@@ -174,7 +181,86 @@ export default function InvoicePreview() {
                   borderTopColor: "#3C2B27",
                 }}
               />
+              <View
+                style={{
+                  marginTop: 100,
+                  marginHorizontal: 32,
+                  marginLeft: "40%",
+                  fontSize: 12,
+                  fontWeight: 400,
+                  gap: 10,
+                }}
+              >
+                <View
+                  style={{
+                    justifyContent: "space-between",
+                    flexDirection: "row",
+                    borderTop: 0.5,
+                    paddingTop: 10,
+                    paddingRight: 8,
+                  }}
+                >
+                  <Text>Subtotal</Text>
+                  <Text>{`$` + Number(currentInvoice?.amount) / 10 ** 9}</Text>
+                </View>
+
+                <View
+                  style={{
+                    justifyContent: "space-between",
+                    flexDirection: "row",
+                    borderTop: 0.5,
+                    paddingTop: 10,
+                    paddingRight: 8,
+                  }}
+                >
+                  <Text>Total</Text>
+                  <Text>{`$` + Number(currentInvoice?.amount) / 10 ** 9}</Text>
+                </View>
+
+                <View
+                  style={{
+                    justifyContent: "space-between",
+                    flexDirection: "row",
+                    borderTop: 0.5,
+                    paddingTop: 10,
+                    paddingRight: 8,
+                  }}
+                >
+                  <Text style={{ fontWeight: "bold" }}>Amount Paid</Text>
+                  <Text>{`$` + Number(currentInvoice?.amount) / 10 ** 9}</Text>
+                </View>
+              </View>
+
+              <View
+                style={{
+                  justifyContent: "space-between",
+                  width: "90%",
+                  marginHorizontal: 32,
+                  flexDirection: "row",
+                  borderTop: 0.5,
+                  paddingTop: 10,
+                  paddingRight: 8,
+                  position: "absolute",
+                  bottom: 20,
+                  fontSize: 8,
+                }}
+              >
+                <Link
+                  href="https://porters.xyz"
+                  style={{ textDecoration: "none", color: "#3C2B27" }}
+                >
+                  Porters.xyz
+                </Link>
+
+                <Text>Page 1</Text>
+              </View>
             </View>
+            <View
+              style={{
+                width: 12,
+                backgroundColor: "#F8DBBE",
+              }}
+            />
           </Page>
         </Document>
       </PDFViewer>

@@ -58,7 +58,6 @@ export default function InvoicePreview() {
                   marginHorizontal: 32,
                   alignItems: "center",
                   justifyContent: "space-between",
-                  // fontFamily: karla.style.fontFamily
                 }}
               >
                 <Text
@@ -74,74 +73,107 @@ export default function InvoicePreview() {
               </View>
 
               <View
-                style={{ borderTop: 1, margin: 32, borderTopColor: "#3C2B27" }}
+                style={{
+                  borderTop: 0.5,
+                  marginHorizontal: 32,
+                  marginTop: 32,
+                  marginBottom: 18,
+                  borderTopColor: "#3C2B27",
+                }}
               />
 
-              {/*  Invoice Number */}
-              <View style={{ marginHorizontal: 32 }}>
-                <View style={{ flexDirection: "row" }}>
-                  <Text style={{ fontWeight: 700, fontSize: 12 }}>
-                    Invoice Number:
-                  </Text>
-                  <Text
-                    style={{ fontWeight: 500, fontSize: 12, marginLeft: 15 }}
-                  >
-                    {currentInvoice?.id}
-                  </Text>
+              <View style={{ marginHorizontal: 32, flexDirection: "row" }}>
+                <View
+                  style={{
+                    flexDirection: "column",
+                    gap: 5,
+                    fontWeight: 500,
+                    fontSize: 12,
+                  }}
+                >
+                  <Text>Invoice Number</Text>
+                  <Text>Transaction Id</Text>
+                  <Text>Paid to</Text>
+                  <Text>Date Paid</Text>
                 </View>
-              </View>
 
-              {/*  Transaction Id */}
-              <View style={{ marginHorizontal: 32 }}>
-                <View style={{ flexDirection: "row" }}>
-                  <Text style={{ fontWeight: 700, fontSize: 12 }}>
-                    Transaction Id:
-                  </Text>
-                  <Text
-                    style={{ fontWeight: 500, fontSize: 12, marginLeft: 15 }}
-                  >
-                    {currentInvoice?.referenceId}
-                  </Text>
-                </View>
-              </View>
-
-              {/* Paid To */}
-              <View style={{ marginHorizontal: 32 }}>
-                <View style={{ flexDirection: "row" }}>
-                  <Text style={{ fontWeight: 700, fontSize: 12 }}>
-                    Paid by:
-                  </Text>
-                  <Text
-                    style={{ fontWeight: 500, fontSize: 12, marginLeft: 15 }}
-                  >
-                    Porters.xyz
-                  </Text>
-                </View>
-              </View>
-
-              {/* Date Paid */}
-              <View style={{ marginHorizontal: 32 }}>
-                <View style={{ flexDirection: "row" }}>
-                  <Text style={{ fontWeight: 700, fontSize: 12 }}>
-                    Date Paid:
-                  </Text>
-                  <Text
-                    style={{ fontWeight: 500, fontSize: 12, marginLeft: 15 }}
-                  >
+                <View
+                  style={{
+                    flexDirection: "column",
+                    gap: 5,
+                    fontWeight: 500,
+                    fontSize: 12,
+                    marginLeft: 24,
+                  }}
+                >
+                  <Text>{currentInvoice?.id}</Text>
+                  <Text>{currentInvoice?.referenceId}</Text>
+                  <Text>Porters.xyz</Text>
+                  <Text>
                     {new Date(currentInvoice?.createdAt).toLocaleDateString()}
                   </Text>
                 </View>
               </View>
 
               <View
-                style={{ borderTop: 1, margin: 32, borderTopColor: "#3C2B27" }}
+                style={{
+                  borderTop: 0.5,
+                  marginHorizontal: 32,
+                  marginTop: 18,
+                  marginBottom: 10,
+                  borderTopColor: "#3C2B27",
+                }}
               />
-              <View style={{ marginHorizontal: 32, fontSize: 10 }}>
+              <View
+                style={{
+                  marginHorizontal: 32,
+                  fontSize: 10,
+                  fontWeight: 400,
+                  gap: 3,
+                }}
+              >
                 <Text>Data Gateways LLC</Text>
                 <Text>30 N Gould St Ste R</Text>
                 <Text>Sheridan, WY 82801</Text>
                 <Text>United States</Text>
               </View>
+              <View
+                style={{
+                  marginTop: 54,
+                  marginHorizontal: 32,
+                  fontSize: 12,
+                  fontWeight: 400,
+                  paddingHorizontal: 10,
+                  justifyContent: "space-between",
+                  flexDirection: "row",
+                }}
+              >
+                <View style={{ gap: 10 }}>
+                  <Text>Description</Text>
+                  <Text>RPC Relays</Text>
+                </View>
+                <View style={{ gap: 10 }}>
+                  <Text>Qty</Text>
+                  <Text>{Number(currentInvoice?.amount) / 1000}</Text>
+                </View>
+                <View style={{ gap: 10 }}>
+                  <Text>Amount (Token spent)</Text>
+                  <Text>{Number(currentInvoice?.amount) * 10 ** -6}</Text>
+                </View>
+                <View style={{ gap: 10 }}>
+                  <Text>Amount (USD)</Text>
+                  <Text>{`$` + Number(currentInvoice?.amount) / 10 ** 9}</Text>
+                </View>
+              </View>
+              <View
+                style={{
+                  borderTop: 0.5,
+                  marginHorizontal: 32,
+                  marginTop: -18,
+                  marginBottom: 10,
+                  borderTopColor: "#3C2B27",
+                }}
+              />
             </View>
           </Page>
         </Document>

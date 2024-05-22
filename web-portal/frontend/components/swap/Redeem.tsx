@@ -255,7 +255,7 @@ export default function Redeem() {
             >
                 {!needToSwitchChain
                     ? `Redeem`
-                    : `Swtich to ${selectedChain?.name}`}
+                    : `Switch to ${selectedChain?.name}`}
             </Button>
 
             {needToSwitchChain && (

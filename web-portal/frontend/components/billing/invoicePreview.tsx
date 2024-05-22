@@ -15,7 +15,9 @@ import {
   Link,
 } from "@react-pdf/renderer";
 import logo from "@frontend/public/porter-footer-logo.png";
-import karlaMedium from "@frontend/public/assets/Karla-Medium.ttf";
+// @ts-ignore
+import  karlaMedium from "@frontend/public/assets/Karla-Medium.ttf";
+// @ts-ignore
 import karlaRegular from "@frontend/public/assets/Karla-Regular.ttf";
 
 Font.register({

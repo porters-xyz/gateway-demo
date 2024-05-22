@@ -71,4 +71,6 @@ export const siweConfig = createSIWEConfig({
   getSession,
   verifyMessage,
   signOut,
+  signOutOnNetworkChange: false,
+  signOutOnDisconnect: true
 });

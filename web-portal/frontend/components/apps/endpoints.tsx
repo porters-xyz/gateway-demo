@@ -28,7 +28,6 @@ const EndpointList: React.FC = () => {
           )}
         </CopyButton>
       </Table.Td>
-      <Table.Td>{Boolean(endpoint.active) ? "Enabled" : "No"}</Table.Td>
     </Table.Tr>
   ));
 
@@ -49,7 +48,6 @@ const EndpointList: React.FC = () => {
           <Table.Tr>
             <Table.Th style={{ fontWeight: "normal" }}>Network</Table.Th>
             <Table.Th style={{ fontWeight: "normal" }}>Your Endpoint</Table.Th>
-            <Table.Th style={{ fontWeight: "normal" }}>Enabled?</Table.Th>
           </Table.Tr>
         </Table.Thead>
         <Table.Tbody>{rows}</Table.Tbody>

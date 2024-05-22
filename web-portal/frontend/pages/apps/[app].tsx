@@ -6,6 +6,8 @@ import {
     Text,
     Title,
     Tooltip,
+    CopyButton,
+    Input
 } from "@mantine/core";
 import _ from "lodash";
 import DashboardLayout from "@frontend/components/dashboard/layout";
@@ -56,10 +58,41 @@ export default function App() {
                 <Breadcrumbs>{breadCrumbItems}</Breadcrumbs>
 
                 <Flex justify="space-between" align="center">
+                <Flex align="center" gap={10}>
+                <Stack gap={2}>
+                  <Text opacity={0.5}>App Name</Text>
+                  <Flex align='center' gap={20}>
                     <Title order={1} maw={700}>
                         {_.get(app, "name")}
                     </Title>
+                    <CopyButton value={app.id}>
+                      {({ copied, copy }) => (
+                        <Tooltip
+                          label={copied ? "Copied AppId" : "Copy AppId"}
+                          bg={copied ? "orange" : "black"}
+                        >
+                          <Input
+                            value={app.id}
+                            w={100}
+                            readOnly
+                            styles={{
+                              input:{
+                                backgroundColor: '#ffffff50',
+                              },
+                              wrapper:
+                              {
+                                cursor: "pointer"
+                              }
+                            }}
+                            onClick={copy}
+                          />
+                        </Tooltip>
+                      )}
+                    </CopyButton>
+                    </Flex>
+                    </Stack>
 
+                  </Flex>
                     <Button
                         onClick={() => router.replace(`${path}?edit=1`)}
                         variant="outline"

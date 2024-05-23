@@ -92,7 +92,6 @@ export default function InvoicePreview() {
                   <Image
                     style={styles.image}
                     src={logo.src}
-                    alt="Porters Logo"
                   />
                 </Link>
               </View>

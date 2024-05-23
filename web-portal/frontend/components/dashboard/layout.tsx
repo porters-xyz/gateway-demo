@@ -47,7 +47,6 @@ import { useAccount, useAccountEffect, useEnsName } from "wagmi";
 
 import CreateAppModal from "./createAppModal";
 import CreateAppButton from "./createApp";
-import { useParams } from "next/navigation";
 import _ from "lodash";
 
 export default function DashboardLayout({
@@ -179,7 +178,7 @@ export default function DashboardLayout({
                 <IconArrowUpRight size={16} style={{ marginRight: 8 }} />
               }
               label="Docs"
-              link="/docs"
+              link="https://docs.porters.xyz"
             />
             <NavLink
               icon={<IconBrandDiscord size={16} style={{ marginRight: 8 }} />}
@@ -187,7 +186,7 @@ export default function DashboardLayout({
                 <IconArrowUpRight size={16} style={{ marginRight: 8 }} />
               }
               label="Discord"
-              link="/discord"
+              link="https://discord.gg/GZywNxPJgd"
             />
           </Group>
         </Stack>

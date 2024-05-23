@@ -6,13 +6,17 @@ import { Provider as JotaiProvider } from "jotai";
 import { State, WagmiProvider } from "wagmi";
 import { ReactNode } from "react";
 
-export const projectId = String(
-  process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID,
-);
+export const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID!;
+export const NEXT_PUBLIC_APP_URL = process.env.NEXT_PUBLIC_APP_URL!;
 
-export const NODE_ENV = process.env.NODE_ENV;
-export const NEXT_PUBLIC_APP_URL = process.env.NEXT_PUBLIC_APP_URL;
-if (!projectId) throw new Error("Project ID is not defined");
+const envVariables = { projectId, NEXT_PUBLIC_APP_URL };
+
+Object.entries(envVariables).forEach(([key, value]) => {
+  if (!value) {
+    throw new Error(`${key} is not defined`);
+  }
+});
+
 
 const metadata = {
   name: "Porters RPC Gateway",

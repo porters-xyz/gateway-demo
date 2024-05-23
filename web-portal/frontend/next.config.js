@@ -19,17 +19,7 @@ const nextConfig = {
     return config;
   },
   images: {
-    remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "api.web3modal.com",
-        port: "",
-      },
-      {
-        protocol: "https",
-        hostname: "*.1inch.io",
-      },
-    ],
+    domains: ['api.web3modal.com','*.1inch.io'],
   },
   async rewrites() {
     return [

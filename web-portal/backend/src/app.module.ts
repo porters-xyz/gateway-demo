@@ -14,6 +14,7 @@ import { UsageModule } from './usage/usage.module';
 import { SiweService } from './siwe/siwe.service';
 import { AuthGuard } from './guards/auth.guard';
 import { AppsService } from './apps/apps.service';
+import { AlertsModule } from './alerts/alerts.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { AppsService } from './apps/apps.service';
     OrgModule,
     UtilsModule,
     UsageModule,
+    AlertsModule,
   ],
   providers: [
     SiweService,

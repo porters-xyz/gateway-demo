@@ -14,6 +14,7 @@ const (
     TENANT     = "tenant"
     QUEUE      = "queue"
     STAGE      = "stage"
+    RATE_LIMIT = "rateLimit"
 )
 
 var (
@@ -30,4 +31,8 @@ var (
         Help: "Shows how much the proxy process is adding to request",
         Buckets: prometheus.ExponentialBucketsRange(float64(10 * time.Millisecond), float64(20 * time.Second), 10),
     }, []string{STAGE})
+    RateLimitGauge = promauto.NewGaugeVec(prometheus.GaugeOpts{
+        Name: "gateway_rate_limit_hit",
+        Help: "Shows rate limits hit on a gauge, resets to 0 when resolved",
+    }, []string{APP, TENANT, RATE_LIMIT})
 )

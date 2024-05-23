@@ -75,7 +75,7 @@ services:
       - porters-redis:/data
 
   kit:
-    image: ghcr.io/pokt-network/pocket-gateway-server:0.1.0-BETA
+    image: ghcr.io/pokt-network/pocket-gateway-server:0.3.0
     volumes:
       - ./.env:/app/.env
     ports:

@@ -11,7 +11,7 @@ import {
 } from "@mantine/core";
 import _ from "lodash";
 import DashboardLayout from "@frontend/components/dashboard/layout";
-import { useParams, usePathname, useRouter } from "next/navigation";
+import {  usePathname, useRouter } from "next/navigation";
 import { useAtomValue } from "jotai";
 import { appsAtom } from "@frontend/utils/atoms";
 import { IApp } from "@frontend/utils/types";
@@ -19,7 +19,7 @@ import StyledLink from "@frontend/components/dashboard/styledlink";
 import AppTabs from "@frontend/components/apps/apptabs";
 
 import UpdateAppModal from "@frontend/components/apps/updateAppModal";
-import { useAppUsage } from "@frontend/utils/hooks";
+
 
 const appsRootUrl = [
     {
@@ -28,13 +28,14 @@ const appsRootUrl = [
     },
 ];
 
-export default function App() {
-    const appId = _.get(useParams(), "app");
+export default function App({appId}: {appId:string}) {
     const apps: Array<IApp> = useAtomValue(appsAtom);
+
     const app = _.find(apps, { id: appId }) as IApp;
 
     const path = usePathname();
     const router = useRouter();
+
 
     const breadCrumbItems = _.map(
         [
@@ -51,6 +52,7 @@ export default function App() {
         ),
     );
 
+
     return (
         <DashboardLayout>
             <UpdateAppModal name={app?.name} description={app?.description} />
@@ -65,14 +67,14 @@ export default function App() {
                     <Title order={1} maw={700}>
                         {_.get(app, "name")}
                     </Title>
-                    <CopyButton value={app.id}>
+                    <CopyButton value={app?.id}>
                       {({ copied, copy }) => (
                         <Tooltip
                           label={copied ? "Copied AppId" : "Copy AppId"}
                           bg={copied ? "orange" : "black"}
                         >
                           <Input
-                            value={app.id}
+                            value={app?.id}
                             w={100}
                             readOnly
                             styles={{
@@ -126,3 +128,14 @@ export default function App() {
         </DashboardLayout>
     );
 }
+
+
+export const getServerSideProps = async ({ params }: {params: any}) => {
+ const appIdFromParams = _.get(params, 'app')
+
+  return {
+    props: {
+      appId: appIdFromParams
+    },
+  };
+};

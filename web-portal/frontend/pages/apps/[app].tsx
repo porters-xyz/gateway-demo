@@ -7,8 +7,10 @@ import {
     Title,
     Tooltip,
     CopyButton,
-    Input
+    Input,
+    Alert
 } from "@mantine/core";
+import { IconAlertOctagon } from "@tabler/icons-react";
 import _ from "lodash";
 import DashboardLayout from "@frontend/components/dashboard/layout";
 import {  usePathname, useRouter } from "next/navigation";
@@ -17,7 +19,7 @@ import { appsAtom } from "@frontend/utils/atoms";
 import { IApp } from "@frontend/utils/types";
 import StyledLink from "@frontend/components/dashboard/styledlink";
 import AppTabs from "@frontend/components/apps/apptabs";
-
+import { useAppAlert } from "@frontend/utils/hooks";
 import UpdateAppModal from "@frontend/components/apps/updateAppModal";
 
 
@@ -35,7 +37,7 @@ export default function App({appId}: {appId:string}) {
 
     const path = usePathname();
     const router = useRouter();
-
+    const { data:showAppAlert } = useAppAlert(appId);
 
     const breadCrumbItems = _.map(
         [
@@ -55,6 +57,10 @@ export default function App({appId}: {appId:string}) {
 
     return (
         <DashboardLayout>
+        { showAppAlert && <Alert color="blue" title="Balance Low" icon={<IconAlertOctagon />} my={32} bg='#F9DCBF'>
+              You app maybe getting rate-limited!
+          </Alert>
+        }
             <UpdateAppModal name={app?.name} description={app?.description} />
             <Stack gap={20}>
                 <Breadcrumbs>{breadCrumbItems}</Breadcrumbs>

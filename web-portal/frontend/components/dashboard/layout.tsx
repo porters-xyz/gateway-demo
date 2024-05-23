@@ -5,8 +5,8 @@ import {
   Container,
   Flex,
   Title,
-  Button,
   Stack,
+  Alert
 } from "@mantine/core";
 
 import Link from "next/link";
@@ -21,6 +21,8 @@ import {
   IconReceipt,
   IconBrandDiscord,
   IconArrowUpRight,
+  IconAlertOctagon,
+  IconSettings
 } from "@tabler/icons-react";
 import { useEffect } from "react";
 import Image from "next/image";
@@ -30,6 +32,8 @@ import {
   useUserApps,
   useEndpoints,
   useRuleTypes,
+  useAppAlert,
+  useTenantAlert,
 } from "@frontend/utils/hooks";
 import { useAtom, useSetAtom } from "jotai";
 import {
@@ -39,10 +43,12 @@ import {
   sessionAtom,
 } from "@frontend/utils/atoms";
 import { useAccount, useAccountEffect, useEnsName } from "wagmi";
-import { IconSettings } from "@tabler/icons-react";
+
 
 import CreateAppModal from "./createAppModal";
 import CreateAppButton from "./createApp";
+import { useParams } from "next/navigation";
+import _ from "lodash";
 
 export default function DashboardLayout({
   children,
@@ -97,6 +103,12 @@ export default function DashboardLayout({
   const { data: ensName } = useEnsName({
     address: session?.address,
   });
+
+
+  const tenantId = _.get(session, 'tenantId')
+
+  const {data: showTenantAlert} = useTenantAlert(tenantId!);
+
 
   const { width } = useViewportSize();
   const isMobile = width < 600;
@@ -183,7 +195,13 @@ export default function DashboardLayout({
 
       <AppShell.Main>
         <CreateAppModal />
-        <Container size={"xl"}>{children}</Container>
+
+        <Container size={"xl"}>
+        { showTenantAlert && <Alert color="blue" title="Balance Low" icon={<IconAlertOctagon />} my={32} bg='#F9DCBF'>
+              Your relay request balance is running low, Please top-up you balance by redeeming some PORTR tokens.
+          </Alert>
+        }
+        {children}</Container>
       </AppShell.Main>
     </AppShell>
   );

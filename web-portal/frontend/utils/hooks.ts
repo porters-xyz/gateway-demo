@@ -432,3 +432,39 @@ export const useAppUsage = () => {
 
     return appUsage;
 };
+
+
+export const useAppAlert = (appId:string) => {
+  const fetchAppAlert =  async () => {
+      const response = await fetch(`/api/alerts/app/${appId}`);
+      if (!response.ok) {
+          throw new Error("Failed to fetch app alerts");
+      }
+      return response.json();
+  };
+  return useQuery({
+    queryKey: ["alert", "app", appId],
+    queryFn: fetchAppAlert,
+    enabled: !!appId,
+    refetchInterval: 60 * 1000,
+    refetchOnMount: true,
+  })
+}
+
+
+export const useTenantAlert = (tenantId:string) => {
+  const fetchAppAlert =  async () => {
+      const response = await fetch(`/api/alerts/tenant/${tenantId}`);
+      if (!response.ok) {
+          throw new Error("Failed to fetch app alerts");
+      }
+      return response.json();
+  };
+  return useQuery({
+    queryKey: ["alert", "tenant", tenantId],
+    queryFn: fetchAppAlert,
+    enabled: !!tenantId,
+    refetchInterval: 60 * 1000,
+    refetchOnMount: true,
+  })
+}

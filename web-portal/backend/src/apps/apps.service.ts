@@ -4,7 +4,8 @@ import { AppRule, PrismaClient, Tenant, RuleType } from '@/.generated/client';
 import { UserService } from '../user/user.service';
 import { createHash, randomBytes } from 'crypto';
 import { Request } from 'express';
-import { nanoid } from '@/src/utils/const';
+import { nanoid } from 'nanoid';
+import { NANO_ID_LENGTH } from '../utils/const';
 
 @Injectable()
 export class AppsService {
@@ -84,7 +85,7 @@ export class AppsService {
     if (!tenants) return;
     const newApp = await this.prisma.client.app.create({
       data: {
-        id: nanoid(),
+        id: nanoid(NANO_ID_LENGTH),
         tenantId: tenants[0].id,
         name,
         description,

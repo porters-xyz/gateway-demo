@@ -1,5 +1,5 @@
 import background from "@frontend/public/background.png";
-import { Button, Container, Title, Box, BackgroundImage, Stack } from "@mantine/core";
+import { Button, Container, Title, Box, BackgroundImage } from "@mantine/core";
 import Image from "next/image";
 import { useWeb3Modal } from "@web3modal/wagmi/react";
 import logo from "@frontend/public/logo.png";
@@ -8,21 +8,12 @@ import poweredByPokt from "@frontend/public/powered-by-pokt.png";
 import { useAccount, useDisconnect } from "wagmi";
 import { useAtomValue } from "jotai";
 import { sessionAtom } from "@frontend/utils/atoms";
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
 
 export default function Login() {
   const { open } = useWeb3Modal();
-  const router = useRouter();
   const session = useAtomValue(sessionAtom);
   const { isConnecting } = useAccount();
   const { disconnect } = useDisconnect();
-
-  useEffect(() => {
-    if (session?.address) {
-      router.replace("/dashboard");
-    }
-  }, [session?.address, router]);
 
   return (
     <Box style={{ backgroundColor: "#3C2B27" }}>
@@ -55,14 +46,20 @@ export default function Login() {
                   : "Connect Wallet"}
             </Button>
           </WelcomeShape>
-          <Container style={{
-            position: 'absolute',
-            bottom: 30
-          }}>
-            <Image src={poweredByPokt.src} width={poweredByPokt.width*0.35} height={poweredByPokt.height*0.35} alt="Powered By Pokt Network"/>
+          <Container
+            style={{
+              position: "absolute",
+              bottom: 30,
+            }}
+          >
+            <Image
+              src={poweredByPokt.src}
+              width={poweredByPokt.width * 0.35}
+              height={poweredByPokt.height * 0.35}
+              alt="Powered By Pokt Network"
+            />
           </Container>
         </Container>
-
       </BackgroundImage>
     </Box>
   );

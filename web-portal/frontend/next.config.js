@@ -19,7 +19,7 @@ const nextConfig = {
     return config;
   },
   images: {
-    domains: ['api.web3modal.com','*.1inch.io'],
+    domains: ["api.web3modal.com", "tokens.1inch.io"],
   },
   async rewrites() {
     return [

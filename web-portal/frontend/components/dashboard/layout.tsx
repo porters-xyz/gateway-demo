@@ -6,7 +6,7 @@ import {
   Flex,
   Title,
   Stack,
-  Alert
+  Alert,
 } from "@mantine/core";
 
 import Link from "next/link";
@@ -22,7 +22,7 @@ import {
   IconBrandDiscord,
   IconArrowUpRight,
   IconAlertOctagon,
-  IconSettings
+  IconSettings,
 } from "@tabler/icons-react";
 import { useEffect } from "react";
 import Image from "next/image";
@@ -44,10 +44,11 @@ import {
 } from "@frontend/utils/atoms";
 import { useAccount, useAccountEffect, useEnsName } from "wagmi";
 
-
 import CreateAppModal from "./createAppModal";
 import CreateAppButton from "./createApp";
 import _ from "lodash";
+import { Address } from "viem";
+import { useRouter } from "next/navigation";
 
 export default function DashboardLayout({
   children,
@@ -59,14 +60,20 @@ export default function DashboardLayout({
   const { data: endpoints } = useEndpoints();
   const { data: ruletypes } = useRuleTypes();
 
+  const router = useRouter();
+
   const [session, setSession] = useAtom(sessionAtom);
   const { address } = useAccount();
   const setEndpointAtom = useSetAtom(endpointsAtom);
   const setApps = useSetAtom(appsAtom);
   const setRuleTypes = useSetAtom(ruleTypesAtom);
-  const { data: appsData } = useUserApps(sessionValue?.address);
+  const { data: appsData } = useUserApps(address as Address);
 
   useEffect(() => {
+    // if (!sessionValue) {
+    //   router.replace("/login");
+    // }
+
     if (sessionValue?.address) {
       setSession(sessionValue);
     }
@@ -92,22 +99,13 @@ export default function DashboardLayout({
     address,
   ]);
 
-  useAccountEffect({
-    onDisconnect() {
-      console.log("disconnecting");
-      setSession(null);
-    },
-  });
-
   const { data: ensName } = useEnsName({
     address: session?.address,
   });
 
+  const tenantId = _.get(session, "tenantId");
 
-  const tenantId = _.get(session, 'tenantId')
-
-  const {data: showTenantAlert} = useTenantAlert(tenantId!);
-
+  const { data: showTenantAlert } = useTenantAlert(tenantId!);
 
   const { width } = useViewportSize();
   const isMobile = width < 600;
@@ -196,11 +194,20 @@ export default function DashboardLayout({
         <CreateAppModal />
 
         <Container size={"xl"}>
-        { showTenantAlert && <Alert color="blue" title="Balance Low" icon={<IconAlertOctagon />} my={32} bg='#F9DCBF'>
-              Your relay request balance is running low, Please top-up you balance by redeeming some PORTR tokens.
-          </Alert>
-        }
-        {children}</Container>
+          {showTenantAlert && (
+            <Alert
+              color="blue"
+              title="Balance Low"
+              icon={<IconAlertOctagon />}
+              my={32}
+              bg="#F9DCBF"
+            >
+              Your relay request balance is running low, Please top-up you
+              balance by redeeming some PORTR tokens.
+            </Alert>
+          )}
+          {children}
+        </Container>
       </AppShell.Main>
     </AppShell>
   );

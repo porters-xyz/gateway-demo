@@ -62,12 +62,12 @@ export default function App({ appId }: { appId: string }) {
       {Boolean(showAppAlert) && (
         <Alert
           color="blue"
-          title="Balance Low"
+          title="Rate Limited"
           icon={<IconAlertOctagon />}
           my={32}
           bg="#F9DCBF"
         >
-          You app maybe getting rate-limited!
+          This app is getting rate limited!
         </Alert>
       )}
       <UpdateAppModal name={app?.name} description={app?.description} />

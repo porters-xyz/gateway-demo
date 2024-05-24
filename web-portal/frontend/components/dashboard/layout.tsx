@@ -66,6 +66,8 @@ export default function DashboardLayout({
   const setRuleTypes = useSetAtom(ruleTypesAtom);
   const { data: appsData } = useUserApps(address as Address);
 
+  const balance = _.get(_.first(_.get(session, "netBalance")), "net", 0);
+
   useEffect(() => {
     if (sessionValue?.address) {
       setSession(sessionValue);
@@ -190,7 +192,7 @@ export default function DashboardLayout({
         <CreateAppModal />
 
         <Container size={"xl"}>
-          {Boolean(showTenantAlert) && (
+          {appsData.length && balance < 1000 && (
             <Alert
               color="blue"
               title="Balance Low"
@@ -200,6 +202,18 @@ export default function DashboardLayout({
             >
               Your relay request balance is running low, Please top-up you
               balance by redeeming some PORTR tokens.
+            </Alert>
+          )}
+
+          {showTenantAlert && (
+            <Alert
+              color="blue"
+              title="Rate Limited"
+              icon={<IconAlertOctagon />}
+              my={32}
+              bg="#F9DCBF"
+            >
+              Some of your apps maybe getting rate-limited
             </Alert>
           )}
           {children}

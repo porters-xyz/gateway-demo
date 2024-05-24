@@ -1,7 +1,5 @@
-import DashboardLayout from "@frontend/components/dashboard/layout";
 import {
   CopyButton,
-  Button,
   Divider,
   Text,
   Stack,

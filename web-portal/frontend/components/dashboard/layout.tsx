@@ -48,7 +48,6 @@ import CreateAppModal from "./createAppModal";
 import CreateAppButton from "./createApp";
 import _ from "lodash";
 import { Address } from "viem";
-import { useRouter } from "next/navigation";
 
 export default function DashboardLayout({
   children,
@@ -60,8 +59,6 @@ export default function DashboardLayout({
   const { data: endpoints } = useEndpoints();
   const { data: ruletypes } = useRuleTypes();
 
-  const router = useRouter();
-
   const [session, setSession] = useAtom(sessionAtom);
   const { address } = useAccount();
   const setEndpointAtom = useSetAtom(endpointsAtom);
@@ -70,14 +67,9 @@ export default function DashboardLayout({
   const { data: appsData } = useUserApps(address as Address);
 
   useEffect(() => {
-    // if (!sessionValue) {
-    //   router.replace("/login");
-    // }
-
     if (sessionValue?.address) {
       setSession(sessionValue);
     }
-
     if (appsData) {
       setApps(appsData);
     }
@@ -105,7 +97,11 @@ export default function DashboardLayout({
 
   const tenantId = _.get(session, "tenantId");
 
-  const { data: showTenantAlert } = useTenantAlert(tenantId!);
+  const { data: tenantAlertCheck } = useTenantAlert(tenantId!);
+
+  const showTenantAlert = Number(
+    _.last(_.get(_.first(_.get(tenantAlertCheck, "data.result")), "value")),
+  );
 
   const { width } = useViewportSize();
   const isMobile = width < 600;
@@ -194,7 +190,7 @@ export default function DashboardLayout({
         <CreateAppModal />
 
         <Container size={"xl"}>
-          {showTenantAlert && (
+          {Boolean(showTenantAlert) && (
             <Alert
               color="blue"
               title="Balance Low"

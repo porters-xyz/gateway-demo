@@ -439,8 +439,7 @@ export const useAppAlert = (appId: string) => {
     if (!response.ok) {
       throw new Error("Failed to fetch app alerts");
     }
-    const x = response.json();
-    return _.get(x, "data.result[0].value");
+    return response.json();
   };
   return useQuery({
     queryKey: ["alert", "app", appId],
@@ -457,8 +456,7 @@ export const useTenantAlert = (tenantId: string) => {
     if (!response.ok) {
       throw new Error("Failed to fetch app alerts");
     }
-    const x = response.json();
-    return _.get(x, "data.result[0].value");
+    return response.json();
   };
   return useQuery({
     queryKey: ["alert", "tenant", tenantId],

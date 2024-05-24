@@ -5,7 +5,6 @@ import {
   Stack,
   Title,
   Flex,
-  Card,
   ActionIcon,
   Tooltip,
   rem,

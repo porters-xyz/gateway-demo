@@ -132,6 +132,7 @@ func setupProxy(remote *url.URL) *httputil.ReverseProxy {
 
     revProxy.ModifyResponse = func(resp *http.Response) error {
         ctx := resp.Request.Context()
+        defaultHeaders(resp)
 
         if common.Enabled(common.INSTRUMENT_ENABLED) {
             instr, ok := common.FromContext(ctx, common.INSTRUMENT)
@@ -189,6 +190,12 @@ func setupContext(req *http.Request) {
         ctx = common.UpdateContext(ctx, common.StartInstrument())
     }
     *req = *req.WithContext(ctx)
+}
+
+// Add or remove headers on response
+// Dealing with CORS mostly
+func defaultHeaders(resp *http.Response) {
+    resp.Header.Set("Access-Control-Allow-Origin", "*")
 }
 
 func lookupPoktId(req *http.Request) (string, bool) {

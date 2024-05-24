@@ -21,6 +21,12 @@ type LeakyBucketPlugin struct {
     ScopeContext string // switch to type on proxy for scopes (tenant, provider, app, client)
 }
 
+type Bucket struct {
+    app *db.App
+    rule db.Apprule
+    limit rl.Limit
+}
+
 func (l *LeakyBucketPlugin) Name() string {
     return "leaky bucket"
 }
@@ -43,8 +49,8 @@ func (l *LeakyBucketPlugin) HandleRequest(req *http.Request) error {
     }
     buckets := l.getBucketsForScope(ctx, app)
     limiter := db.Limiter()
-    for k, v := range buckets {
-        res, err := limiter.Allow(ctx, k, v)
+    for k, bucket := range buckets {
+        res, err := limiter.Allow(ctx, k, bucket.limit)
         if err != nil {
             return proxy.NewHTTPError(http.StatusBadGateway)
         }
@@ -53,7 +59,10 @@ func (l *LeakyBucketPlugin) HandleRequest(req *http.Request) error {
 
         // rate limited
         if res.Allowed == 0 {
-            return proxy.NewRateLimitError(v.Rate, v.Period)
+            bucket.rateLimitHit()
+            return proxy.NewRateLimitError(bucket.rule.Value)
+        } else {
+            bucket.rateLimitResolved()
         }
     }
     lifecycle := proxy.SetStageComplete(ctx, proxy.RateLimit)
@@ -62,8 +71,8 @@ func (l *LeakyBucketPlugin) HandleRequest(req *http.Request) error {
     return nil
 }
 
-func (l *LeakyBucketPlugin) getBucketsForScope(ctx context.Context, app *db.App) map[string]rl.Limit {
-    buckets := make(map[string]rl.Limit)
+func (l *LeakyBucketPlugin) getBucketsForScope(ctx context.Context, app *db.App) map[string]Bucket {
+    buckets := make(map[string]Bucket)
     rules, err := app.Rules(ctx)
     if err != nil {
         log.Error("error getting rules", "app", app.HashId(), "err", err)
@@ -79,13 +88,27 @@ func (l *LeakyBucketPlugin) getBucketsForScope(ctx context.Context, app *db.App)
             continue
         }
 
-        bucket := rl.Limit{
+        limit := rl.Limit{
             Rate: rate.Amount,
             Burst: rate.Amount,
             Period: rate.Period,
         }
 
+        bucket := Bucket{
+            app: app,
+            rule: rule,
+            limit: limit,
+        }
+
         buckets[rule.Id] = bucket
     }
     return buckets
+}
+
+func (b *Bucket) rateLimitHit() {
+    common.RateLimitGauge.WithLabelValues(b.app.HashId(), b.app.Tenant.Id, b.rule.Id).Inc()
+}
+
+func (b *Bucket) rateLimitResolved() {
+    common.RateLimitGauge.WithLabelValues(b.app.HashId(), b.app.Tenant.Id, b.rule.Id).Set(0)
 }

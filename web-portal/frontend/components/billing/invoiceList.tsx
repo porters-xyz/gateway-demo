@@ -61,10 +61,6 @@ const InvoiceList: React.FC = () => {
       <Stack>
         <Flex justify={"space-between"} align={"center"}>
           <Title order={3}>Billing History</Title>
-
-          <Button onClick={() => router.push("?download=all")}>
-            Download All
-          </Button>
         </Flex>
         <Table
           highlightOnHover

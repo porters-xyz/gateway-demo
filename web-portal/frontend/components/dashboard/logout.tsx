@@ -11,7 +11,7 @@ export default function LogoutButton() {
     <Button
       onClick={() => disconnect()}
       variant="outline"
-      color="umbra.1"
+      color="#856853"
       w="max-content"
     >
       {isMobile && <IconLogout />}

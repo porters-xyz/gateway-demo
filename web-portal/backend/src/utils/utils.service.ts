@@ -4,7 +4,7 @@ import { PrismaClient, TransactionType } from '@/.generated/client';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { parseAbiItem, fromHex, isAddress } from 'viem';
 import { opClient, baseClient, gnosisClient } from './viemClient';
-
+import { PORTR_ADDRESS } from './const';
 interface IParsedLog {
   tenantId: string;
   amount: number;
@@ -12,7 +12,7 @@ interface IParsedLog {
   transactionType: TransactionType;
 }
 
-const portrAddress = '0x54d5f8a0e0f06991e63e46420bcee1af7d9fe944';
+
 const event = parseAbiItem(
   'event Applied(bytes32 indexed _identifier, uint256 _amount)',
 );
@@ -121,7 +121,7 @@ export class UtilsService {
       throw new HttpException(`Could not fetch quote`, HttpStatus.BAD_REQUEST);
     }
     const res = await fetch(
-      `https://${chainName}.api.0x.org/swap/v1/quote?sellToken=${sellToken}&buyToken=${portrAddress}&sellAmount=${sellAmount}`,
+      `https://${chainName}.api.0x.org/swap/v1/quote?sellToken=${sellToken}&buyToken=${PORTR_ADDRESS}&sellAmount=${sellAmount}`,
       {
         headers: {
           Accept: 'application/json',
@@ -148,7 +148,7 @@ export class UtilsService {
     }
 
     const res = await fetch(
-      `https://${chainName}.api.0x.org/swap/v1/price?sellToken=${sellToken}&buyToken=${portrAddress}&sellAmount=${sellAmount}`,
+      `https://${chainName}.api.0x.org/swap/v1/price?sellToken=${sellToken}&buyToken=${PORTR_ADDRESS}&sellAmount=${sellAmount}`,
       {
         headers: {
           Accept: 'application/json',
@@ -184,7 +184,7 @@ export class UtilsService {
         const blockNumber = await client.getBlockNumber();
         const logs = await client.getLogs({
           event,
-          address: portrAddress,
+          address: PORTR_ADDRESS,
           fromBlock: blockNumber - BigInt(1000),
           toBlock: blockNumber,
         });
@@ -221,7 +221,7 @@ export class UtilsService {
   parseLogs(logs: any[], network: string): IParsedLog[] {
     return logs.map((log: any) => ({
       tenantId: fromHex(log?.args?._identifier, 'string').replaceAll(`\x00`, ''),
-      amount: Number(log?.args?._amount * 10 ** -12),
+      amount: Number(log?.args?._amount) * 10 ** -12,
       // 10 ** -18 (to parse to human readable) * 10 ** 3 (for 1000 relay per token) * 10 ** 3 for chain weight = 10 ** -12
       referenceId: network + `:` + log.transactionHash!,
       transactionType: TransactionType.CREDIT!,

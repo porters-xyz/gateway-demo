@@ -12,7 +12,7 @@ primary_region = 'sea'
   strategy = 'canary'
 
 [env]
-  HOST = 'g.staging.porters.xyz'
+  HOST = 'rpc.staging.porters.xyz'
   ### SECRETS ###
   # DATABASE_URL = ...
   # PROXY_TO = ...

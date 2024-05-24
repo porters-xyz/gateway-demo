@@ -25,7 +25,6 @@ type Lifecycle struct {
     mask LifecycleMask
 }
 
-// TODO add additional required fields
 func (l *Lifecycle) checkComplete() bool {
     // Unused or optional are masked out
     unused := ^LifecycleMask(Auth | AccountLookup | BalanceCheck | RateLimit) // lowest bits on

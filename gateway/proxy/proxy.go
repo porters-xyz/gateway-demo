@@ -20,7 +20,6 @@ import (
 var server *http.Server
 
 func Start() {
-    // TODO grab url for gateway kit
     proxyUrl := common.GetConfig(common.PROXY_TO)
     remote, err := url.Parse(proxyUrl)
     if err != nil {
@@ -83,13 +82,16 @@ func setupProxy(remote *url.URL) *httputil.ReverseProxy {
     revProxy.Director = func(req *http.Request) {
         defaultDirector(req)
 
+        cancel := RequestCanceler(req)
         req.Host = remote.Host
 
-        poktId := lookupPoktId(req)
+        poktId, ok := lookupPoktId(req)
+        if !ok {
+            cancel(ChainNotSupportedError)
+        }
         target := utils.NewTarget(remote, poktId)
         req.URL = target.URL()
 
-        cancel := RequestCanceler(req)
 
         for _, p := range (*reg).plugins {
             h, ok := p.(PreHandler)
@@ -160,7 +162,6 @@ func setupProxy(remote *url.URL) *httputil.ReverseProxy {
     }
 
     revProxy.ErrorHandler = func(resp http.ResponseWriter, req *http.Request, err error) {
-        // TODO handle errors elegantly
         ctx := req.Context()
         var httpErr *HTTPError
         cause := context.Cause(ctx)
@@ -182,7 +183,6 @@ func setupProxy(remote *url.URL) *httputil.ReverseProxy {
 }
 
 func setupContext(req *http.Request) {
-    // TODO read ctx from request and make any modifications
     ctx := req.Context()
     ctx = common.UpdateContext(ctx, &Lifecycle{})
     if common.Enabled(common.INSTRUMENT_ENABLED) {
@@ -191,17 +191,16 @@ func setupContext(req *http.Request) {
     *req = *req.WithContext(ctx)
 }
 
-func lookupPoktId(req *http.Request) string {
+func lookupPoktId(req *http.Request) (string, bool) {
     ctx := req.Context()
     name := PluckProductName(req)
     product := &db.Product{Name: name}
     err := product.Lookup(ctx)
     if err != nil {
-        // TODO pick appropriate HTTP code
         log.Error("product not found", "product", product.Name, "err", err)
+        return "", false
     }
     productCtx := common.UpdateContext(ctx, product) 
     *req = *req.WithContext(productCtx)
-    // TODO put product into context for usage and weight purposes
-    return product.PoktId
+    return product.PoktId, true
 }

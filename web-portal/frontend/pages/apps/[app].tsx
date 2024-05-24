@@ -6,10 +6,12 @@ import {
     Text,
     Title,
     Tooltip,
+    CopyButton,
+    Input
 } from "@mantine/core";
 import _ from "lodash";
 import DashboardLayout from "@frontend/components/dashboard/layout";
-import { useParams, usePathname, useRouter } from "next/navigation";
+import {  usePathname, useRouter } from "next/navigation";
 import { useAtomValue } from "jotai";
 import { appsAtom } from "@frontend/utils/atoms";
 import { IApp } from "@frontend/utils/types";
@@ -17,7 +19,7 @@ import StyledLink from "@frontend/components/dashboard/styledlink";
 import AppTabs from "@frontend/components/apps/apptabs";
 
 import UpdateAppModal from "@frontend/components/apps/updateAppModal";
-import { useAppUsage } from "@frontend/utils/hooks";
+
 
 const appsRootUrl = [
     {
@@ -26,13 +28,14 @@ const appsRootUrl = [
     },
 ];
 
-export default function App() {
-    const appId = _.get(useParams(), "app");
+export default function App({appId}: {appId:string}) {
     const apps: Array<IApp> = useAtomValue(appsAtom);
+
     const app = _.find(apps, { id: appId }) as IApp;
 
     const path = usePathname();
     const router = useRouter();
+
 
     const breadCrumbItems = _.map(
         [
@@ -49,6 +52,7 @@ export default function App() {
         ),
     );
 
+
     return (
         <DashboardLayout>
             <UpdateAppModal name={app?.name} description={app?.description} />
@@ -56,16 +60,47 @@ export default function App() {
                 <Breadcrumbs>{breadCrumbItems}</Breadcrumbs>
 
                 <Flex justify="space-between" align="center">
+                <Flex align="center" gap={10}>
+                <Stack gap={2}>
+                  <Text opacity={0.5}>App Name</Text>
+                  <Flex align='center' gap={20}>
                     <Title order={1} maw={700}>
                         {_.get(app, "name")}
                     </Title>
+                    <CopyButton value={app?.id}>
+                      {({ copied, copy }) => (
+                        <Tooltip
+                          label={copied ? "Copied AppId" : "Copy AppId"}
+                          bg={copied ? "orange" : "black"}
+                        >
+                          <Input
+                            value={app?.id}
+                            w={100}
+                            readOnly
+                            styles={{
+                              input:{
+                                backgroundColor: '#ffffff50',
+                              },
+                              wrapper:
+                              {
+                                cursor: "pointer"
+                              }
+                            }}
+                            onClick={copy}
+                          />
+                        </Tooltip>
+                      )}
+                    </CopyButton>
+                    </Flex>
+                    </Stack>
 
+                  </Flex>
                     <Button
                         onClick={() => router.replace(`${path}?edit=1`)}
                         variant="outline"
-                        color="umbra.1"
+                        color="#856853"
                     >
-                        Update
+                        Edit
                     </Button>
                 </Flex>
                 <Tooltip.Floating
@@ -93,3 +128,14 @@ export default function App() {
         </DashboardLayout>
     );
 }
+
+
+export const getServerSideProps = async ({ params }: {params: any}) => {
+ const appIdFromParams = _.get(params, 'app')
+
+  return {
+    props: {
+      appId: appIdFromParams
+    },
+  };
+};

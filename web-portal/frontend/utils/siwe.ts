@@ -64,11 +64,13 @@ export const signOut = async () => {
   if (res.ok) return true;
   return false;
 };
-
+// @ts-ignore
 export const siweConfig = createSIWEConfig({
   createMessage,
   getNonce,
   getSession,
   verifyMessage,
   signOut,
+  signOutOnNetworkChange: false,
+  signOutOnDisconnect: true
 });

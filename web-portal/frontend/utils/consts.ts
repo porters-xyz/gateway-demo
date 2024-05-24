@@ -52,19 +52,19 @@ export const supportedChains = [
         id: "10",
         name: "optimism",
         exchangeProxy: `0xdef1abe32c034e558cdd535791643c58a13acc10` as Address,
-        portrAddress: "0x54d5f8a0e0f06991e63e46420bcee1af7d9fe944" as Address,
+        portrAddress,
     },
     {
         id: "8543",
         name: "base",
         exchangeProxy: `0xdef1c0ded9bec7f1a1670819833240f027b25eff` as Address,
-        portrAddress: "0x54d5f8a0e0f06991e63e46420bcee1af7d9fe944",
+        portrAddress
     },
     {
         id: "100",
         name: "gnosis",
         // exchangeProxy: `0xdef1c0ded9bec7f1a1670819833240f027b25eff` as Address,
-        portrAddress: "0x54d5f8a0e0f06991e63e46420bcee1af7d9fe944",
+        portrAddress
     },
 ];
 

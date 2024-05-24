@@ -364,6 +364,7 @@ export default function Swap() {
                     style={{
                         fontFamily: karla.style.fontFamily,
                         borderRadius: 50,
+                        width: 160
                     }}
                     bg={"blue"}
                 >
@@ -377,6 +378,17 @@ export default function Swap() {
                     PORTR
                 </Button>
             </Flex>
+
+            <Flex justify="space-between" dir="row" mx={10} mt={-10}>
+                <Text
+                    size="sm"
+                    style={{ fontWeight: 600 }}
+                    c='blue'
+                >
+                    {`Number of Relays ≈ `}
+                    {Number(values["buyAmount"])*1000}
+                </Text>
+                </Flex>
 
             <Button
                 size="lg"

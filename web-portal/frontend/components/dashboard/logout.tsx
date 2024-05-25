@@ -4,12 +4,14 @@ import { useDisconnect } from "wagmi";
 import { useViewportSize } from "@mantine/hooks";
 
 export default function LogoutButton() {
-  const { disconnect } = useDisconnect();
+  const { disconnectAsync } = useDisconnect();
+
   const { width } = useViewportSize();
   const isMobile = width < 600;
+
   return (
     <Button
-      onClick={() => disconnect()}
+      onClick={() => disconnectAsync()}
       variant="outline"
       color="#856853"
       w="max-content"

@@ -5,8 +5,8 @@ import {
   Container,
   Flex,
   Title,
-  Button,
   Stack,
+  Alert,
 } from "@mantine/core";
 
 import Link from "next/link";
@@ -21,6 +21,8 @@ import {
   IconReceipt,
   IconBrandDiscord,
   IconArrowUpRight,
+  IconAlertOctagon,
+  IconSettings,
 } from "@tabler/icons-react";
 import { useEffect } from "react";
 import Image from "next/image";
@@ -30,6 +32,8 @@ import {
   useUserApps,
   useEndpoints,
   useRuleTypes,
+  useAppAlert,
+  useTenantAlert,
 } from "@frontend/utils/hooks";
 import { useAtom, useSetAtom } from "jotai";
 import {
@@ -39,10 +43,11 @@ import {
   sessionAtom,
 } from "@frontend/utils/atoms";
 import { useAccount, useAccountEffect, useEnsName } from "wagmi";
-import { IconSettings } from "@tabler/icons-react";
 
 import CreateAppModal from "./createAppModal";
 import CreateAppButton from "./createApp";
+import _ from "lodash";
+import { Address } from "viem";
 
 export default function DashboardLayout({
   children,
@@ -59,13 +64,14 @@ export default function DashboardLayout({
   const setEndpointAtom = useSetAtom(endpointsAtom);
   const setApps = useSetAtom(appsAtom);
   const setRuleTypes = useSetAtom(ruleTypesAtom);
-  const { data: appsData } = useUserApps(sessionValue?.address);
+  const { data: appsData } = useUserApps(address as Address);
+
+  const balance = _.get(_.first(_.get(session, "netBalance")), "net", 0);
 
   useEffect(() => {
     if (sessionValue?.address) {
       setSession(sessionValue);
     }
-
     if (appsData) {
       setApps(appsData);
     }
@@ -87,16 +93,17 @@ export default function DashboardLayout({
     address,
   ]);
 
-  useAccountEffect({
-    onDisconnect() {
-      console.log("disconnecting");
-      setSession(null);
-    },
-  });
-
   const { data: ensName } = useEnsName({
     address: session?.address,
   });
+
+  const tenantId = _.get(session, "tenantId");
+
+  const { data: tenantAlertCheck } = useTenantAlert(tenantId!);
+
+  const showTenantAlert = Number(
+    _.last(_.get(_.first(_.get(tenantAlertCheck, "data.result")), "value")),
+  );
 
   const { width } = useViewportSize();
   const isMobile = width < 600;
@@ -167,7 +174,7 @@ export default function DashboardLayout({
                 <IconArrowUpRight size={16} style={{ marginRight: 8 }} />
               }
               label="Docs"
-              link="/docs"
+              link="https://docs.porters.xyz"
             />
             <NavLink
               icon={<IconBrandDiscord size={16} style={{ marginRight: 8 }} />}
@@ -175,7 +182,7 @@ export default function DashboardLayout({
                 <IconArrowUpRight size={16} style={{ marginRight: 8 }} />
               }
               label="Discord"
-              link="/discord"
+              link="https://discord.gg/GZywNxPJgd"
             />
           </Group>
         </Stack>
@@ -183,7 +190,34 @@ export default function DashboardLayout({
 
       <AppShell.Main>
         <CreateAppModal />
-        <Container size={"xl"}>{children}</Container>
+
+        <Container size={"xl"}>
+          {appsData.length && balance < 1000 && (
+            <Alert
+              color="blue"
+              title="Balance Low"
+              icon={<IconAlertOctagon />}
+              my={32}
+              bg="#F9DCBF"
+            >
+              Your relay request balance is running low, Please top-up you
+              balance by redeeming some PORTR tokens.
+            </Alert>
+          )}
+
+          {showTenantAlert && (
+            <Alert
+              color="blue"
+              title="Rate Limited"
+              icon={<IconAlertOctagon />}
+              my={32}
+              bg="#F9DCBF"
+            >
+              Some of your apps maybe getting rate-limited
+            </Alert>
+          )}
+          {children}
+        </Container>
       </AppShell.Main>
     </AppShell>
   );

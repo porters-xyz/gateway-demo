@@ -7,6 +7,7 @@ import {
   Title,
   Stack,
   Alert,
+  Skeleton
 } from "@mantine/core";
 
 import Link from "next/link";
@@ -121,12 +122,20 @@ export default function DashboardLayout({
       <AppShell.Header>
         <Flex w={"full"} justify="space-between" align="center" p={14}>
           <Burger opened={opened} onClick={toggle} hiddenFrom="sm" p={12} />
-          <Title order={2}>
+
+          <Title order={2} style={{
+            justifyContent: 'center',
+            alignItems: 'center'
+          }}>
+            <Skeleton height={32} radius="md" visible={!session?.address}>
             Welcome
-            {!isMobile
-              ? `, ${ensName ?? String(session?.address).substring(0, 10)}`
-              : null}
+            {session?.address ? (
+              !isMobile ? `, ${ensName ? ensName : String(session.address).substring(0, 10)}` : ''
+            ) : ''}
+            </Skeleton>
           </Title>
+
+
           <Flex gap={8}>
             <CreateAppButton />
             <LogoutButton />

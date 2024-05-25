@@ -2,7 +2,7 @@ import { SiweMessage } from "siwe";
 import Cookies from "js-cookie";
 import { createSIWEConfig } from "@web3modal/siwe";
 import { queryClient, config } from "./Web3Provider";
-import { disconnect } from "@wagmi/core";
+import { Config, disconnect } from "@wagmi/core";
 
 export const getNonce = async () => {
   const res = await fetch("/api/siwe", { method: "PUT" });
@@ -56,7 +56,7 @@ export const getSession = async () => {
 };
 
 export const signOut = async () => {
-  const result = await disconnect(config);
+  const result = await disconnect(config as any);
   Cookies.set("session", "");
   queryClient.setQueryData(["session"], null);
   console.log({ session: Cookies.get("session"), result });

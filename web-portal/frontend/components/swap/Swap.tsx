@@ -68,7 +68,7 @@ export default function Swap() {
     // Utils
     const chainId = useChainId();
     const { switchChain } = useSwitchChain();
-    const { writeContractAsync } = useWriteContract();
+    const { writeContractAsync, isPending } = useWriteContract();
     const { sendTransaction } = useSendTransaction();
     const queryClient = useQueryClient();
 
@@ -397,9 +397,13 @@ export default function Swap() {
                           ? handleAllowance
                           : handleSwap
                 }
-                bg={showError ? "red" : needToSwitchChain ? "carrot" : "red"}
+                style={{
+                  backgroundColor: 'carrot'
+                }}
                 disabled={shouldDisable && !needToSwitchChain}
-                c="white"
+                c={shouldDisable && !needToSwitchChain ? 'blue.4' : 'white'}
+                loading={isPending}
+                loaderProps={{ type: 'dots' }}
             >
                 {showError
                     ? "Not enough balance"

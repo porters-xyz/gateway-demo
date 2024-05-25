@@ -41,7 +41,7 @@ export default function Redeem() {
         (c) => Number(c.id) === Number(selectedChainId),
     );
 
-    const { writeContractAsync } = useWriteContract();
+    const { writeContractAsync, isPending } = useWriteContract();
 
     const chainId = useChainId();
     const { switchChain } = useSwitchChain();
@@ -248,10 +248,12 @@ export default function Redeem() {
 
             <Button
                 size="lg"
-                c="white"
-                bg={shouldDisable ? "red" : needToSwitchChain ? "carrot" : 'red'}
+                style={{
+                  backgroundColor: 'carrot'
+                }}
                 disabled={shouldDisable && !needToSwitchChain}
                 onClick={needToSwitchChain ? handleSwitchNetwork : handleRedeem}
+                loading={isPending}
             >
                 {!needToSwitchChain
                     ? `Redeem`

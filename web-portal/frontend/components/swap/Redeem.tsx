@@ -249,8 +249,8 @@ export default function Redeem() {
             <Button
                 size="lg"
                 c="white"
-                bg={shouldDisable || needToSwitchChain ? "red" : "carrot"}
-                disabled={shouldDisable}
+                bg={shouldDisable ? "red" : needToSwitchChain ? "carrot" : 'red'}
+                disabled={shouldDisable && !needToSwitchChain}
                 onClick={needToSwitchChain ? handleSwitchNetwork : handleRedeem}
             >
                 {!needToSwitchChain

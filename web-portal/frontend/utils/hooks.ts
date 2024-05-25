@@ -10,7 +10,7 @@ import { usePathname, useRouter, useParams } from "next/navigation";
 import { Address, erc20Abi } from "viem";
 import { supportedChains } from "./consts";
 import _ from "lodash";
-import { IToken } from "./types";
+import { ISession, IToken } from "./types";
 import { timeOptions } from "./consts";
 import { useAtomValue } from "jotai";
 import { sessionAtom } from "./atoms";
@@ -25,7 +25,9 @@ export const useSession = () => {
     refetchOnMount: false,
   });
 
-  return { data, isLoading, isFetched };
+  const returnData:ISession = _.omit(data as ISession, ['chainId'])
+
+  return { data: returnData, isLoading, isFetched };
 };
 
 export const useEndpoints = () => {

@@ -153,9 +153,7 @@ export default function Swap() {
 
     // Action Handlers
     const handleSwitchNetwork = () => {
-        if (chainId !== quote?.chainId) {
-            switchChain({ chainId: quote?.chainId });
-        }
+        switchChain({ chainId: selectedChainId });
     };
 
     const handleTokenChange = (token: IToken) => {
@@ -399,8 +397,8 @@ export default function Swap() {
                           ? handleAllowance
                           : handleSwap
                 }
-                bg={needToSwitchChain || showError ? "red" : "carrot"}
-                disabled={shouldDisable}
+                bg={showError ? "red" : needToSwitchChain ? "carrot" : "red"}
+                disabled={shouldDisable && !needToSwitchChain}
                 c="white"
             >
                 {showError

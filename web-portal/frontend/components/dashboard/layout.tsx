@@ -192,7 +192,7 @@ export default function DashboardLayout({
         <CreateAppModal />
 
         <Container size={"xl"}>
-          {appsData.length && balance < 1000 && (
+          {!!appsData?.length && balance < 1000 && (
             <Alert
               color="blue"
               title="Balance Low"
@@ -205,7 +205,7 @@ export default function DashboardLayout({
             </Alert>
           )}
 
-          {showTenantAlert && (
+          {!!showTenantAlert && (
             <Alert
               color="blue"
               title="Rate Limited"

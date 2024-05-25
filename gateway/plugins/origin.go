@@ -4,7 +4,7 @@ import (
     "context"
     log "log/slog"
     "net/http"
-    "regexp"
+    "strings"
 
     "porters/db"
     "porters/proxy"
@@ -43,14 +43,7 @@ func (a *AllowedOriginFilter) HandleRequest(req *http.Request) error {
     }
 
     rules := a.getRulesForScope(ctx, app)
-    allow := (len(rules) == 0)
-
-    for _, rule := range rules {
-        if rule.MatchString(origin) {
-            allow = true
-            break
-        }
-    }
+    allow := a.matchesRules(origin, rules)
 
     if !allow {
         return proxy.NewHTTPError(http.StatusUnauthorized)
@@ -59,8 +52,26 @@ func (a *AllowedOriginFilter) HandleRequest(req *http.Request) error {
     return nil
 }
 
-func (a *AllowedOriginFilter) getRulesForScope(ctx context.Context, app *db.App) []regexp.Regexp {
-    origins := make([]regexp.Regexp, 0)
+func (a *AllowedOriginFilter) HandleResponse(resp *http.Response) error {
+    ctx := resp.Request.Context()
+    app := &db.App{
+        Id: proxy.PluckAppId(resp.Request),
+    }
+    err := app.Lookup(ctx)
+    if err != nil {
+        return nil // don't modify header
+    }
+
+    rules := a.getRulesForScope(ctx, app)
+    if len(rules) > 0 {
+        allowedOrigins := strings.Join(rules, ",")
+        resp.Header.Set("Access-Control-Allow-Origin", allowedOrigins)
+    }
+    return nil
+}
+
+func (a *AllowedOriginFilter) getRulesForScope(ctx context.Context, app *db.App) []string {
+    origins := make([]string, 0)
     rules, err := app.Rules(ctx)
     if err != nil {
         log.Error("couldn't get rules", "app", app.HashId(), "err", err)
@@ -69,13 +80,17 @@ func (a *AllowedOriginFilter) getRulesForScope(ctx context.Context, app *db.App)
             if rule.RuleType != ALLOWED_ORIGIN || !rule.Active {
                 continue
             }
-            matcher, err := regexp.Compile(rule.Value)
-            if err != nil {
-                log.Error("error compiling origin regex", "regex", rule.Value, "err", err)
-                continue
-            }
-            origins = append(origins, *matcher)
+            origins = append(origins, rule.Value)
         }
     }
     return origins
+}
+
+func (a *AllowedOriginFilter) matchesRules(origin string, rules []string) bool {
+    for _, rule := range rules {
+        if strings.EqualFold(rule, origin) {
+            return true
+        }
+    }
+    return false
 }

@@ -16,18 +16,15 @@ import { useAtomValue } from "jotai";
 import { sessionAtom } from "./atoms";
 
 export const useSession = () => {
-  const { address, isConnected } = useAccount();
+  const { address } = useAccount();
   const { data, isLoading, isFetched } = useQuery({
     queryKey: ["session"],
     queryFn: getSession,
-    enabled: address && isConnected,
-    refetchInterval: 60 * 60 * 1000,
-    refetchOnMount: false,
+    enabled: !!address,
   });
 
-  const returnData:ISession = _.omit(data as ISession, ['chainId'])
 
-  return { data: returnData, isLoading, isFetched };
+  return { data, isLoading, isFetched };
 };
 
 export const useEndpoints = () => {

@@ -13,6 +13,7 @@ export interface ISession {
 }
 
 export const SESSION_OPTIONS = {
+  ttl: 60 * 60 * 60,
   password:
     process.env.SESSION_SECRET! ?? `NNb774sZ7bNnGkWTwkXE3T9QWCAC5DkY0HTLz`, // TODO: get via env vars only
 };

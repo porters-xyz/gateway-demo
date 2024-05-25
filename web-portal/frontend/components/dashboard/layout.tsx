@@ -32,7 +32,6 @@ import {
   useUserApps,
   useEndpoints,
   useRuleTypes,
-  useAppAlert,
   useTenantAlert,
 } from "@frontend/utils/hooks";
 import { useAtom, useSetAtom } from "jotai";
@@ -42,7 +41,7 @@ import {
   ruleTypesAtom,
   sessionAtom,
 } from "@frontend/utils/atoms";
-import { useAccount, useAccountEffect, useEnsName } from "wagmi";
+import { useAccount, useEnsName } from "wagmi";
 
 import CreateAppModal from "./createAppModal";
 import CreateAppButton from "./createApp";

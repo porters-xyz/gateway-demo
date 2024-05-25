@@ -63,7 +63,7 @@ export const signOut = async () => {
 
   setTimeout(() => (window.location.href = "/login"), 1500);
 
-  return result;
+  return Boolean(result)
 };
 
 // @ts-ignore

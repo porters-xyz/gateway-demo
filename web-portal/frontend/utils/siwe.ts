@@ -1,6 +1,8 @@
 import { SiweMessage } from "siwe";
 import Cookies from "js-cookie";
 import { createSIWEConfig } from "@web3modal/siwe";
+import { queryClient, config } from "./Web3Provider";
+import { Config, disconnect } from "@wagmi/core";
 
 export const getNonce = async () => {
   const res = await fetch("/api/siwe", { method: "PUT" });
@@ -54,16 +56,16 @@ export const getSession = async () => {
 };
 
 export const signOut = async () => {
-  Cookies.remove("session");
-  const res = await fetch("/api/siwe", {
-    method: "DELETE",
-  });
-  if (!Cookies.get("session")) {
-    window.location.href = "/login";
-  }
-  if (res.ok) return true;
-  return false;
+  const result = await disconnect(config as any);
+  Cookies.set("session", "");
+  queryClient.setQueryData(["session"], null);
+  console.log({ session: Cookies.get("session"), result });
+
+  setTimeout(() => (window.location.href = "/login"), 1500);
+
+  return Boolean(result)
 };
+
 // @ts-ignore
 export const siweConfig = createSIWEConfig({
   createMessage,
@@ -72,5 +74,5 @@ export const siweConfig = createSIWEConfig({
   verifyMessage,
   signOut,
   signOutOnNetworkChange: false,
-  signOutOnDisconnect: true
+  signOutOnDisconnect: true,
 });

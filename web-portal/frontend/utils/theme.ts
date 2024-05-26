@@ -1,6 +1,5 @@
 import { createTheme, rem, Button, Modal, TextInput, Select, NumberInput, Textarea, Pill } from "@mantine/core";
 import { Crimson_Text, Karla, Red_Rose } from "next/font/google";
-import Link from "next/link";
 export const crimson = Crimson_Text({
   subsets: ["latin"],
   display: "swap",

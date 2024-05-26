@@ -1,14 +1,13 @@
 import { useSearchParams, usePathname, useRouter } from "next/navigation";
 import { Modal, Button, TextInput, Textarea } from "@mantine/core";
 import { useForm } from "@mantine/form";
-import { useSession, useCreateAppMutation } from "@frontend/utils/hooks";
+import {  useCreateAppMutation } from "@frontend/utils/hooks";
 
 export default function CreateAppModal() {
     const searchParams = useSearchParams();
     const shouldOpen = searchParams?.get("new") === "app";
     const path = usePathname();
     const router = useRouter();
-    const { data: session } = useSession();
 
     const { values, getInputProps } = useForm({
         initialValues: {

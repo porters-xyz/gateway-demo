@@ -7,6 +7,7 @@ import {
   Title,
   Stack,
   Alert,
+  Skeleton
 } from "@mantine/core";
 
 import Link from "next/link";
@@ -32,7 +33,6 @@ import {
   useUserApps,
   useEndpoints,
   useRuleTypes,
-  useAppAlert,
   useTenantAlert,
 } from "@frontend/utils/hooks";
 import { useAtom, useSetAtom } from "jotai";
@@ -42,7 +42,7 @@ import {
   ruleTypesAtom,
   sessionAtom,
 } from "@frontend/utils/atoms";
-import { useAccount, useAccountEffect, useEnsName } from "wagmi";
+import { useAccount, useEnsName } from "wagmi";
 
 import CreateAppModal from "./createAppModal";
 import CreateAppButton from "./createApp";
@@ -122,12 +122,20 @@ export default function DashboardLayout({
       <AppShell.Header>
         <Flex w={"full"} justify="space-between" align="center" p={14}>
           <Burger opened={opened} onClick={toggle} hiddenFrom="sm" p={12} />
-          <Title order={2}>
+
+          <Title order={2} style={{
+            justifyContent: 'center',
+            alignItems: 'center'
+          }}>
+            <Skeleton height={32} radius="md" visible={!session?.address}>
             Welcome
-            {!isMobile
-              ? `, ${ensName ?? String(session?.address).substring(0, 10)}`
-              : null}
+            {session?.address ? (
+              !isMobile ? `, ${ensName ? ensName : String(session.address).substring(0, 10)}` : ''
+            ) : ''}
+            </Skeleton>
           </Title>
+
+
           <Flex gap={8}>
             <CreateAppButton />
             <LogoutButton />
@@ -192,7 +200,7 @@ export default function DashboardLayout({
         <CreateAppModal />
 
         <Container size={"xl"}>
-          {appsData.length && balance < 1000 && (
+          {!!appsData?.length && balance < 1000 && (
             <Alert
               color="blue"
               title="Balance Low"
@@ -205,7 +213,7 @@ export default function DashboardLayout({
             </Alert>
           )}
 
-          {showTenantAlert && (
+          {!!showTenantAlert && (
             <Alert
               color="blue"
               title="Rate Limited"

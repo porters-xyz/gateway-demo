@@ -10,20 +10,19 @@ import { usePathname, useRouter, useParams } from "next/navigation";
 import { Address, erc20Abi } from "viem";
 import { supportedChains } from "./consts";
 import _ from "lodash";
-import { IToken } from "./types";
+import { ISession, IToken } from "./types";
 import { timeOptions } from "./consts";
 import { useAtomValue } from "jotai";
 import { sessionAtom } from "./atoms";
 
 export const useSession = () => {
-  const { address, isConnected } = useAccount();
+  const { address } = useAccount();
   const { data, isLoading, isFetched } = useQuery({
     queryKey: ["session"],
     queryFn: getSession,
-    enabled: address && isConnected,
-    refetchInterval: 60 * 60 * 1000,
-    refetchOnMount: false,
+    enabled: !!address,
   });
+
 
   return { data, isLoading, isFetched };
 };

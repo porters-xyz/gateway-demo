@@ -17,7 +17,6 @@ Object.entries(envVariables).forEach(([key, value]) => {
   }
 });
 
-
 const metadata = {
   name: "Porters RPC Gateway",
   description: "Porters RPC Gateway",
@@ -38,7 +37,7 @@ export const config = defaultWagmiConfig({
   }),
 });
 
-const queryClient = new QueryClient();
+export const queryClient = new QueryClient();
 
 export default function Web3Provider({
   children,

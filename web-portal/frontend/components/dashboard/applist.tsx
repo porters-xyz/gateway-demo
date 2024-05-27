@@ -1,5 +1,14 @@
 import React from "react";
-import { Stack, Table, Flex, Title, Card, Button, CopyButton, Input, Tooltip } from "@mantine/core";
+import {
+  Stack,
+  Table,
+  Flex,
+  Title,
+  Button,
+  CopyButton,
+  Input,
+  Tooltip,
+} from "@mantine/core";
 import { IApp } from "@frontend/utils/types";
 import { IconChevronRight, IconCopy } from "@tabler/icons-react";
 import { usePathname, useRouter } from "next/navigation";
@@ -21,27 +30,27 @@ const AppList: React.FC = () => {
     >
       <Table.Th>{app.name ?? "Un-named App"}</Table.Th>
       <Table.Td>
-      <CopyButton value={app.id}>
-        {({ copied, copy }) => (
-          <Tooltip
-            label={copied ? "Copied App Id" : "Copy App Id"}
-            bg={copied ? "orange" : "black"}
-          >
-            <Input
-              value={app.id}
-              readOnly
-              style={{ cursor: "pointer" }}
-              onClick={copy}
-              rightSection={
-                <IconCopy size={18}/>
-              }
-            />
-          </Tooltip>
-        )}
-      </CopyButton>
+        <CopyButton value={app.id}>
+          {({ copied, copy }) => (
+            <Tooltip
+              label={copied ? "Copied App Id" : "Copy App Id"}
+              bg={copied ? "orange" : "black"}
+            >
+              <Input
+                value={app.id}
+                readOnly
+                style={{ cursor: "pointer" }}
+                onClick={copy}
+                rightSection={<IconCopy size={18} />}
+              />
+            </Tooltip>
+          )}
+        </CopyButton>
       </Table.Td>
       <Table.Td>{app.active ? "Yes" : "No"}</Table.Td>
-      <Table.Td>{new Date(app?.createdAt as string).toLocaleDateString()}</Table.Td>
+      <Table.Td>
+        {new Date(app?.createdAt as string).toLocaleDateString()}
+      </Table.Td>
     </Table.Tr>
   ));
 

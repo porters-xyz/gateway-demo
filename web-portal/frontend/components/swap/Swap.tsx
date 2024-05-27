@@ -68,7 +68,7 @@ export default function Swap() {
     // Utils
     const chainId = useChainId();
     const { switchChain } = useSwitchChain();
-    const { writeContractAsync } = useWriteContract();
+    const { writeContractAsync, isPending } = useWriteContract();
     const { sendTransaction } = useSendTransaction();
     const queryClient = useQueryClient();
 
@@ -153,9 +153,7 @@ export default function Swap() {
 
     // Action Handlers
     const handleSwitchNetwork = () => {
-        if (chainId !== quote?.chainId) {
-            switchChain({ chainId: quote?.chainId });
-        }
+        switchChain({ chainId: selectedChainId });
     };
 
     const handleTokenChange = (token: IToken) => {
@@ -399,9 +397,13 @@ export default function Swap() {
                           ? handleAllowance
                           : handleSwap
                 }
-                bg={needToSwitchChain || showError ? "red" : "carrot"}
-                disabled={shouldDisable}
-                c="white"
+                style={{
+                  backgroundColor: 'carrot'
+                }}
+                disabled={shouldDisable && !needToSwitchChain}
+                c={shouldDisable && !needToSwitchChain ? 'blue.4' : 'white'}
+                loading={isPending}
+                loaderProps={{ type: 'dots' }}
             >
                 {showError
                     ? "Not enough balance"

@@ -1,52 +1,60 @@
-import { defaultWagmiConfig } from "@web3modal/wagmi/react/config";
-import { cookieStorage, createStorage } from "wagmi";
+import { ConnectKitProvider, SIWEProvider, getDefaultConfig } from "connectkit";
 import { base, gnosis, mainnet, optimism } from "wagmi/chains";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Provider as JotaiProvider } from "jotai";
-import { State, WagmiProvider } from "wagmi";
+import {  WagmiProvider, createConfig, http } from "wagmi";
 import { ReactNode } from "react";
+import { siweConfig } from "./siwe";
 
-export const projectId = String(
-  process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID,
-);
+export const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID!;
+export const NEXT_PUBLIC_APP_URL = process.env.NEXT_PUBLIC_APP_URL!;
 
-export const NODE_ENV = process.env.NODE_ENV;
-export const NEXT_PUBLIC_APP_URL = process.env.NEXT_PUBLIC_APP_URL;
-if (!projectId) throw new Error("Project ID is not defined");
+const envVariables = { projectId, NEXT_PUBLIC_APP_URL };
 
-const metadata = {
-  name: "Porters RPC Gateway",
-  description: "Porters RPC Gateway",
-  url: String(NEXT_PUBLIC_APP_URL),
-  icons: ["https://staging.porters.xyz/favicon.ico"],
-};
+Object.entries(envVariables).forEach(([key, value]) => {
+  if (!value) {
+    throw new Error(`${key} is not defined`);
+  }
+});
 
 // Create wagmiConfig
 export const chains = [mainnet, optimism, base, gnosis] as const;
 
-export const config = defaultWagmiConfig({
-  chains,
-  projectId,
-  metadata,
-  ssr: true,
-  storage: createStorage({
-    storage: cookieStorage,
-  }),
-});
+export const config = createConfig(
+  getDefaultConfig({
+    chains: [mainnet, base, gnosis, optimism],
+    transports: {
+      [mainnet.id]: http(
+          `https://eth-mainnet.rpc.grove.city/v1/1eec3963`
+      ),
+      [base.id]: http(`https://base-mainnet.rpc.grove.city/v1/1eec3963`),
+      [gnosis.id]: http(`https://gnosischain-mainnet.rpc.grove.city/v1/1eec3963`),
+      [optimism.id]: http(`https://optimism-mainnet.rpc.grove.city/v1/1eec3963`),
+    },
+    walletConnectProjectId: projectId,
+    appName: "Porters RPC Gateway",
+    appDescription: "Porters RPC Gateway",
+    appUrl:  String(NEXT_PUBLIC_APP_URL),
+    appIcon: 'https://porters.xyz/favicon.ico'
+  }));
 
-const queryClient = new QueryClient();
+export const queryClient = new QueryClient();
 
 export default function Web3Provider({
   children,
-  initialState,
 }: {
   children: ReactNode;
-  initialState?: State;
 }) {
   return (
-    <WagmiProvider config={config} initialState={initialState}>
+     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
-        <JotaiProvider>{children}</JotaiProvider>
+        <JotaiProvider>
+        <SIWEProvider {...siweConfig}>
+        <ConnectKitProvider>
+        {children}
+        </ConnectKitProvider>
+        </SIWEProvider>
+        </JotaiProvider>
       </QueryClientProvider>
     </WagmiProvider>
   );

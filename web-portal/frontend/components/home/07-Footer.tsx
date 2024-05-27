@@ -10,19 +10,22 @@ import {
 } from "@tabler/icons-react";
 import { crimson } from "@frontend/utils/theme";
 import { useViewportSize } from "@mantine/hooks";
-
+import { useRouter } from "next/navigation";
 
 export default function Footer() {
-  const { width } = useViewportSize()
-  const dir = width > 920 ? 'row' : 'column'
-
+  const { width } = useViewportSize();
+  const dir = width > 920 ? "row" : "column";
+  const router = useRouter();
   return (
     <Container
-      size='xl'
+      size="xl"
       p={40}
-      style={{ fontFamily: crimson.style.fontFamily, display: 'flex', flexDirection: dir }}
+      style={{
+        fontFamily: crimson.style.fontFamily,
+        display: "flex",
+        flexDirection: dir,
+      }}
     >
-
       <Flex align="center" justify="center" dir="row" gap={5} p={20}>
         <Image
           src={portersLogo.src}
@@ -31,27 +34,74 @@ export default function Footer() {
           height={150 * 0.25}
           style={{
             marginBottom: 8,
+            cursor: "pointer",
           }}
         />
-        <Text mb={5} >©</Text>
-        <Text mb={5} >2024</Text>
+        <Text mb={5}>©</Text>
+        <Text mb={5}>2024</Text>
       </Flex>
 
       <Flex align="center" justify="center" dir="row" gap={10} p={20}>
-        <Text mb={5} w={100}>Privacy Policy</Text>
-        <Text mb={5} w={120}>Terms of Service</Text>
+        <Text
+          mb={5}
+          w={100}
+          onClick={() => router.push("privacy-policy")}
+          style={{ cursor: "pointer" }}
+        >
+          Privacy Policy
+        </Text>
+        <Text
+          mb={5}
+          w={120}
+          onClick={() => router.push("terms-of-service")}
+          style={{ cursor: "pointer" }}
+        >
+          Terms of Service
+        </Text>
       </Flex>
-      <Flex align="center" justify="center" dir="row" gap={10} p={20} mb={5} w={260}>
+
+      <Flex
+        align="center"
+        justify="center"
+        dir="row"
+        gap={10}
+        p={20}
+        mb={5}
+        w={260}
+        onClick={() => router.replace("https://pokt.network/")}
+        style={{ cursor: "pointer" }}
+      >
         <Text>Powered By</Text>
         <Image src={poktLogo.src} alt="svg" width={80} height={21.84} />
       </Flex>
       <Flex align="center" justify="center" dir="row" gap={10} p={20} mb={5}>
-        <IconBrandGithubFilled size={25} />
-        <IconBrandDiscordFilled size={25} />
-        <IconBrandX size={25} />
-        <Image src={farcasterLogo.src} alt="svg" width={25} height={25} />
-      </Flex>
+        <IconBrandGithubFilled
+          size={25}
+          onClick={() => router.replace("https://github.com/porters-xyz")}
+          style={{ cursor: "pointer" }}
+        />
 
-    </Container >
+        <IconBrandDiscordFilled
+          size={25}
+          onClick={() => router.replace("https://discord.gg/GZywNxPJgd")}
+          style={{ cursor: "pointer" }}
+        />
+
+        <IconBrandX
+          size={25}
+          onClick={() => router.replace("https://twitter.com/PORTERSXYZ")}
+          style={{ cursor: "pointer" }}
+        />
+
+        <Image
+          src={farcasterLogo.src}
+          alt="svg"
+          width={25}
+          height={25}
+          onClick={() => router.replace("https://google.com")}
+          style={{ cursor: "pointer" }}
+        />
+      </Flex>
+    </Container>
   );
 }

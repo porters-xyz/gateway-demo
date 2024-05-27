@@ -1,20 +1,11 @@
 import "@mantine/core/styles.css";
 import type { AppProps } from "next/app";
 import Head from "next/head";
-import { siweConfig } from "@frontend/utils/siwe";
 import { MantineProvider } from "@mantine/core";
-import Web3Provider, { config, projectId } from "@frontend/utils/Web3Provider";
+import Web3Provider from "@frontend/utils/Web3Provider";
 import { theme } from "@frontend/utils/theme";
-import { createWeb3Modal } from "@web3modal/wagmi/react";
-import { usePathname } from "next/navigation";
 
-createWeb3Modal({
-    siweConfig,
-    wagmiConfig: config,
-    projectId,
-    enableAnalytics: false,
-    enableOnramp: false,
-});
+import { usePathname } from "next/navigation";
 
 export default function App({ Component, pageProps }: AppProps) {
     const path = usePathname();

@@ -1,8 +1,8 @@
-import { SiweMessage } from "siwe";
 import Cookies from "js-cookie";
-import { createSIWEConfig } from "@web3modal/siwe";
 import { queryClient, config } from "./Web3Provider";
+import { SiweMessage } from 'siwe';
 import { Config, disconnect } from "@wagmi/core";
+import { SIWEConfig } from "connectkit";
 
 export const getNonce = async () => {
   const res = await fetch("/api/siwe", { method: "PUT" });
@@ -66,8 +66,7 @@ export const signOut = async () => {
   return Boolean(result)
 };
 
-// @ts-ignore
-export const siweConfig = createSIWEConfig({
+export const siweConfig:SIWEConfig = {
   createMessage,
   getNonce,
   getSession,
@@ -75,4 +74,4 @@ export const siweConfig = createSIWEConfig({
   signOut,
   signOutOnNetworkChange: false,
   signOutOnDisconnect: true,
-});
+}

@@ -3,6 +3,7 @@ package db
 import (
     "context"
     "fmt"
+    log "log/slog"
 
     "porters/common"
 )
@@ -40,6 +41,10 @@ func NewUsageUpdater(ctx context.Context, status string) *UsageUpdater {
 }
 
 func (u *UsageUpdater) Run() {
+    if u.app == nil || u.tenant == nil || u.product == nil {
+        log.Debug("invalid request, usage not reported")
+        return
+    }
     if u.status == "success" {
         ctx := context.Background()
         DecrementCounter(ctx, u.balancekey, u.product.Weight)
@@ -50,7 +55,7 @@ func (u *UsageUpdater) Run() {
         }
         IncrementCounter(ctx, use.Key(), u.product.Weight)
     }
-    common.EndpointUsage.WithLabelValues(u.app.HashId(), u.app.Tenant.Id, u.product.Name, u.status).Inc()
+    common.EndpointUsage.WithLabelValues(u.app.HashId(), u.tenant.Id, u.product.Name, u.status).Inc()
 }
 
 func (u *UsageUpdater) Error() string {

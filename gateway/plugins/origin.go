@@ -87,6 +87,9 @@ func (a *AllowedOriginFilter) getRulesForScope(ctx context.Context, app *db.App)
 }
 
 func (a *AllowedOriginFilter) matchesRules(origin string, rules []string) bool {
+    if len(rules) == 0 {
+        return true
+    }
     for _, rule := range rules {
         if strings.EqualFold(rule, origin) {
             return true

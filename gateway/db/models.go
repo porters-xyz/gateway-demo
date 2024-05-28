@@ -169,5 +169,8 @@ func (r *Relaytx) Field() string {
 }
 
 func (a *App) HashId() string {
-    return utils.Hash(a.Id)
+    if a != nil {
+        return utils.Hash(a.Id)
+    }
+    return ""
 }

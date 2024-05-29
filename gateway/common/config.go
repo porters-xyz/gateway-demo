@@ -4,6 +4,7 @@ import (
     log "log/slog"
     "os"
     "strconv"
+    "strings"
     "sync"
 )
 
@@ -21,12 +22,14 @@ const (
     REDIS_USER            = "REDIS_USER"
     REDIS_PASSWORD        = "REDIS_PASSWORD"
     INSTRUMENT_ENABLED    = "ENABLE_INSTRUMENT"
+    LOG_LEVEL             = "LOG_LEVEL"
 )
 
 // This may evolve to include config outside env, or use .env file for
 // convenience
 type Config struct {
     defaults map[string]string
+    loglevel *log.LevelVar
 }
 
 var config *Config
@@ -43,6 +46,9 @@ func setupConfig() *Config {
         config.defaults[HOST] = "localhost"
         config.defaults[PORT] = "9000"
         config.defaults[INSTRUMENT_ENABLED] = "false"
+
+        level := GetLogLevel()
+        config.SetLogLevel(level)
     })
     return config
 }
@@ -57,7 +63,7 @@ func GetConfig(key string) string {
         if ok {
             return defaultval
         } else {
-            log.Warn("config not set no default", "key", key)
+            log.Warn("config not set, no default", "key", key)
             return ""
         }
     }
@@ -80,4 +86,23 @@ func Enabled(key string) bool {
         boolval = false
     }
     return boolval
+}
+
+func GetLogLevel() log.Level {
+    configval := GetConfig(LOG_LEVEL)
+    if strings.EqualFold(configval, "ERROR") {
+        return log.LevelError
+    } else if strings.EqualFold(configval, "WARN") {
+        return log.LevelWarn
+    } else if strings.EqualFold(configval, "DEBUG") {
+        return log.LevelDebug
+    } else {
+        return log.LevelInfo
+    }
+}
+
+func (c *Config) SetLogLevel(level log.Level) {
+    c.loglevel.Set(level)
+    logger := log.New(log.NewJSONHandler(os.Stderr, &log.HandlerOptions{Level: c.loglevel}))
+    log.SetDefault(logger)
 }

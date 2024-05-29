@@ -14,8 +14,9 @@ import (
 func gateway() {
     // Start job queue
     common.GetTaskQueue().SetupWorkers()
+    level := common.GetLogLevel()
 
-    log.Info("starting gateway")
+    log.Info("starting gateway", "level", level)
     proxy.Start()
 
     done := make(chan os.Signal, 1)

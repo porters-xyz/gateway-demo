@@ -1,4 +1,11 @@
+import React from "react";
 import { Address } from "viem";
+
+export interface INotification {
+  title: string;
+  content: string;
+  icon?: React.ReactNode;
+}
 
 export interface IApp {
     id: string;

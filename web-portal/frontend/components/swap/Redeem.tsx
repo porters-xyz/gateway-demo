@@ -1,6 +1,7 @@
-import { useState } from "react";
-import { Flex, Stack, Button, TextInput, Text, Select } from "@mantine/core";
+import { useEffect, useState } from "react";
+import { Flex, Stack, Button, TextInput, Text, Select, rem, Notification } from "@mantine/core";
 import _, { isNumber, isString } from "lodash";
+import { useWaitForTransactionReceipt } from "wagmi";
 import Image from "next/image";
 import { karla } from "@frontend/utils/theme";
 import { useForm } from "@mantine/form";
@@ -11,8 +12,8 @@ import { useChainId, useWriteContract, useSwitchChain } from "wagmi";
 import { toHex, zeroAddress } from "viem";
 
 import { abi } from "@frontend/utils/abi";
-import { useAtomValue } from "jotai";
-import { sessionAtom } from "@frontend/utils/atoms";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
+import { notificationAtom, sessionAtom } from "@frontend/utils/atoms";
 
 // Common styles for TextInput and Select components
 const commonStyles = {
@@ -36,12 +37,20 @@ export default function Redeem() {
     const session = useAtomValue(sessionAtom)
     const balance = _.get(_.first(_.get(session, 'netBalance')), 'net', 0)
     const [selectedChainId, setSelectedChainId] = useState(10);
+
+
     const selectedChain = _.find(
         chains,
         (c) => Number(c.id) === Number(selectedChainId),
     );
 
-    const { writeContractAsync, isPending } = useWriteContract();
+    const { writeContractAsync,  isSuccess: isSubmitted } = useWriteContract();
+
+    const [hash, setHash] = useState();
+
+    const {  data} = useWaitForTransactionReceipt({hash})
+
+    const setNotificationData = useSetAtom(notificationAtom)
 
     const chainId = useChainId();
     const { switchChain } = useSwitchChain();
@@ -86,16 +95,46 @@ export default function Redeem() {
 
     const handleRedeem = async () => {
         console.log("Attempting to redeem...");
-        await writeContractAsync({
+         const txHash = await writeContractAsync({
             abi,
             chainId: selectedChainId,
             address: portrTokenData?.address,
             functionName: "applyToAccount",
             args: [hexAccountId, bigNumberRedeem],
         });
-
-        console.log("Redeem Attempt was made");
+         if(txHash){
+           setHash(txHash as any)
+         }
+        console.log("Redeem Attempt was made: hash" , {txHash} );
     };
+
+
+    useEffect(() => {
+      if(isSubmitted){
+        setNotificationData({
+          title: 'Your tx to top-up was submitted',
+          content: 'Please wait for it to be completed onchain!'
+        })
+      }
+
+
+      if(data?.status == 'success'){
+        setNotificationData({
+          title: 'Your tx was successful',
+          content: 'Please wait for UI to reflect changes. and update your balance!'
+        })
+      }
+
+      if(data?.status == 'reverted'){
+        setNotificationData({
+          title: 'Your tx was not successful',
+          content: 'Please check on block explorer or contact porters support!'
+        })
+      }
+
+    }, [isSubmitted, data])
+
+
 
 
 
@@ -254,6 +293,7 @@ export default function Redeem() {
                 disabled={shouldDisable && !needToSwitchChain}
                 onClick={needToSwitchChain ? handleSwitchNetwork : handleRedeem}
                 loading={isPending}
+                loaderProps={{ type: 'dots' }}
             >
                 {!needToSwitchChain
                     ? `Redeem`

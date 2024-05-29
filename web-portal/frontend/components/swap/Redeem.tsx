@@ -48,7 +48,7 @@ export default function Redeem() {
 
     const [hash, setHash] = useState();
 
-    const { data, isPending} = useWaitForTransactionReceipt({hash})
+    const { data , isLoading} = useWaitForTransactionReceipt({hash})
 
     const setNotificationData = useSetAtom(notificationAtom)
 
@@ -292,7 +292,7 @@ export default function Redeem() {
                 }}
                 disabled={shouldDisable && !needToSwitchChain}
                 onClick={needToSwitchChain ? handleSwitchNetwork : handleRedeem}
-                loading={isPending}
+                loading={isLoading}
                 loaderProps={{ type: 'dots' }}
             >
                 {!needToSwitchChain

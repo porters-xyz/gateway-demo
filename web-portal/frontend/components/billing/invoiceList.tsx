@@ -31,7 +31,7 @@ const InvoiceList: React.FC = () => {
       <Table.Th c={invoice.transactionType === "DEBIT" ? "red" : "blue"}>
         {invoice.transactionType}
       </Table.Th>
-      <Table.Td>{invoice.amount}</Table.Td>
+      <Table.Td>{Number(invoice.amount) / 1000}</Table.Td>
       <Table.Td>
         {new Date(invoice?.createdAt as string).toLocaleDateString()}
       </Table.Td>
@@ -75,7 +75,7 @@ const InvoiceList: React.FC = () => {
               <Table.Th style={{ fontWeight: "normal" }}>
                 Transaction Type
               </Table.Th>
-              <Table.Th style={{ fontWeight: "normal" }}>Amount</Table.Th>
+              <Table.Th style={{ fontWeight: "normal" }}>Relays</Table.Th>
               <Table.Th style={{ fontWeight: "normal" }}>Created At</Table.Th>
             </Table.Tr>
           </Table.Thead>

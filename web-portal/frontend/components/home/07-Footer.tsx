@@ -18,7 +18,7 @@ export default function Footer() {
   const router = useRouter();
   return (
     <Container
-      size="xl"
+      size="lg"
       p={40}
       style={{
         fontFamily: crimson.style.fontFamily,
@@ -44,16 +44,8 @@ export default function Footer() {
       <Flex align="center" justify="center" dir="row" gap={10} p={20}>
         <Text
           mb={5}
-          w={100}
-          onClick={() => router.push("privacy-policy")}
-          style={{ cursor: "pointer" }}
-        >
-          Privacy Policy
-        </Text>
-        <Text
-          mb={5}
           w={120}
-          onClick={() => router.push("terms-of-service")}
+          onClick={() => router.push("tos")}
           style={{ cursor: "pointer" }}
         >
           Terms of Service
@@ -98,7 +90,7 @@ export default function Footer() {
           alt="svg"
           width={25}
           height={25}
-          onClick={() => router.replace("https://google.com")}
+          onClick={() => router.replace("https:/warpcast.com/porters")}
           style={{ cursor: "pointer" }}
         />
       </Flex>

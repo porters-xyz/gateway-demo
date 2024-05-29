@@ -14,7 +14,7 @@ export default function Login() {
   const session = useAtomValue(sessionAtom);
 
   const { setOpen } = useModal();
-  const { data, isReady, isRejected, isLoading, isSignedIn, signOut, signIn } = useSIWE();
+  const { data, isLoading} = useSIWE();
 
   return (
     <Box style={{ backgroundColor: "#3C2B27" }}>
@@ -33,7 +33,7 @@ export default function Login() {
           <WelcomeShape>
             <Image src={logo.src} alt="hello" width="160" height="58" />
             <Title order={2} style={{ color: "white", textAlign: "center" }}>
-              Welcome to Porters. Let’s get started!
+              Welcome to Porters. <br/> Let’s get started!
             </Title>
             <Button
               onClick={() => {

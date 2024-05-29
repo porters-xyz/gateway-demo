@@ -401,7 +401,6 @@ export default function Swap() {
                   backgroundColor: 'carrot'
                 }}
                 disabled={shouldDisable && !needToSwitchChain}
-                c={shouldDisable && !needToSwitchChain ? 'blue.4' : 'white'}
                 loading={isPending}
                 loaderProps={{ type: 'dots' }}
             >

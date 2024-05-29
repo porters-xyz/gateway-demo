@@ -54,7 +54,7 @@ export default function SwapOrRedeem() {
                 },
               }}
             >
-              Redeem
+              Top-Up
             </Tabs.Tab>
           </Tabs.List>
 

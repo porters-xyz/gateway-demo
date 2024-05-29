@@ -61,10 +61,10 @@ export default function TOSpage() {
               <Group mb={30}>
                 <Title w='100%' order={2}>1. Acceptance of Terms</Title>
                 <Text>
-                  By using the PORTERS platform reachable under porters.xyz (hereinafter referred to as the Platform), or services
+                  {`By using the PORTERS platform reachable under porters.xyz (hereinafter referred to as the Platform), or services
                   (the “Services”) offered by DATA GATEWAYS LLC (hereinafter referred to as the Company), you (the “User”, “They”)
                   are agreeing to these Terms of Services ("Terms''). If the User does not agree to these Terms, they must refrain
-                  from using the Services and the Platform.
+                  from using the Services and the Platform.`}
                 </Text>
               </Group>
 

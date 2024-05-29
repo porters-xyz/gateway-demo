@@ -48,7 +48,7 @@ export default function Redeem() {
 
     const [hash, setHash] = useState();
 
-    const {  data} = useWaitForTransactionReceipt({hash})
+    const { data, isPending} = useWaitForTransactionReceipt({hash})
 
     const setNotificationData = useSetAtom(notificationAtom)
 

@@ -236,7 +236,7 @@ export default function DashboardLayout({
               my={32}
               bg="#F9DCBF"
             >
-              Your relay request balance is running low, Please top-up you
+              Your relay request balance is running low, Please top-up your
               balance by redeeming some PORTR tokens.
             </Alert>
           )}

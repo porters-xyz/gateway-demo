@@ -221,7 +221,7 @@ export class UtilsService {
   parseLogs(logs: any[], network: string): IParsedLog[] {
     return logs.map((log: any) => ({
       tenantId: fromHex(log?.args?._identifier, 'string').replaceAll(`\x00`, ''),
-      amount: Math.ceil(Number(log?.args?._amount) * 10 ** -12),
+      amount: Math.ceil(Number(log?.args?._amount) * 10 ** -12), // Math.ceil rounds up to next largest integer
       // 10 ** -18 (to parse to human readable) * 10 ** 3 (for 1000 relay per token) * 10 ** 3 for chain weight = 10 ** -12
       referenceId: network + `:` + log.transactionHash!,
       transactionType: TransactionType.CREDIT!,

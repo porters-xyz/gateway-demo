@@ -25,9 +25,9 @@ import {
   IconArrowUpRight,
   IconAlertOctagon,
   IconSettings,
-  IconCheck,
+  IconX,
 } from "@tabler/icons-react";
-import { useEffect } from "react";
+import { useEffect, useLayoutEffect } from "react";
 import Image from "next/image";
 import LogoutButton from "@frontend/components/dashboard/logout";
 import {
@@ -51,7 +51,8 @@ import CreateAppModal from "./createAppModal";
 import CreateAppButton from "./createApp";
 import _ from "lodash";
 import { Address } from "viem";
-import { karla } from "@frontend/utils/theme";
+import { useRouter } from "next/navigation";
+import { useSIWE } from "connectkit";
 
 export default function DashboardLayout({
   children,
@@ -70,7 +71,8 @@ export default function DashboardLayout({
   const setApps = useSetAtom(appsAtom);
   const setRuleTypes = useSetAtom(ruleTypesAtom);
   const { data: appsData } = useUserApps(address as Address);
-
+  const { isSignedIn, isReady, isLoading } = useSIWE();
+  const router = useRouter()
   const balance = _.get(_.first(_.get(session, "netBalance")), "net", 0);
 
   useEffect(() => {
@@ -86,6 +88,11 @@ export default function DashboardLayout({
     if (ruletypes) {
       setRuleTypes(ruletypes);
     }
+
+    if (!isSignedIn && isReady && !isLoading ) {
+      router.replace('/login');
+    }
+
   }, [
     sessionValue,
     appsData,
@@ -96,6 +103,9 @@ export default function DashboardLayout({
     ruletypes,
     setRuleTypes,
     address,
+    isLoading,
+    isReady,
+    isSignedIn
   ]);
 
   const { data: ensName } = useEnsName({
@@ -113,6 +123,9 @@ export default function DashboardLayout({
   const { width } = useViewportSize();
   const isMobile = width < 600;
 
+
+
+
   return (
     <AppShell
       header={{ height: 70 }}
@@ -126,8 +139,7 @@ export default function DashboardLayout({
     >
       <AppShell.Header>
         <Flex w={"full"} justify="space-between" align="center" p={14}>
-          <Burger opened={opened} onClick={toggle} hiddenFrom="sm" p={12} />
-
+          <Burger opened={opened} onClick={toggle} hiddenFrom="sm" size="sm" />
           <Title order={2} style={{
             justifyContent: 'center',
             alignItems: 'center'
@@ -150,9 +162,12 @@ export default function DashboardLayout({
       </AppShell.Header>
 
       <AppShell.Navbar p="md" bg="umbra.1" style={{ color: "white" }} px={"2%"}>
-        <Link href="/dashboard">
-          <Image src={logo.src} alt="hello" width="160" height="58" />
-        </Link>
+        <Flex align='center' justify='space-between' p={5}>
+          <Link href="/dashboard">
+            <Image src={logo.src} alt="hello" width="160" height="58" />
+          </Link>
+           {width < 768 && <IconX onClick={toggle} cursor='pointer'/>}
+        </Flex>
         <Stack justify="space-between" h={"100%"}>
           <Group style={{ marginTop: 32, gap: 2 }}>
             <NavLink

@@ -7,7 +7,8 @@ import {
   Title,
   Stack,
   Alert,
-  Skeleton
+  Skeleton,
+  Notification
 } from "@mantine/core";
 
 import Link from "next/link";
@@ -24,6 +25,7 @@ import {
   IconArrowUpRight,
   IconAlertOctagon,
   IconSettings,
+  IconCheck,
 } from "@tabler/icons-react";
 import { useEffect } from "react";
 import Image from "next/image";
@@ -39,6 +41,7 @@ import { useAtom, useSetAtom } from "jotai";
 import {
   appsAtom,
   endpointsAtom,
+  notificationAtom,
   ruleTypesAtom,
   sessionAtom,
 } from "@frontend/utils/atoms";
@@ -48,6 +51,7 @@ import CreateAppModal from "./createAppModal";
 import CreateAppButton from "./createApp";
 import _ from "lodash";
 import { Address } from "viem";
+import { karla } from "@frontend/utils/theme";
 
 export default function DashboardLayout({
   children,
@@ -59,6 +63,7 @@ export default function DashboardLayout({
   const { data: endpoints } = useEndpoints();
   const { data: ruletypes } = useRuleTypes();
 
+  const [notificationData, setNotificationData] = useAtom(notificationAtom);
   const [session, setSession] = useAtom(sessionAtom);
   const { address } = useAccount();
   const setEndpointAtom = useSetAtom(endpointsAtom);
@@ -136,6 +141,7 @@ export default function DashboardLayout({
           </Title>
 
 
+
           <Flex gap={8}>
             <CreateAppButton />
             <LogoutButton />
@@ -198,6 +204,13 @@ export default function DashboardLayout({
 
       <AppShell.Main>
         <CreateAppModal />
+
+        {
+        notificationData &&
+        <Notification withBorder color="orange" bg='#fff' title={notificationData.title} onClose={() => setNotificationData(null)}>
+              {notificationData.content}
+
+            </Notification>}
 
         <Container size={"xl"}>
           {!!appsData?.length && balance < 1000 && (

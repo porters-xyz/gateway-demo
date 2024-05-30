@@ -30,9 +30,12 @@ import {
     useChainId,
     useSendTransaction,
     useSwitchChain,
+    useWaitForTransactionReceipt,
     useWriteContract,
 } from "wagmi";
 import { useForm } from "@mantine/form";
+import { useSetAtom } from "jotai";
+import { notificationAtom } from "@frontend/utils/atoms";
 
 // Common styles for TextInput and Select components
 const commonStyles = {
@@ -68,11 +71,15 @@ export default function Swap() {
     // Utils
     const chainId = useChainId();
     const { switchChain } = useSwitchChain();
-    const { writeContractAsync, isPending } = useWriteContract();
-    const { sendTransaction } = useSendTransaction();
+    const { writeContractAsync, isPending, isError, isSuccess } = useWriteContract();
+    const { sendTransaction,  data:sendTxData, isSuccess:isSubmitted } = useSendTransaction();
     const queryClient = useQueryClient();
 
     // UI States
+    const setNotificationData = useSetAtom(notificationAtom);
+    const [hash, setHash] = useState();
+    const {data} = useWaitForTransactionReceipt({hash: sendTxData})
+
     const [selectedTokenData, setSelectedTokenData] = useState<IToken>();
 
     const { values, getInputProps, setFieldValue } = useForm({
@@ -168,24 +175,54 @@ export default function Swap() {
     }, [sellAmount]);
 
     const handleAllowance = async () => {
-        await writeContractAsync({
+        const txHash  = await writeContractAsync({
             chainId: selectedChainId,
             address: quote?.sellTokenAddress,
             abi: erc20Abi,
             functionName: "approve",
-            args: [exchangeProxy, sellAmountBigNumber],
+            args: [exchangeProxy, sellAmountBigNumber]
         });
+        if(txHash){
+          setHash(txHash as any)
+        }
     };
 
     const handleSwap = () => {
-        sendTransaction({
+       sendTransaction({
             to: quote?.to!,
             value: quote?.value,
             data: quote?.data,
         });
     };
 
+
+
+
     // Effects
+
+    useEffect(() => {
+      if(isSubmitted || isSuccess){
+        setNotificationData({
+          title: 'Your tx was submitted on chain',
+          content: 'Please wait for it to be completed onchain!'
+        })
+      }
+
+      if(data?.status == 'success'){
+        setNotificationData({
+          title: 'Your tx was successful',
+          content: 'Please wait for UI to reflect changes.'
+        })
+      }
+
+      if(data?.status == 'reverted'){
+        setNotificationData({
+          title: 'Your tx was not successful',
+          content: 'Please check on block explorer or contact porters support!'
+        })
+      }
+
+    }, [isSubmitted, data, isSubmitted, hash, sendTxData])
 
     useEffect(() => {
         if (!selectedTokenData) setSelectedTokenData(defaultToken);
@@ -401,7 +438,6 @@ export default function Swap() {
                   backgroundColor: 'carrot'
                 }}
                 disabled={shouldDisable && !needToSwitchChain}
-                c={shouldDisable && !needToSwitchChain ? 'blue.4' : 'white'}
                 loading={isPending}
                 loaderProps={{ type: 'dots' }}
             >

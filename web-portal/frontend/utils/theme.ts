@@ -149,7 +149,8 @@ export const theme = createTheme({
         root: {
           right: 20,
           bottom: 40,
-          position: 'fixed'
+          position: 'fixed',
+          zIndex: 1000
         }
       }
       }

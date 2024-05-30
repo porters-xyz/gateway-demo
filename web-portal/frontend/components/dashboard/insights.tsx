@@ -196,8 +196,8 @@ const Insights: React.FC = () => {
                         value={String(totalRequests || 0)}
                     />
                     <MetricCard
-                        title="Balance"
-                        value={balance > 0 ? `~` + numeral(balance/1000).format("0.0a") + ` Req` : `0`}
+                        title="Balance (Relays)"
+                        value={balance > 0 ? `~` + numeral(balance/1000).format("0.0a") : `0`}
                     />
                 </Stack>
                 <RingCard

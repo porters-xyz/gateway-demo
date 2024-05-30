@@ -25,11 +25,9 @@ import {
   IconArrowUpRight,
   IconAlertOctagon,
   IconSettings,
-  IconCheck,
-  IconBurger,
   IconX,
 } from "@tabler/icons-react";
-import { useEffect } from "react";
+import { useEffect, useLayoutEffect } from "react";
 import Image from "next/image";
 import LogoutButton from "@frontend/components/dashboard/logout";
 import {
@@ -53,7 +51,8 @@ import CreateAppModal from "./createAppModal";
 import CreateAppButton from "./createApp";
 import _ from "lodash";
 import { Address } from "viem";
-import { karla } from "@frontend/utils/theme";
+import { useRouter } from "next/navigation";
+import { useSIWE } from "connectkit";
 
 export default function DashboardLayout({
   children,
@@ -72,7 +71,8 @@ export default function DashboardLayout({
   const setApps = useSetAtom(appsAtom);
   const setRuleTypes = useSetAtom(ruleTypesAtom);
   const { data: appsData } = useUserApps(address as Address);
-
+  const { isSignedIn, isReady, isLoading } = useSIWE();
+  const router = useRouter()
   const balance = _.get(_.first(_.get(session, "netBalance")), "net", 0);
 
   useEffect(() => {
@@ -88,6 +88,11 @@ export default function DashboardLayout({
     if (ruletypes) {
       setRuleTypes(ruletypes);
     }
+
+    if (!isSignedIn && isReady && !isLoading ) {
+      router.replace('/login');
+    }
+
   }, [
     sessionValue,
     appsData,
@@ -98,6 +103,9 @@ export default function DashboardLayout({
     ruletypes,
     setRuleTypes,
     address,
+    isLoading,
+    isReady,
+    isSignedIn
   ]);
 
   const { data: ensName } = useEnsName({
@@ -114,6 +122,9 @@ export default function DashboardLayout({
 
   const { width } = useViewportSize();
   const isMobile = width < 600;
+
+
+
 
   return (
     <AppShell

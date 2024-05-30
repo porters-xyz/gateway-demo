@@ -403,13 +403,13 @@ export default function Swap() {
                     }}
                     bg={"blue"}
                 >
-                    <Image
-                        src="/favicon.ico"
-                        alt="PORTR"
-                        width={24}
-                        height={24}
-                        style={{ marginRight: 10, borderRadius: 50 }}
-                    />
+                  <Image
+                      src={_.get(portrTokenData, "logoURI") as string}
+                      alt={_.get(portrTokenData, "symbol") as string}
+                      width={24}
+                      height={24}
+                      style={{ marginRight: 10, borderRadius: 50 }}
+                  />
                     PORTR
                 </Button>
             </Flex>

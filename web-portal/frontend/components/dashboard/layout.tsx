@@ -26,6 +26,8 @@ import {
   IconAlertOctagon,
   IconSettings,
   IconCheck,
+  IconBurger,
+  IconX,
 } from "@tabler/icons-react";
 import { useEffect } from "react";
 import Image from "next/image";
@@ -126,8 +128,7 @@ export default function DashboardLayout({
     >
       <AppShell.Header>
         <Flex w={"full"} justify="space-between" align="center" p={14}>
-          <Burger opened={opened} onClick={toggle} hiddenFrom="sm" p={12} />
-
+          <Burger opened={opened} onClick={toggle} hiddenFrom="sm" size="sm" />
           <Title order={2} style={{
             justifyContent: 'center',
             alignItems: 'center'
@@ -150,9 +151,12 @@ export default function DashboardLayout({
       </AppShell.Header>
 
       <AppShell.Navbar p="md" bg="umbra.1" style={{ color: "white" }} px={"2%"}>
-        <Link href="/dashboard">
-          <Image src={logo.src} alt="hello" width="160" height="58" />
-        </Link>
+        <Flex align='center' justify='space-between' p={5}>
+          <Link href="/dashboard">
+            <Image src={logo.src} alt="hello" width="160" height="58" />
+          </Link>
+           {width < 768 && <IconX onClick={toggle} cursor='pointer'/>}
+        </Flex>
         <Stack justify="space-between" h={"100%"}>
           <Group style={{ marginTop: 32, gap: 2 }}>
             <NavLink

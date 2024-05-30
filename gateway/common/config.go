@@ -39,6 +39,7 @@ func setupConfig() *Config {
     configMutex.Do(func() {
         config = &Config{
             defaults: make(map[string]string),
+            loglevel: &log.LevelVar{},
         }
         config.defaults[SHUTDOWN_DELAY] = "5"
         config.defaults[JOB_BUFFER_SIZE] = "50"
@@ -47,7 +48,7 @@ func setupConfig() *Config {
         config.defaults[PORT] = "9000"
         config.defaults[INSTRUMENT_ENABLED] = "false"
 
-        level := GetLogLevel()
+        level := parseLogLevel(os.Getenv(LOG_LEVEL))
         config.SetLogLevel(level)
     })
     return config
@@ -90,11 +91,15 @@ func Enabled(key string) bool {
 
 func GetLogLevel() log.Level {
     configval := GetConfig(LOG_LEVEL)
-    if strings.EqualFold(configval, "ERROR") {
+    return parseLogLevel(configval)
+}
+
+func parseLogLevel(level string) log.Level {
+    if strings.EqualFold(level, "ERROR") {
         return log.LevelError
-    } else if strings.EqualFold(configval, "WARN") {
+    } else if strings.EqualFold(level, "WARN") {
         return log.LevelWarn
-    } else if strings.EqualFold(configval, "DEBUG") {
+    } else if strings.EqualFold(level, "DEBUG") {
         return log.LevelDebug
     } else {
         return log.LevelInfo
@@ -103,6 +108,6 @@ func GetLogLevel() log.Level {
 
 func (c *Config) SetLogLevel(level log.Level) {
     c.loglevel.Set(level)
-    logger := log.New(log.NewJSONHandler(os.Stderr, &log.HandlerOptions{Level: c.loglevel}))
+    logger := log.New(log.NewTextHandler(os.Stdout, &log.HandlerOptions{Level: c.loglevel}))
     log.SetDefault(logger)
 }

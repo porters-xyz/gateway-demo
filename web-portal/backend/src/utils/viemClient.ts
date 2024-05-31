@@ -1,5 +1,5 @@
 import { createPublicClient, http } from 'viem';
-import { optimism, base, gnosis } from 'viem/chains';
+import { optimism, base, gnosis, taiko } from 'viem/chains';
 
 export const opClient = createPublicClient({
   chain: optimism,
@@ -13,5 +13,10 @@ export const baseClient = createPublicClient({
 
 export const gnosisClient = createPublicClient({
   chain: gnosis,
+  transport: http(),
+});
+
+export const taikoClient = createPublicClient({
+  chain: taiko,
   transport: http(),
 });

@@ -42,7 +42,7 @@
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.1",
     "siwe": "^2.1.4",
-    "viem": "2.x",
+    "viem": "^2.13.3",
     "web3": "^4.8.0"
   },
   "devDependencies": {

@@ -5,6 +5,7 @@ import { Provider as JotaiProvider } from "jotai";
 import {  WagmiProvider, createConfig, http } from "wagmi";
 import { ReactNode } from "react";
 import { siweConfig } from "./siwe";
+import { connectKitTheme } from "@frontend/styles/connectkit-theme";
 
 export const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID!;
 export const NEXT_PUBLIC_APP_URL = process.env.NEXT_PUBLIC_APP_URL!;
@@ -50,7 +51,7 @@ export default function Web3Provider({
       <QueryClientProvider client={queryClient}>
         <JotaiProvider>
         <SIWEProvider {...siweConfig}>
-        <ConnectKitProvider>
+        <ConnectKitProvider customTheme={connectKitTheme}>
         {children}
         </ConnectKitProvider>
         </SIWEProvider>

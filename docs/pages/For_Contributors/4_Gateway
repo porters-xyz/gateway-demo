@@ -1,0 +1,32 @@
+# Gateway Documentation
+
+The Gateway first and foremost relies on the `net/http` library and its `ReverseProxy` functionality.
+
+Requests are handled by `GorillaMux` by mapping paths to the reverse proxy.
+
+Inside the reverse proxy, middleware is running and hosts the logic that allows or denies requests. For any change that needs to be made, 
+
+As middleware plugins are injected. These implement rules for proxyiing or not proxy. 
+
+For any contributor looking to contribute, plugins are a viable path for getting started. They are located in the **plugins packages**.
+
+## Plugins Pakckage
+
+The `main.go` configures the server. This allows you to add your plugins to `main.go`. It then calls `gateway.start`.
+
+For any new logic, a new plugin must be provided.
+
+Other aspects that are, the database package,
+
+The database package contains all logic for interactions between redis and postgress.
+
+## Utils Package
+
+The utils package has small utility packages.
+
+## Commons Package
+
+Common contains the prometheus metrics, as well as configuration files.
+
+- PLOR WANTS TO EXPLAIN THE CONCEPT OF THE LIFECYCLE:   
+    - each stage of the lifecycle must be fulfilled by a plugin in order for the request to be considered valid

@@ -1,0 +1,31 @@
+# Frontend
+
+## STRUCUTRE TBD
+This page documents the frontend of the PORTERS portal.
+
+The frontend uses next.js, which is a full stack framework. Yet, PORTERS is only using it for the frontend.
+
+Regarding **next.js**, **pages router** is used instead of **app router** and each page is in its respective directory `[pageName]/index.tsx`. Components for relevant pages are in components folder as
+`components/[pageFolder]/...components.tsx`.
+
+The frontend calls endpoints on the next.js backend/ API and they are redirected to the the nest.js backend.
+
+We are using the Mantine UI library for our components.
+
+Connect Kit is used for Sign-in-with-Ethereum, which verifies messages and validates sessions by redirecting to the nest.js backend. For this Connect Kit uses the `/siwe` endpoint.
+
+WAGMI is used to connect the frontend to the blockchain, using REACT. For state management on the frontend **jotai** and tanstack query are used.
+
+For general fetching, the PORTERS portal uses tanstack query as it has some state management capabilities.
+
+The theming is mostly centralised in a `theme.ts` file.
+
+The swapping feature, which is related to the [payment infrastructure](\gateway-demo/docs/pages/For_Contributors/7_Smart_Contracts_Payments), uses [0x](https://wwww.0x.org).
+
+The frontend calls the backend, which in turn calls **prometheus** for usage data and alerts.
+
+Balances are provided from sessions. If an app or tenant has been rate limited, the notification is read from the backend by calling prometheus. The session contains user info, i.e. apps, orgs (not exposed), enterprises (not exposed), and tenant ID.
+
+Redeeming calls the `apply to account` function 
+
+For generating invoices, the portal uses `@react-pdf/renderer`.

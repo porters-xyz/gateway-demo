@@ -3,7 +3,7 @@ import { CustomPrismaService } from 'nestjs-prisma';
 import { PrismaClient, TransactionType } from '@/.generated/client';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { parseAbiItem, fromHex, isAddress } from 'viem';
-import { opClient, baseClient, gnosisClient } from './viemClient';
+import { opClient, baseClient, gnosisClient, taikoClient } from './viemClient';
 import { PORTR_ADDRESS } from './const';
 interface IParsedLog {
   tenantId: string;
@@ -166,15 +166,17 @@ export class UtilsService {
     return data;
   }
 
+
   @Cron(CronExpression.EVERY_MINUTE)
-  async watchEvent() {
+  async watchEvent(lastBlocksCount = 1000) {
     console.log('Getting Event Logs from all clients');
 
     // Define clients and their respective names
     const clients = [
       { client: opClient, name: 'optimism' },
       { client: gnosisClient, name: 'gnosis' },
-      { client: baseClient, name: 'base' }
+      { client: baseClient, name: 'base' },
+      { client: taikoClient, name: 'taiko'}
     ];
 
     // Fetch and parse logs for all clients
@@ -185,7 +187,7 @@ export class UtilsService {
         const logs = await client.getLogs({
           event,
           address: PORTR_ADDRESS,
-          fromBlock: blockNumber - BigInt(1000),
+          fromBlock: blockNumber - BigInt(lastBlocksCount),
           toBlock: blockNumber,
         });
 
@@ -193,19 +195,19 @@ export class UtilsService {
       })
     );
 
-    const [parsedLogsOP, parsedLogsGnosis, parsedLogsBase] = allParsedLogs;
+    const [parsedLogsOP, parsedLogsGnosis, parsedLogsBase, parsedLogsTaiko] = allParsedLogs;
 
-    console.log({ parsedLogsOP, parsedLogsGnosis, parsedLogsBase });
+    console.log({ parsedLogsOP, parsedLogsGnosis, parsedLogsBase, parsedLogsTaiko });
 
-    if (!parsedLogsOP.length && !parsedLogsGnosis.length && !parsedLogsBase.length) {
-      console.log('No New Redemptions');
+    if (!parsedLogsOP.length && !parsedLogsGnosis.length && !parsedLogsBase.length && !parsedLogsTaiko.length) {
+      console.log('No New Redemptions',`parsed logs for last: ${lastBlocksCount} blocks`);
       return;
     }
 
     // Create records for unique logs
     const appliedLogs = await this.prisma.client.paymentLedger.createMany({
       skipDuplicates: true,
-      data: [...parsedLogsOP, ...parsedLogsGnosis, ...parsedLogsBase],
+      data: [...parsedLogsOP, ...parsedLogsGnosis, ...parsedLogsBase, ...parsedLogsTaiko],
     });
 
     console.log({ appliedLogs });
@@ -226,6 +228,13 @@ export class UtilsService {
       referenceId: network + `:` + log.transactionHash!,
       transactionType: TransactionType.CREDIT!,
     }));
+  }
+
+  @Cron(CronExpression.EVERY_HOUR)
+  async reconciliation(){
+    console.log("Started Reconciliation at " + new Date().toLocaleString());
+    () => this.watchEvent(25000);
+    console.log("Finished Reconciliation at " + new Date().toLocaleString());
   }
 
 }

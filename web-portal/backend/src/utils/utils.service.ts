@@ -200,7 +200,7 @@ export class UtilsService {
     console.log({ parsedLogsOP, parsedLogsGnosis, parsedLogsBase, parsedLogsTaiko });
 
     if (!parsedLogsOP.length && !parsedLogsGnosis.length && !parsedLogsBase.length && !parsedLogsTaiko.length) {
-      console.log('No New Redemptions',`pased logs for last: ${lastBlocksCount} blocks`);
+      console.log('No New Redemptions',`parsed logs for last: ${lastBlocksCount} blocks`);
       return;
     }
 

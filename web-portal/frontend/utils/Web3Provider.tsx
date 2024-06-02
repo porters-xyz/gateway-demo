@@ -10,13 +10,6 @@ import { connectKitTheme } from "@frontend/styles/connectkit-theme";
 export const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID!;
 export const NEXT_PUBLIC_APP_URL = process.env.NEXT_PUBLIC_APP_URL!;
 
-const envVariables = { projectId, NEXT_PUBLIC_APP_URL };
-
-Object.entries(envVariables).forEach(([key, value]) => {
-  if (!value) {
-    throw new Error(`${key} is not defined`);
-  }
-});
 
 // Create wagmiConfig
 export const chains = [mainnet, optimism, base, gnosis] as const;

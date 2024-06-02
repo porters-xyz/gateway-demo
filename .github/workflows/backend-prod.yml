@@ -2,12 +2,12 @@ name: Fly Deploy Prod Backend
 on:
     push:
         branches:
-            - develop
+            - master
         paths:
             - "web-portal/backend/**"
 jobs:
     deploy:
-        name: Deploy Staging Backend
+        name: Deploy Prod Backend
         runs-on: ubuntu-latest
         concurrency: deploy-group
         steps:

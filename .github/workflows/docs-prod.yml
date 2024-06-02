@@ -2,12 +2,12 @@ name: Fly Deploy Prod Docs
 on:
     push:
         branches:
-            - develop
+            - master
         paths:
             - "docs/**"
 jobs:
     deploy:
-        name: Deploy Staging Frontend
+        name: Deploy Prod Frontend
         runs-on: ubuntu-latest
         concurrency: deploy-group
         steps:

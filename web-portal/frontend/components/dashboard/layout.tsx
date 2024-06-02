@@ -27,7 +27,7 @@ import {
   IconSettings,
   IconX,
 } from "@tabler/icons-react";
-import { useEffect, useLayoutEffect } from "react";
+import { useEffect } from "react";
 import Image from "next/image";
 import LogoutButton from "@frontend/components/dashboard/logout";
 import {

@@ -8,13 +8,14 @@ import { useAtomValue } from "jotai";
 import { sessionAtom } from "@frontend/utils/atoms";
 
 import { useSIWE, useModal, SIWESession } from "connectkit";
+import CommonLinks from "@frontend/components/login/Links";
 
 export default function Login() {
 
   const session = useAtomValue(sessionAtom);
 
   const { setOpen } = useModal();
-  const { data, isLoading} = useSIWE();
+  const { data, isLoading, isConnected} = useSIWE();
 
   return (
     <Box style={{ backgroundColor: "#3C2B27" }}>
@@ -31,7 +32,7 @@ export default function Login() {
           }}
         >
           <WelcomeShape>
-            <Image src={logo.src} alt="hello" width="160" height="58" />
+            <Image src={logo.src} alt="porters" width="160" height="58" />
             <Title order={2} style={{ color: "white", textAlign: "center" }}>
               Welcome to Porters. <br/> Let’s get started!
             </Title>
@@ -42,13 +43,14 @@ export default function Login() {
               loading={isLoading}
               loaderProps={{ type: 'dots' }}
             >
-              {isLoading
-                ? "Connecting"
-                : Boolean(data?.address)
-                  ? "Disconnect"
+              {Boolean(data?.address)?
+                 "Disconnect"
                   : "Connect Wallet"}
             </Button>
           </WelcomeShape>
+          <Container>
+            <CommonLinks />
+            </Container>
           <Container
             style={{
               position: "absolute",

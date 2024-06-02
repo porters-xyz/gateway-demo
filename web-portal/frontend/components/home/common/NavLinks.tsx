@@ -10,7 +10,7 @@ export default function NavLinks({ size = 18 }: { size?: number }) {
         Home
       </Title>
 
-      <Title size={size} fw={500} onClick={() => router.push('/#pricing')} style={{
+      <Title size={size} fw={500} onClick={() => router.push('/pricing')} style={{
         cursor: "pointer"
       }}>
         Pricing

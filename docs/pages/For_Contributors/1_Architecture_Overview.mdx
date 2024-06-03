@@ -1,0 +1,31 @@
+# Overview of RPC Gateway Architecture
+
+This document outlines the architecture of the RPC Gateway with recent changes and data flow descriptions.
+
+## Changes to Initial Architectures
+
+- **External Services**: Some services initially conceptualized as internal are now considered external.
+- **Payment Infrastructure**: Changes have been made to the payment infrastructure.
+- **Data Flow**: The data primarily flows from the frontend to the backend and then to the schema.
+
+## Data Management
+
+- **Account Management**: Frontend and backend manage access to accounts for setting up the database.
+- **Caching**: Redis database primarily caches PostgreSQL calls, including usage data, which is periodically updated in chunks to the PostgreSQL database.
+
+## Future Enhancements
+
+- **Flow Chart**: Future enhancements may include the addition of a flow chart to visually represent the data flow and interactions.
+- **Canonical Data Store**: PostgreSQL serves as the canonical data store for all information.
+- **Configuration Updates**: Frontend calls the backend to alter PostgreSQL for configuring the proxy.
+
+## Smart Contracts and Event Watcher
+
+- **Token Burning**: Smart contracts are responsible for burning tokens.
+- **Event Monitoring**: An event watcher continuously monitors these events and updates the account accordingly.
+
+## Architecture Diagram
+
+![Architecture Diagram](/FINAL_PORTERS_Architecture.png)
+
+For further details on the architecture and data flow, refer to the diagram above.

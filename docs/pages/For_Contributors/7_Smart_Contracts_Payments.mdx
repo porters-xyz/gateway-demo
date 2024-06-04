@@ -1,0 +1,28 @@
+# Smart Contracts
+
+## ERC-20 Token `PORTR`
+
+It is a standard ERC-20 smart contract with a few additions, namely:
+
+- open mint with a fixed price, which is maintained by Chainlink.
+    - the smart contract on Taiko Mainnet is using PYTH data feed through the Chainlink interface
+    - it allows for minting by sending the native token as the payable, the rate of which is set by the Chainlink price feed
+- admin mint is only called by the owner to mint without having to pay
+    - this is used for internal usage and enterprise-onboarding
+- apply to account function
+    - initiates a burn and emits an event, which is used to increase the account balance within the gateway
+- sweep and sweep token
+    - allows the operator to withdraw token balances of the contract, both native and ERC-20, sor settling internal accounts
+    - this enables coverage of POKT relay costs
+    - it completes the lifecycle of the smart contract
+
+## PYTH Integration
+
+The Taiko deployment of the smart contract has a dependency of the PYTH-wrapper for Chainlink. It has been deployed by us, but the code-base is not maintained by PORTERS. The wrapper is then connected to our implementation.
+
+A [script]() for deploying this wrapper exists and has to be modified for deploying any other price feed.
+
+## Smart Contract Deployments
+
+Link Smart Contract Deployments
+

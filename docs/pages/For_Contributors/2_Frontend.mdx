@@ -1,31 +1,45 @@
-# Frontend
+# Frontend Documentation
 
-## STRUCUTRE TBD
-This page documents the frontend of the PORTERS portal.
+## Introduction
 
-The frontend uses next.js, which is a full stack framework. Yet, PORTERS is only using it for the frontend.
+This document provides an overview of the frontend architecture and technologies used in the PORTERS portal.
 
-Regarding **next.js**, **pages router** is used instead of **app router** and each page is in its respective directory `[pageName]/index.tsx`. Components for relevant pages are in components folder as
-`components/[pageFolder]/...components.tsx`.
+## Framework and Libraries
 
-The frontend calls endpoints on the next.js backend/ API and they are redirected to the the nest.js backend.
+- **Next.js**: Used as the frontend framework.
+- **Mantine**: UI library for components.
+- **Connect Kit**: For Sign-in-with-Ethereum functionality.
+- **WAGMI**: Connects the frontend to the blockchain.
+- **Jotai and Tanstack Query**: For state management.
+- **@react-pdf/renderer**: For generating invoices.
 
-We are using the Mantine UI library for our components.
+## Folder Structure
 
-Connect Kit is used for Sign-in-with-Ethereum, which verifies messages and validates sessions by redirecting to the nest.js backend. For this Connect Kit uses the `/siwe` endpoint.
+- **Pages**: Uses next.js pages router, each page resides in its respective directory `[pageName]/index.tsx`.
+- **Components**: Reusable components reside in `components/[pageFolder]/...components.tsx`.
 
-WAGMI is used to connect the frontend to the blockchain, using REACT. For state management on the frontend **jotai** and tanstack query are used.
+## Functionality
 
-For general fetching, the PORTERS portal uses tanstack query as it has some state management capabilities.
+- **Sign-in-with-Ethereum**: Handled by Connect Kit, which validates sessions using the `/siwe` endpoint on backend.
+- **Blockchain Integration**: WAGMI is used for connecting frontend to the blockchain.
+- **State Management**: Jotai and Tanstack Query are used for managing state.
+- **Fetching Data**: Tanstack Query is used for general fetching.
+- **Theming**: Centralized theming in a `theme.ts` file.
 
-The theming is mostly centralised in a `theme.ts` file.
+## Integration with Backend
 
-The swapping feature, which is related to the [payment infrastructure](\gateway-demo/docs/pages/For_Contributors/7_Smart_Contracts_Payments), uses [0x](https://wwww.0x.org).
+- **Endpoints**: Frontend calls endpoints on the next.js backend/API, which redirects to the nest.js backend.
+- **Swap Feature**: Swapping feature related to payment infrastructure uses 0x.
+- **Usage Data**: Backend calls Prometheus for usage data and alerts.
 
-The frontend calls the backend, which in turn calls **prometheus** for usage data and alerts.
+## Session and User Information
 
-Balances are provided from sessions. If an app or tenant has been rate limited, the notification is read from the backend by calling prometheus. The session contains user info, i.e. apps, orgs (not exposed), enterprises (not exposed), and tenant ID.
+- **Balances**: Provided from sessions, containing user info such as apps, orgs, enterprises, and tenant ID.
+- **Rate Limiting**: Notifications retrieved from the backend by calling Prometheus.
+- **Redeeming**: Calls the `applyToAccount` function.
 
-Redeeming calls the `apply to account` function 
+## Additional Tools
 
-For generating invoices, the portal uses `@react-pdf/renderer`.
+- **Invoice Generation**: Utilizes `@react-pdf/renderer` for generating invoices.
+
+For detailed information on each aspect, refer to the relevant sections above.

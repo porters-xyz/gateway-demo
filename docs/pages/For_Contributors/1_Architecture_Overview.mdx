@@ -8,17 +8,17 @@ A few changes to the initial architectures are needed.
 
 Generally the data flows from the frontend to the backend and then to the schema.
 
-The frontend and the backend manage access to accounts for setting up the database. A redis database primarily caches postgress calls, but also usage is being cached and is being updated in chunks to the postgress database.
+The frontend and the backend manage access to accounts for setting up the database. A redis database primarily caches postgres calls, but also usage is being cached and is being updated in chunks to the postgress database.
 
 - future enhancement may include a flow chart
 - postgress is the canonical data store for all bits
-- frontend calls the backend, which in turn alters the postgress for configuring the proxy
+- frontend calls the backend, which in turn alters the postgres for configuring the proxy
 
 - smart contracts are burning tokens
 - event watcher for looking for these events and updating the account
 
 ## Architecture Diagram
 
-
 ![](/FINAL_PORTERS_Architecture.png)
 
+For further details on the architecture and data flow, refer to the diagram above.

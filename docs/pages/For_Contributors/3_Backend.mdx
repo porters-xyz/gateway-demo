@@ -1,9 +1,22 @@
-# Backend
+# Backend Documentation
 
-This page documents the backend of the PORTERS portal.
+This document provides an overview of the backend architecture and technologies used in the PORTERS portal.
 
-**nest.js** is used as a backend framework with **express.js** underneath. **Prisma ORM** is used to interact to interact with the postgress database. We use authorisation guard as a global guard for protecting our routes. The authorisation guard checks whether a session cookie was provided. If a user is authorised for a request they want to perform, it authorises it accordingly. Only one endpoint `\siwe` is public and is marked with a custom decorator `isPublic`.
+## Frameworks and Libraries
 
-The endpoint documentation/ parameter documentation is available at our [API specification](https://staging.porters.xyz/api/specs). The REST endpoints should be self-explanatory.
+- **Nest.js**: Backend framework.
+- **Express.js**: Used underneath Nest.js.
+- **Prisma ORM**: Interacts with the PostgreSQL database.
 
+## Authentication and Authorization
 
+- **Global Guard**: Authorisation guard is used as a global guard to protect routes.
+- **Session Authentication**: Checks whether a session cookie is provided for authorisation.
+- **Endpoint Visibility**: Only one endpoint, `\siwe`, is public and marked with a custom decorator `isPublic`.
+
+## API Documentation
+
+- **API Specification**: Endpoint documentation and parameter details are available in our [API specification](https://staging.porters.xyz/api/specs).
+- **REST Endpoints**: Endpoints follow REST principles and should be self-explanatory.
+
+For detailed information on each aspect, refer to the relevant sections above.

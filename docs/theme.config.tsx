@@ -2,7 +2,7 @@ import React from "react";
 import { DocsThemeConfig } from "nextra-theme-docs";
 
 const config: DocsThemeConfig = {
-  logo: <span>Open Gateway</span>,
+  logo: <span>Porters RPC Gateway</span>,
   project: {
     link: "https://github.com/porters-xyz/gateway-demo/",
   },

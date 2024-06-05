@@ -1,0 +1,38 @@
+# Gateway Documentation
+
+This document provides an overview of the gateway architecture and functionality used in the PORTERS portal.
+
+## Overview
+
+The gateway primarily relies on the `[net/http](https://pkg.go.dev/net/http)` library and its `ReverseProxy` functionality.
+Requests are handled by `[gorilla/mux](https://github.com/gorilla/mux)`, mapping paths to the reverse proxy.
+
+## Reverse Proxy and Middleware
+
+Inside the reverse proxy, middleware runs and hosts logic for allowing or denying requests in addition to modifying aspects of the request (headers, error codes, etc).
+These middleware plugins are inserted into the request lifecycle, implementing rules for proxying or rejecting requests.
+Contributors can start by exploring plugins located in the **plugins** package.
+
+## Plugins Package
+
+The `main.go` file configures the server and allows adding plugins. Contributors can add new logic by providing new plugins.
+These plugins are essential for customizing gateway behavior.
+
+## Database Package
+
+The `db` package contains logic for interactions between Redis and PostgreSQL, handling data storage and retrieval.
+
+## Utils Package
+
+The `utils` package consists of small utility packages, providing helper functions and tools for various tasks.
+
+## Commons Package
+
+The `commons` package includes Prometheus metrics and configuration files essential for gateway operations.
+
+## Lifecycle Management
+
+The concept of the lifecycle, where each stage must be fulfilled by a plugin for the request to be considered valid.
+This concept guides the development and integration of plugins into the gateway architecture.
+
+For more detailed information on each aspect, refer to the corresponding sections above.

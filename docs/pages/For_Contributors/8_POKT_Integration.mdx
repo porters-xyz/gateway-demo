@@ -1,0 +1,18 @@
+# PORTERS Integration with POKT
+
+We are using a script by Nodies for the app stakes, which can be found [here](). It is a simple node script, which walks you through the app stake process.
+
+One sets up a file with the private keys for accounts that contain unstaked POKT. The private key goes into the input directory. Then the script is run.
+
+The inputs are the POKT nodes, which is required to do the RPC calls.
+
+## Prompts
+
+- POKT node, URL of the node the script is going to call to
+- Chain IDs, a CSV of the chains you intend to stake to. It can be a list of one to fifteen chain IDs
+- selector for POKT Mainnet and POKT Testnet
+- amount of POKT to stake per account and chain
+    - mono relays are split across chains
+
+
+Thereafter, the script verifies the prompts. The script then sends the POKT to stake. 

@@ -167,7 +167,7 @@ const Insights: React.FC = () => {
 
 
     const successData = totalRequests;
-    const failureData = 0;
+    const failureData = 0; // TODO: filter success and failure separately when there is enough usage
 
     return (
         <Stack>

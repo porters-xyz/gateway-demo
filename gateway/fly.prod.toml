@@ -13,6 +13,8 @@ primary_region = 'sea'
 
 [env]
   HOST = 'rpc.porters.xyz'
+  JOB_BUFFER_SIZE = '500'
+  NUM_WORKERS = '50'
   ### SECRETS ###
   # DATABASE_URL = ...
   # PROXY_TO = ...

@@ -1,31 +1,33 @@
 default:
     @just --list
 
+clean:
+    @just gateway/clean
+    @just web-portal/clean
+    @just docs/clean
+
 test:
     @just gateway/test
 
 generate:
-    cd ./web-portal/backend && pnpm install && npx prisma generate
+    @just web-portal/backend/generate
 migrate:
-    cd ./web-portal/backend && pnpm install && npx prisma migrate dev
+    @just web-portal/backend/migrate
 
+dev:
+    @just web-portal/dev
+build:
+    @just gateway/build
+    @just web-portal/build
+run:
+    @just gateway/run
+    @just web-portal/run
 
-dev-backend:
-    cd ./web-portal/backend && pnpm install && pnpm start
-build-backend:
-    cd ./web-portal/backend && pnpm install && pnpm build
-serve-backend:
-    cd ./web-portal/backend && pnpm install && pnpm start:prod
+stage:
+    @just gateway/stage
+    @just web-portal/stage
 
-
-dev-frontend:
-    cd ./web-portal/frontend && pnpm install && pnpm dev
-build-frontend:
-    cd ./web-portal/frontend && pnpm install && pnpm build
-serve-frontend:
-    cd ./web-portal/frontend && pnpm install && pnpm start
-
-deploy-prod:
-    @just gateway/prod-deploy
-    @just services/gatewaykit/prod-deploy
-    @just services/redis/prod-deploy
+prod:
+    @just gateway/prod
+    @just services/gatewaykit/prod
+    @just services/redis/prod

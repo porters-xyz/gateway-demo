@@ -1,0 +1,23 @@
+default:
+    @just --list
+
+clean:
+    rm -rf node_modules/
+
+install:
+    pnpm install
+
+build: install
+    pnpm build
+
+dev: install
+    pnpm dev
+
+run: install
+    pnpm start
+
+stage:
+    fly deploy
+
+prod:
+    fly deploy -c fly.prod.toml

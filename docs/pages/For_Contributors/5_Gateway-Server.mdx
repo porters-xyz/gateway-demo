@@ -1,0 +1,18 @@
+# Gateway Server
+
+## Introduction
+
+This page documents our usage of the gateway server (previously gateway kit). More thorough documentation is available at the [Gateway Server documentation](https://github.com/pokt-network/gateway-server/blob/main/docs/overview.md).
+
+## Description of our implementation
+
+We are proxying to the Gateway Server. The Gateway Server, in turn coordinates traffic with the POKT Network, i.e. selecting nodes to route traffic to based on the alocated app stakes.
+We use [this script](https://github.com/baaspoolsllc/pokt-stake-apps-script) to create app stakes.
+The private keys from the app stakes are imported to the Gateway Server, which distributes POKT-specific traffic among the staked nodes according to the app stakes, latency, and available nodes.
+
+Furthermore, the gateway server manages the quality of services and the pool of nodes on the POKT network. In short, it tracks connections between app stakes and nodes and distributes traffic among them.
+
+## Our usage
+
+We included a Docker image for the gateway server in our repository.
+The version to pull and deploy can be managed in the appropriate `docker-compose.yaml` or `fly.toml` file.

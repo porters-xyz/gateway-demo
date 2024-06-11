@@ -2,35 +2,52 @@
 
 ## Description
 
-It is the contract layer between the gateway and the portal. Any change to the schema must be coordinated between the portal and the gateway. It is a shared component between the portal and the gateway, as such connecting the two components.
+It is the data contract between the gateway and the portal.
+Any change to the schema must be coordinated between the portal and the gateway.
+It is a shared component between the portal and the gateway, as such connecting the two components.
+We put it in the `services/postgres` directory so neither codebase feels it has direct control.
 
 Schemas are managed by **Prisma object relational model (ORM)**. It allows to generate object models for the schemas.
+You can run `just generate` to generate the javascript code for interacting with the database.
+In addition changes to the schema can be pushed to the database with `just migrate`.
 
 ## Functionality
 
-The schema consists of several tables. Tables contain a partition. There are portal-specific tables and some tables are shared between the gateway and the portal. Tables that are not interfacing with the gateway are frontend-specific.
+The schema consists of several tables.
+There is a conceptual partition in the schema based on whether the gateway proxy directly interfaces with it.
+There are portal-specific tables and some tables which are shared between the gateway and the portal.
+Tables that are not interfacing with the gateway are frontend-specific and can be modified without the need to coordinate with the golang packages.
 
 ### Shared Tables
 
-- tenant table, managed by the portal
-    - stores and tracks the balance
-- app(lication) table, managed by the portal
-- app rule table, managed by the portal
-- payment ledger, updated and managed by the watcher
-- relay ledger, updated by the gateway
-- product table, it is a look up table
-    - contains the supported chains, but generalises 
-    - maps the chain name to an identifier
+- **Tenant**:
+    - created by the portal, apps can be attached to it
+    - stores and tracks the relay balance
+- **App**:
+    - application table, managed by the portal
+    - each app represents an set of endpoints for the enabled chains
+- **AppRule**:
+    - app rules add security or constraints on the endpoints
+- **RuleType**:
+    - types of app rules supported by the gateway
+- **PaymentLedger**:
+    - updated and managed by the event watcher
+- **RelayLedger**:
+    - updated by the gateway as relays are consumed
+- **Product**:
+    - lookup table for endpoint
+    - contains the supported chains for the gateway
+    - maps the chain name to the POKT identifier
     - enables per product usage tracking
-- rule-type table, a look up table
-    - describes the available rules
-    - it is used inconsequentially by the gateway
 
 ### Portal-only Tables
 
-- user table, stores user and session information, as well as governing permissions
-- org(anisation) table, currently not used, but allows for scalability in the future
-- enterprise table, for future use
-    - an enterprise can have many tenants and many organisation
-    - organisations and tenants under an enterprise can autonomously manage balances
-- user-org mapping is contained in another table
+- **User**:
+    - stores user and session information
+- **Org**:
+    - for future use
+    - allows multiple users to share a `Tenant`
+- **Enterprise**:
+    - for future use
+    - an enterprise can have multiple tenants and organisations
+    - since balances are managed at the tenant level, allows multiple cost centers

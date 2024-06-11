@@ -4,8 +4,8 @@ This document provides an overview of the gateway architecture and functionality
 
 ## Overview
 
-The gateway primarily relies on the `[net/http](https://pkg.go.dev/net/http)` library and its `ReverseProxy` functionality.
-Requests are handled by `[gorilla/mux](https://github.com/gorilla/mux)`, mapping paths to the reverse proxy.
+The gateway primarily relies on the [net/http](https://pkg.go.dev/net/http) library and its `ReverseProxy` functionality.
+Requests are handled by [gorilla/mux](https://github.com/gorilla/mux), mapping paths to the reverse proxy.
 
 ## Reverse Proxy and Middleware
 
@@ -15,24 +15,102 @@ Contributors can start by exploring plugins located in the **plugins** package.
 
 ## Plugins Package
 
-The `main.go` file configures the server and allows adding plugins. Contributors can add new logic by providing new plugins.
+The `main.go` file configures the server and allows adding plugins to the registry.
+Contributors can add new logic by providing new plugins.
 These plugins are essential for customizing gateway behavior.
+
+The plugin interface is defined as:
+
+```go
+type Plugin interface {
+    Name() string
+    Key() string
+    Load()
+}
+```
+
+`Name()` is just the user-friendly name by which to describe the plugin.
+`Key()` is used to avoid collisions between Plugins, any cache data specific to a plugin should be prefixed with `Key()`.
+`Load()` is called on application start to perform any steps needed to initialize the plugin
+
+There are two additional sub-interfaces which are called for each request.
+`PreHandler` introduces a function `HandleRequest(*http.Request) error` which can be implemented to be called before requests are forwarded to the POKT network.
+This should be used to reject requests and make any precondition checks.
+`PostHandler` introduces a function `HandleResponse(*http.Response) error` which may be implemented to be called after the Response from the gateway server.
+It should be used to modify the response or clean up any errant responses.
+In either case, an `error` may be returned which will reflect in the HTTP response.
+
+### Lifecycle Management
+
+This gateway introduces the concept of a lifecycle, where each stage must be fulfilled by a plugin for the request to be considered valid.
+Plugins are not required to fulfill any lifecycle stages, but may fulfill several.
+This concept guides the development and integration of plugins into the gateway architecture.
+
+Currently there are four stages:
+- `Auth`
+- `AccountLookup`
+- `BalanceCheck`
+- `RateLimit`
+
+## Proxy Package
+
+The primary package in this program is the `proxy` package.
+This defines the above `Plugin` type and calls it as part of the request lifecycle.
+The proxy can be started as it is in the `gateway.go` file by calling `Start()` and requests will be proxyed to the gateway server defined by the environment variable `PROXY_TO` according to the established usage pattern.
 
 ## Database Package
 
 The `db` package contains logic for interactions between Redis and PostgreSQL, handling data storage and retrieval.
+Redis acts as a pass-through cache with a few additional features.
+The goal is to keep all database specific interaction in this package (`go-redis` and `pq`).
 
 ## Utils Package
 
 The `utils` package consists of small utility packages, providing helper functions and tools for various tasks.
+- `gatewaykit.go` defines `Target` which builds the URL to proxy to
+- `rate.go` defines the encoding of rate limits using `ISO 8601` inspired format
+- `sha256.go` is a wrapper on the `crypto/sha256` library for easily producing hashes
 
 ## Commons Package
 
 The `commons` package includes Prometheus metrics and configuration files essential for gateway operations.
 
-## Lifecycle Management
+### Config
 
-The concept of the lifecycle, where each stage must be fulfilled by a plugin for the request to be considered valid.
-This concept guides the development and integration of plugins into the gateway architecture.
+Environment variables are used to configure the gateway.
+In the future configuration may be moved to the database or a config file.
+Current environment variables are:
+- **SHUTDOWN_DELAY**: How long to wait for processes to finish on graceful shutdown (default: 5sec)
+- **JOB_BUFFER_SIZE**: How many worker tasks to buffer before blocking (default: 50)
+- **NUM_WORKERS**: How many goroutines to run to process the job buffer (default: 10)
+- **PROXY_TO**: Internal URL to gateway server
+- **HOST**: Domain this is hosted on, used to extract chain name from subdomain
+- **PORT**: Network port for server to listen on (default: 9000)
+- **DATABASE_URL**: Postgres connection URL
+- **REDIS_URL**: Redis connection URL, alternative to decomposed vars
+- **REDIS_ADDR**: Host of redis server
+- **REDIS_USER**: Redis username
+- **REDIS_PASSWORD**: Redis password
+- **INSTRUMENT_ENABLED**: Debugging feature flag to add instrumentation
+- **LOG_LEVEL**: How verbose should logs be (default: INFO)
 
-For more detailed information on each aspect, refer to the corresponding sections above.
+### Worker Pool
+
+To avoid random goroutines being managed throughout the code, there is a task queue to coordinate asynchronous jobs.
+Implement the `Runnable` interface and add to the queue for a job runner to pick it up.
+Set the environment variables described above to increase or decrease the queue size and number of workers based on needs. 
+
+### Healthcheck
+
+There is a healthcheck endpoint exposed at `/health` which reports on the status of the gateway proxy.
+Any external service can be monitored by adding its health to this service.
+In addition, any internal metrics that should cause infrastructure to respond in some way can also be added.
+
+### Prometheus
+
+Prometheus is used for tracking metrics. It is exposed with a `/metrics` endpoint.
+In addition to the common metrics, we add:
+- **EndpointUsage**: A counter for usage on each endpoint, used for reporting
+- **JobGauge**: Shows the current size of the job queue, used for monitoring
+- **LatencyHistogram**: Instrumentation to show how much latency is added by the proxy process
+- **RateLimitGauge**: Notifications that a rate limit has been hit, resets when resolved

@@ -1,0 +1,17 @@
+default:
+    @just --list
+
+install:
+    pnpm install
+
+build: install
+    pnpm build
+
+clean:
+    rm -rf node_modules/ .next/ pnpm-lock.json
+    
+run:
+    npx next start
+
+dev: install 
+    pnpm dev

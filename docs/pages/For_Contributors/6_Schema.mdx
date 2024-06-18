@@ -34,7 +34,7 @@ Tables that are not interfacing with the gateway are frontend-specific and can b
     - updated and managed by the event watcher
 - **RelayLedger**:
     - updated by the gateway as relays are consumed
-- **Product**:
+- **Products**:
     - lookup table for endpoint
     - contains the supported chains for the gateway
     - maps the chain name to the POKT identifier
@@ -51,3 +51,22 @@ Tables that are not interfacing with the gateway are frontend-specific and can b
     - for future use
     - an enterprise can have multiple tenants and organisations
     - since balances are managed at the tenant level, allows multiple cost centers
+
+## Operations
+
+Several tables aren't yet managed by the portal and must be manually updated to complete the functionality for production.
+
+The **Product** table contains the information about which chains are offered.
+You can add a new product by running `psql` and performing:
+
+```sql
+INSERT INTO "Products" ("id", "name", "weight", "params", "updatedAt", "poktId") VALUES (<unique_id>, <chain_name>, <weight 1000=100%>, <future_use, "">, NOW(), <4 digit pokt_id>);
+```
+
+The **RuleType** table establishes the rules possible for apps. If adding a new type:
+
+```sql
+INSERT INTO "RuleType" ("id", "name", "isEditable", "isMultiple", "validationType", "validationValue", "updatedAt", "description") VALUES (<unique_id>, <name_key>, <user_can_modify>, <1:n?>, (function, regex, etc), <validation>, NOW(), <description>);
+```
+
+In addition, follow the documentation for Gateway Server to set the pokt_applications (app stakes) and chain_configurations (altruists, etc) table values.

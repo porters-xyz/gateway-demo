@@ -1,0 +1,12 @@
+{
+  "index": "Index",
+  "architecture_overview": "Architecture Overview",
+  "frontend": "Frontend",
+  "backend": "Backend",
+  "gateway": "Gateway",
+  "gateway_server": "Gateway Server",
+  "schema": "Schema",
+  "smart_contracts_payments": "Smart Contract Payments",
+  "pokt_integration": "POKT Integration",
+  "redis": "Redis"
+}

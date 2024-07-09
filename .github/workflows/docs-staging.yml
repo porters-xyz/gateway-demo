@@ -5,9 +5,10 @@ on:
             - develop
         paths:
             - "docs/**"
+    workflow_dispatch:
 jobs:
     deploy:
-        name: Deploy Staging Frontend
+        name: Deploy Staging Docs
         runs-on: ubuntu-latest
         concurrency: deploy-group
         steps:

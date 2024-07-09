@@ -5,6 +5,7 @@ on:
             - develop
         paths:
             - "web-portal/backend/**"
+    workflow_dispatch:
 jobs:
     deploy:
         name: Deploy Staging Backend

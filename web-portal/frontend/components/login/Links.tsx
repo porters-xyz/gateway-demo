@@ -13,7 +13,7 @@ export default function CommonLinks(){
     Pricing
   </Title>
 
-  <Title order={2}  onClick={() => router.push('docs.porters.xyz')} c='carrot' style={{
+  <Title order={2}  onClick={() => router.push('https://docs.porters.xyz')} c='carrot' style={{
     cursor: "pointer",
     fontFamily: crimson.style.fontFamily
   }}>

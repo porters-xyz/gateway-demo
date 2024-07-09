@@ -8,7 +8,7 @@ on:
     workflow_dispatch:
 jobs:
     deploy:
-        name: Deploy Prod Frontend
+        name: Deploy Prod Docs
         runs-on: ubuntu-latest
         concurrency: deploy-group
         steps:

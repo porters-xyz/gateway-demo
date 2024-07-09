@@ -5,6 +5,7 @@ on:
             - develop
         paths:
             - "gateway/**"
+    workflow_dispatch:
 jobs:
     deploy:
         name: Deploy Staging Proxy

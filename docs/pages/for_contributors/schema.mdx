@@ -1,0 +1,72 @@
+# Postgres Schema
+
+## Description
+
+It is the data contract between the gateway and the portal.
+Any change to the schema must be coordinated between the portal and the gateway.
+It is a shared component between the portal and the gateway, as such connecting the two components.
+We put it in the `services/postgres` directory so neither codebase feels it has direct control.
+
+Schemas are managed by **Prisma object relational model (ORM)**. It allows to generate object models for the schemas.
+You can run `just generate` to generate the javascript code for interacting with the database.
+In addition changes to the schema can be pushed to the database with `just migrate`.
+
+## Functionality
+
+The schema consists of several tables.
+There is a conceptual partition in the schema based on whether the gateway proxy directly interfaces with it.
+There are portal-specific tables and some tables which are shared between the gateway and the portal.
+Tables that are not interfacing with the gateway are frontend-specific and can be modified without the need to coordinate with the golang packages.
+
+### Shared Tables
+
+- **Tenant**:
+    - created by the portal, apps can be attached to it
+    - stores and tracks the relay balance
+- **App**:
+    - application table, managed by the portal
+    - each app represents an set of endpoints for the enabled chains
+- **AppRule**:
+    - app rules add security or constraints on the endpoints
+- **RuleType**:
+    - types of app rules supported by the gateway
+- **PaymentLedger**:
+    - updated and managed by the event watcher
+- **RelayLedger**:
+    - updated by the gateway as relays are consumed
+- **Products**:
+    - lookup table for endpoint
+    - contains the supported chains for the gateway
+    - maps the chain name to the POKT identifier
+    - enables per product usage tracking
+
+### Portal-only Tables
+
+- **User**:
+    - stores user and session information
+- **Org**:
+    - for future use
+    - allows multiple users to share a `Tenant`
+- **Enterprise**:
+    - for future use
+    - an enterprise can have multiple tenants and organisations
+    - since balances are managed at the tenant level, allows multiple cost centers
+
+## Operations
+
+Several tables aren't yet managed by the portal and must be manually updated to complete the functionality for production.
+
+The **Product** table contains the information about which chains are offered.
+You can add a new product by running `psql` and performing:
+
+```sql
+INSERT INTO "Products" ("id", "name", "weight", "params", "updatedAt", "poktId") VALUES (<unique_id>, <chain_name>, <weight 1000=100%>, <future_use, "">, NOW(), <4 digit pokt_id>);
+```
+
+The **RuleType** table establishes the rules possible for apps. If adding a new type:
+
+```sql
+INSERT INTO "RuleType" ("id", "name", "isEditable", "isMultiple", "validationType", "validationValue", "updatedAt", "description") VALUES (<unique_id>, <name_key>, <user_can_modify>, <1:n?>, (function, regex, etc), <validation>, NOW(), <description>);
+```
+
+In addition, follow the documentation for Gateway Server to set the pokt_applications (app stakes) and chain_configurations (altruists, etc) table values.

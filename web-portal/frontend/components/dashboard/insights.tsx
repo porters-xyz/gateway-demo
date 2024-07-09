@@ -2,12 +2,14 @@ import {
     Stack,
     Flex,
     Title,
+    Text,
     SegmentedControl,
     Card,
     RingProgress,
 } from "@mantine/core";
 import React from "react";
 import classes from "@frontend/styles/insight.module.css";
+import nodata from "@frontend/public/no-data.png";
 import { AreaChart } from "@mantine/charts";
 import numeral from "numeral";
 import {
@@ -21,7 +23,8 @@ import { format } from "date-fns";
 import { useAtomValue } from "jotai";
 import { sessionAtom } from "@frontend/utils/atoms";
 import { timeOptions } from "@frontend/utils/consts";
-
+import Image from "next/image";
+import { useViewportSize } from "@mantine/hooks";
 
 const MetricCard: React.FC<{ title: string; value: string }> = ({
     title,
@@ -91,13 +94,11 @@ const RingCard: React.FC<{
 
 const NoRequests = () => {
     return (
-        <Stack h="100%" w="100%" justify="center" align="center" gap={2}>
-            <Title order={1} c="umbra.1">
-                😵
-            </Title>
-            <Title order={4} c="umbra.1">
-                No usage data yet
-            </Title>
+        <Stack h="100%" w="100%" justify="center" align="center" gap={10}>
+            <Image src={nodata.src} width={nodata.width/4} height={nodata.height/4} alt='No relay data' />
+            <Text ta='center'>
+                No usage data yet for this period!
+            </Text>
         </Stack>
     );
 };
@@ -137,8 +138,6 @@ const Insights: React.FC = () => {
     const session = useAtomValue(sessionAtom);
     const balance = _.get(_.first(_.get(session, 'netBalance')), 'net', 0)
 
-
-
     const router = useRouter();
 
     const timeOption = params?.get("t") || timeOptions[1].option;
@@ -168,7 +167,7 @@ const Insights: React.FC = () => {
 
 
     const successData = totalRequests;
-    const failureData = 0;
+    const failureData = 0; // TODO: filter success and failure separately when there is enough usage
 
     return (
         <Stack>
@@ -197,8 +196,8 @@ const Insights: React.FC = () => {
                         value={String(totalRequests || 0)}
                     />
                     <MetricCard
-                        title="Balance"
-                        value={balance > 0 ? `~` + numeral(balance/1000).format("0.0a") + ` Req` : `0`}
+                        title="Balance (Relays)"
+                        value={balance > 0 ? `~` + numeral(balance/1000).format("0.0a") : `0`}
                     />
                 </Stack>
                 <RingCard

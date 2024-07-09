@@ -1,9 +1,10 @@
 {
   "index": "Introduction",
-  "advanced": "Advanced",
-  "about": {
-    "title": "About",
-    "type": "page"
+  "for_contributors" : {
+    "title": "For Contributors"
+  },
+  "for_users" : {
+    "title": "For Users"
   },
   "contact": {
     "title": "Contact ↗",

@@ -28,9 +28,9 @@ export default function EnterNow() {
                     transform: "translate(-50%, -50%)",
                 }}
             >
-                <Link href="#">
-                    <Button>Coming Soon</Button>
-                </Link>
+            <Link href="/login">
+                <Button>Get Started</Button>
+            </Link>
             </Flex>
         </Container>
     );

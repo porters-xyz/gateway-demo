@@ -1,6 +1,9 @@
 default:
     @just --list
 
+clean:
+    echo
+
 build:
     go install
 
@@ -19,7 +22,7 @@ docker-run: docker-build
 prod-status:
     fly status -c fly.prod.toml
 
-prod-deploy:
+prod:
     fly scale count 3 --region sea,sin,ams -c fly.prod.toml
 
 # I was typing `just status` a lot so put this here

@@ -7,7 +7,7 @@ Documentation created with [Nextra](https://nextra.site).
 
 ## Quick Start
 
-Coming soon...
+Coming soon..
 
 ## Local Development
 

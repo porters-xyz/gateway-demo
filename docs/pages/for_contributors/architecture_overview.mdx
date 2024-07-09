@@ -1,0 +1,23 @@
+# Overview of RPC Gateway Architecture
+
+Below is an architecture diagram for reference. The architecture of this system is broken into four main parts.
+- The gateway portal allows users to manage their account and create apps to use on the gateway proxy
+- The gateway proxy handles RPC requests and charges the account for access to the POKT network
+- The on-chain portion manages the financial flow to buy credits and pay the POKT network
+- The POKT network is interfaced through the gateway server product
+
+## Database Design
+
+The portal manages creation and updates to accounts in the postgres database. The gateway proxy uses a redis database primarily to cache data from this postgres database, but also writes from the proxy are cached to be updated in chunks to the postgres database.
+
+- See [schema](6_Schema) for furter details on the postgres canonical data store
+
+## PORTR Token
+- Usage credits can be purchased and can be applied to increase account balance via the ERC-20 smart contract
+- An event watcher listens for these events and credits the account in the database
+
+## Architecture Diagram
+
+![](/FINAL_PORTERS_Architecture.png)
+
+For further details on the architecture and data flow, refer to the diagram above.

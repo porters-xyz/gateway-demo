@@ -1,138 +1,77 @@
-# POKT Gateway Demo
+# PORTERS POKT RPC Gateway
 
-Work related to https://forum.pokt.network/t/open-priority-gateway-demo/4874
+## Table of Contents
 
-## Proposal
+## Background
 
-### ⚔️ Raid Guild Proposal <> POKT OPEN PRIORITY: Gateway Demo  ⚔️
+- Gateway Kit
+- POKT
+- Sign-in-with-Ethereum
 
-> Building a User-facing Demo Gateway on top of the Nodies Gateway Kit
+### Dependencies
 
-##### Scope of Work
-This Raid Party proposed to handle all aspects of the rebuild of the POKT website. We are thrilled to present our comprehensive proposal for developing a state-of-the-art Software as a Service (SaaS) web portal that leverages the Gateway Kit as its robust backend. Our goal is to exceed expectations by incorporating essential features and considering some nice-to-have enhancements, resulting in a scalable portal that aligns perfectly with the needs of modern self-service SaaS platforms. We are committed to delivering an agile development process with active involvement from PNF and the Pocket community.
+- Postgres
+- Prisma
+- Prometheus
 
-#### POKT POP- Gateway SaaS Kit
+## Requirements
 
-##### Detailed Modules Overview
+The PORTERS POKT RPC Gateway is build using **golang** for proxy, **javascript** for the frontend and backend. The portal, consisting of frontend and backend, requires **node.js** and you may follow our implementation design by using `pnpm` for package management, however, you may use other package managers if you desire.
 
-###### 1. Project Website & Documentation
-- **A. Public-Facing Website Development**
-  - **Framework**: Utilize React.js for a responsive, dynamic project website.
-- **B. Comprehensive Documentation**
-  - **Tool**: Employ Docusaurus or similar for user-friendly documentation.
-  - **Content**: Include thorough API docs and user manuals.
+## Install
 
-###### 2. User Access Module
-- **A. User Authentication System**
-  - **Authentication**: Implement OAuth2.0 or JWT for secure login.
-  - **User Management**: Full CRUD operations for user profiles.
-- **B. App/Endpoint Management System**
-  - **App Settings**: Intuitive UI for configuration settings.
-  - **API Key Management**: Robust system for key generation and security.
-  - **Usage Reporting**: Detailed analytics and log dashboard for monitoring.
+- required environment variables (can set in .env for `docker compose`)
+    - `API_ENDPOINT`: build arg for frontend to backend API
+    - `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID`: walletconnect project ID
+    - `PROM_URL`: URL to Prometheus metrics api (scraped from instances)
+    - `PROM_TOKEN`: Auth token for accessing Prometheus metrics
+    - `DATABASE_URL`: connection string for postgres database (portal schema)
+    - `ONEINCH_API_KEY`: key for price data from 1inch
+    - `OX_API_KEY`: key for 0x protocol for swaps
+    - `RPC_KEY`: RPC key for event listener
+    - `SESSION_SECRET`: Encryption secret for SIWE sessions
+    - `HOST`: RPC proxy host that wildcard subdomain is attached to
+    - `JOB_BUFFER_SIZE`: size of worker pool
+    - `NUM_WORKERS`: count of workers for pool
+    - `REDIS_URL`: connection string to Redis instance
+    - `PROXY_TO`: base URL of Gateway Server
+    - `ALTRUIST_REQUEST_TIMEOUT`: see Gateway Server docs
+    - `CHAIN_NETWORK`: see Gateway Server docs
+    - `EMIT_SERVICE_URL_FROM_METRICS`: see Gateway Server docs
+    - `ENVIRONMENT_STAGE`: see Gateway Server docs
+    - `HTTP_SERVER_PORT`: see Gateway Server docs
+    - `POKT_RPC_TIMEOUT`: see Gateway Server docs
+    - `SESSION_CACHE_TTL`: see Gateway Server docs
+    - `API_KEY`: see Gateway Server docs
+    - `DB_CONNECTION_URL`: postgres connection string (gateway server schema)
+    - `POKT_APPLICATIONS_ENCRYPTION_KEY`: see Gateway Server docs
+    - `POKT_RPC_FULL_HOST`: see Gateway Server docs
+- docker compose
 
-###### 3. Drop-in Payment Module
-- **A. User-Payment Plan Setup**
-  - **Payment Integration**: Pay as you go crypto payments in multiple tokens.
-  - **Subscription Tiers**: Multiple tiers to cater to different user needs.
-- **B. Invoicing & Reporting**
-  - **Usage Notifications**: Automated alerts for usage and billing.
+## Build
 
-###### 4. Gateway Admin Module - Frontend
-- **A. Gateway Health & Monitoring**
-  - **Monitoring**: Real-time tracking and management of app stakes, utilizing Gateway Kit Prometheus metrics.
-  - **Visualization**: Dynamic, visual representation of stats and health indicators.
-- **B. User Access & Monitoring**
-  - **Admin Panel**: Comprehensive user access management interface.
-  - **Audit Trails**: Detailed logging and auditing for security and compliance.
+- allows for shorter dev iteration (over docker)
 
-###### 5. Gateway Proxy/Backend Setup
-- **A. Request Relaying via Gateway Kit**
-  - **Load Balancing**: Implement effective load distribution and routing.
-- **B. Backend Tasks**
-  - **Data Processing**: Efficient handling and processing of backend data.
-  - **Caching Setup**: Implement caching for enhanced performance and speed.
+See the [justfile](/gateway-demo/justfile) for further information. You can run the just commands to see which components you can run how.
 
+- justfile
+  - `just build` to build `just` to list other available commands
+  - run from root directory or navigate into specific components
 
-#### Stack Details
+## Usage
 
-##### Frontend
-- **Framework**: Next.js
-  - Utilizes React.js, enabling server-side rendering and static site generation.
-  - Improved SEO, performance, easy routing, and Node.js integration.
+Once you installed the PORTERS POKT RPC Gateway, you can use the PORTERS portal for generating RPC endpoints.
 
-##### Backend
-- **Framework**: NestJS with Prisma ORM
-  - NestJS offers modular architecture, maintainable and scalable code.
-  - TypeScript support for reliability and maintainability.
-  - Prisma ORM integrated for strong typing, model validation, and efficient database management.
-  - Simplified database operations with an easy-to-use query builder.
+In the proxy is the file `main.go` that is used for configuration. It allows you to configure rate limiting and other core functionalities of an RPC service.
 
-- **Database**: PostgreSQL and Redis
-  - Advanced SQL database with strong consistency and reliability for multi-tenancy user and application data.
-  - Ideal for scalable applications and large datasets.
-  - Redis offers low latency writes necessary for collecting usage stats on the reverse proxy
+## Contribute
 
-- **Reverse Proxy**: Golang
-  - Interfaces with the gateway kit to offer the reverse proxy.
-  - Performs authorization via API keys created by management system.
-  - Tracks usage for billing purposes.
+We welcome contributions from outside contributors. For contributing, please fork the repository and open a pull request with the proposed changes.
 
+All contributions shall be made to the `develop` branch. Contributions may then be merged into `master`.
 
-##### TEAM
-###### [Raid Guild](https://www.raidguild.org/portfolio)
-We are a selected Raiding Party custom built to tackle this unique POP. Raid Guild is a service DAO founded in late 2020 to provide clients access to a network of technical and creative Web3 builders. Our organization is flat and true to the ideals of the Ethereum ecosystem.
+In the future, more stringent contribution rules may be put in place at the sole descretion of the PORTERS core team.
 
-- **SAYONARA** - Lead Front End Dev
-- **PLOR** - BackEnd Dev and Systems Engineer
-- **BENEDICTVS** - Bis Dev
-- **SASQUATCH** - Account/Project Management
----
-#### Proposal from RaidGuild
-    
-##### Expected Deliverables
-- **Design**
-    - Wireframes for the user portal
-    - Shared via figma for open use by community
-- **Portal**
-    - User management
-    - Endpoint management
-    - Usage statistics and Rate limits
-    - Billing
-- **Documentation**
-    - Gateway usage information
-    - Open source dev docs
-- **Reverse Proxy**
-    - Routes to gateway kit
-    - Tracks per endpoint usage
-    - Rate limiting
+## Licence
 
-
-##### **Milestones**
----
-###### Sprint 1: 
-> - Design assets produced and reviewed
-> - Backend components scaffolding and architecture design
-
-###### Sprint 2: 
-> - Portal initial development
->   - Landing page and login
-> - Database initialization
-
-###### Sprint 3: 
-> - Portal user creation
-> - Reverse proxy development
-
-###### Sprint 4:
-> - Portal endpoint creation
-> - Documentation setup
-> - Per endpoint usage tracking
-
-###### Sprint 5:
-> - Portal usage and rate limiting
-> - Payment accounting and processing
-
-###### Sprint 6:
-> - Portal accounting reporting and payments
-> - Finalize documentation
-> - Final backend deploys and configuration
+- MIT Licence

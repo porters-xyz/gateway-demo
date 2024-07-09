@@ -1,0 +1,29 @@
+default:
+    @just --list
+
+clean:
+    echo
+
+install:
+    pnpm install
+
+generate: install
+    npx prisma generate
+
+migrate: install
+    npx prisma migrate dev
+
+build: install
+    pnpm build
+
+dev: install
+    pnpm start
+
+run: install
+    pnpm start:prod
+
+stage:
+    fly deploy
+
+prod:
+    fly deploy -c fly.prod.toml

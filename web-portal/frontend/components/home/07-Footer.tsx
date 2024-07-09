@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { Container, Flex, Group, Text, Stack } from "@mantine/core";
+import { Container, Flex, Group, Text, Stack, Modal } from "@mantine/core";
 import portersLogo from "@frontend/public/porter-footer-logo.png";
 import poktLogo from "@frontend/public/pokt-logo.png";
 import farcasterLogo from "@frontend/public/farcaster-logo.png";
@@ -11,14 +11,16 @@ import {
 import { crimson } from "@frontend/utils/theme";
 import { useViewportSize } from "@mantine/hooks";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 export default function Footer() {
   const { width } = useViewportSize();
   const dir = width > 920 ? "row" : "column";
   const router = useRouter();
+  const [showForm, setShowForm] = useState(false)
   return (
     <Container
-      size="xl"
+      size="lg"
       p={40}
       style={{
         fontFamily: crimson.style.fontFamily,
@@ -26,6 +28,10 @@ export default function Footer() {
         flexDirection: dir,
       }}
     >
+    <Modal opened={showForm} onClose={ () => setShowForm(false)} title={`Building Something Cool? We'd love to help out!`} size='700px' >
+    <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSfulvCOfLspV3RGFcGvNhoOKi5FXmViuu_vSJigsRhOIyxH-A/viewform?embedded=true" width="640" height="810" frameBorder="0">Loading…</iframe>
+    </Modal>
+
       <Flex align="center" justify="center" dir="row" gap={5} p={20}>
         <Image
           src={portersLogo.src}
@@ -42,18 +48,19 @@ export default function Footer() {
       </Flex>
 
       <Flex align="center" justify="center" dir="row" gap={10} p={20}>
-        <Text
-          mb={5}
-          w={100}
-          onClick={() => router.push("privacy-policy")}
-          style={{ cursor: "pointer" }}
-        >
-          Privacy Policy
-        </Text>
+      <Text
+        mb={5}
+        w={120}
+        onClick={() => setShowForm(true)}
+        style={{ cursor: "pointer" }}
+      >
+        Request Credits
+      </Text>
+
         <Text
           mb={5}
           w={120}
-          onClick={() => router.push("terms-of-service")}
+          onClick={() => router.push("tos")}
           style={{ cursor: "pointer" }}
         >
           Terms of Service
@@ -98,7 +105,7 @@ export default function Footer() {
           alt="svg"
           width={25}
           height={25}
-          onClick={() => router.replace("https://google.com")}
+          onClick={() => router.replace("https:/warpcast.com/porters")}
           style={{ cursor: "pointer" }}
         />
       </Flex>

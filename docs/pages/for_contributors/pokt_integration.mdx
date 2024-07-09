@@ -1,0 +1,16 @@
+# PORTERS Integration with POKT
+
+We are using a script by Nodies for the app stakes, which can be found [here](https://github.com/baaspoolsllc/pokt-stake-apps-script).
+It is a simple node script, which walks you through the app stake process.
+
+## Prompts
+
+- POKT node, URL of the node the script is going to call to stake
+- Chain IDs, a comma separated list of the chains you intend to stake to
+    - this can be a list of one to fifteen chain IDs
+- selector for POKT Mainnet and POKT Testnet (y/n)
+- amount of POKT to stake per private key
+    - number of relays available are split evenly across all chains staked
+
+Thereafter, the script verifies the prompts.
+The script then runs the transaction on the POKT network to stake.

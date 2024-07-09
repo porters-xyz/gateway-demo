@@ -1,4 +1,4 @@
-import { createTheme, rem, Button, Modal, TextInput, Select, NumberInput, Textarea, Pill } from "@mantine/core";
+import { createTheme, rem, Button, Modal, Notification, TextInput, Select, NumberInput, Textarea, Pill } from "@mantine/core";
 import { Crimson_Text, Karla, Red_Rose } from "next/font/google";
 export const crimson = Crimson_Text({
   subsets: ["latin"],
@@ -133,6 +133,26 @@ export const theme = createTheme({
           fontSize: rem(15),
           fontWeight: 500
         }
+      }
+    }),
+    Notification: Notification.extend({
+      defaultProps: {
+      styles: {
+        title: {
+          color: 'black',
+          fontFamily: karla.style.fontFamily
+        },
+        description: {
+          color: 'black',
+          fontFamily: karla.style.fontFamily
+        },
+        root: {
+          right: 20,
+          bottom: 40,
+          position: 'fixed',
+          zIndex: 1000
+        }
+      }
       }
     }),
     Modal: Modal.extend({

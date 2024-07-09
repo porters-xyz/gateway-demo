@@ -1,0 +1,22 @@
+default:
+    @just --list
+
+clean:
+    @just backend/clean
+    @just frontend/clean
+
+build:
+    @just backend/build
+    @just frontend/build
+
+dev:
+    @just backend/dev
+    @just frontend/dev
+
+run:
+    @just backend/run
+    @just frontend/run
+
+prod:
+    @just backend/prod
+    @just frontend/prod

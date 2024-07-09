@@ -165,7 +165,7 @@ export class AppsService {
     const data = updateData.map((value) => ({ value }));
 
     const updatedAppRule = await this.prisma.client.appRule.updateMany({
-      where: { ruleId, appId, deletedAt: { not: null } },
+      where: { ruleId, appId, deletedAt: null },
       data,
     });
 
@@ -184,7 +184,7 @@ export class AppsService {
     const deletedAt = new Date();
 
     const deletedAppRule = await this.prisma.client.appRule.updateMany({
-      where: { ruleId, appId, deletedAt: { not: null } },
+      where: { ruleId, appId, deletedAt: null },
       data: { deletedAt },
     });
 

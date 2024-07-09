@@ -7,7 +7,8 @@ import {
   Title,
   Stack,
   Alert,
-  Skeleton
+  Skeleton,
+  Notification
 } from "@mantine/core";
 
 import Link from "next/link";
@@ -24,6 +25,7 @@ import {
   IconArrowUpRight,
   IconAlertOctagon,
   IconSettings,
+  IconX,
 } from "@tabler/icons-react";
 import { useEffect } from "react";
 import Image from "next/image";
@@ -39,6 +41,7 @@ import { useAtom, useSetAtom } from "jotai";
 import {
   appsAtom,
   endpointsAtom,
+  notificationAtom,
   ruleTypesAtom,
   sessionAtom,
 } from "@frontend/utils/atoms";
@@ -48,6 +51,8 @@ import CreateAppModal from "./createAppModal";
 import CreateAppButton from "./createApp";
 import _ from "lodash";
 import { Address } from "viem";
+import { useRouter } from "next/navigation";
+import { useSIWE } from "connectkit";
 
 export default function DashboardLayout({
   children,
@@ -59,13 +64,15 @@ export default function DashboardLayout({
   const { data: endpoints } = useEndpoints();
   const { data: ruletypes } = useRuleTypes();
 
+  const [notificationData, setNotificationData] = useAtom(notificationAtom);
   const [session, setSession] = useAtom(sessionAtom);
   const { address } = useAccount();
   const setEndpointAtom = useSetAtom(endpointsAtom);
   const setApps = useSetAtom(appsAtom);
   const setRuleTypes = useSetAtom(ruleTypesAtom);
   const { data: appsData } = useUserApps(address as Address);
-
+  const { isSignedIn, isReady, isLoading } = useSIWE();
+  const router = useRouter()
   const balance = _.get(_.first(_.get(session, "netBalance")), "net", 0);
 
   useEffect(() => {
@@ -81,6 +88,11 @@ export default function DashboardLayout({
     if (ruletypes) {
       setRuleTypes(ruletypes);
     }
+
+    if (!isSignedIn && isReady && !isLoading ) {
+      router.replace('/login');
+    }
+
   }, [
     sessionValue,
     appsData,
@@ -91,6 +103,9 @@ export default function DashboardLayout({
     ruletypes,
     setRuleTypes,
     address,
+    isLoading,
+    isReady,
+    isSignedIn
   ]);
 
   const { data: ensName } = useEnsName({
@@ -108,6 +123,9 @@ export default function DashboardLayout({
   const { width } = useViewportSize();
   const isMobile = width < 600;
 
+
+
+
   return (
     <AppShell
       header={{ height: 70 }}
@@ -121,8 +139,7 @@ export default function DashboardLayout({
     >
       <AppShell.Header>
         <Flex w={"full"} justify="space-between" align="center" p={14}>
-          <Burger opened={opened} onClick={toggle} hiddenFrom="sm" p={12} />
-
+          <Burger opened={opened} onClick={toggle} hiddenFrom="sm" size="sm" />
           <Title order={2} style={{
             justifyContent: 'center',
             alignItems: 'center'
@@ -136,6 +153,7 @@ export default function DashboardLayout({
           </Title>
 
 
+
           <Flex gap={8}>
             <CreateAppButton />
             <LogoutButton />
@@ -144,9 +162,12 @@ export default function DashboardLayout({
       </AppShell.Header>
 
       <AppShell.Navbar p="md" bg="umbra.1" style={{ color: "white" }} px={"2%"}>
-        <Link href="/dashboard">
-          <Image src={logo.src} alt="hello" width="160" height="58" />
-        </Link>
+        <Flex align='center' justify='space-between' p={5}>
+          <Link href="/dashboard">
+            <Image src={logo.src} alt="hello" width="160" height="58" />
+          </Link>
+           {width < 768 && <IconX onClick={toggle} cursor='pointer'/>}
+        </Flex>
         <Stack justify="space-between" h={"100%"}>
           <Group style={{ marginTop: 32, gap: 2 }}>
             <NavLink
@@ -199,6 +220,13 @@ export default function DashboardLayout({
       <AppShell.Main>
         <CreateAppModal />
 
+        {
+        notificationData &&
+        <Notification withBorder color="orange" bg='#fff' title={notificationData.title} onClose={() => setNotificationData(null)}>
+              {notificationData.content}
+
+            </Notification>}
+
         <Container size={"xl"}>
           {!!appsData?.length && balance < 1000 && (
             <Alert
@@ -208,7 +236,7 @@ export default function DashboardLayout({
               my={32}
               bg="#F9DCBF"
             >
-              Your relay request balance is running low, Please top-up you
+              Your relay request balance is running low, Please top-up your
               balance by redeeming some PORTR tokens.
             </Alert>
           )}

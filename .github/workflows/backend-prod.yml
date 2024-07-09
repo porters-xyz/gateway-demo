@@ -5,6 +5,7 @@ on:
             - master
         paths:
             - "web-portal/backend/**"
+    workflow_dispatch:
 jobs:
     deploy:
         name: Deploy Prod Backend

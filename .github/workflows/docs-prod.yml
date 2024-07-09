@@ -5,6 +5,7 @@ on:
             - master
         paths:
             - "docs/**"
+    workflow_dispatch:
 jobs:
     deploy:
         name: Deploy Prod Frontend

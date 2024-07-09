@@ -5,6 +5,7 @@ on:
             - master
         paths:
             - "gateway/**"
+    workflow_dispatch:
 jobs:
     deploy:
         name: Deploy Prod Proxy

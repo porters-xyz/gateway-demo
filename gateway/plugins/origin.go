@@ -62,12 +62,17 @@ func (a *AllowedOriginFilter) HandleResponse(resp *http.Response) error {
 	}
 
 	rules := a.getRulesForScope(ctx, app)
+	resp.Header.Set("Access-Control-Allow-Headers", "authorization, content-type, server")
+	resp.Header.Set("Access-Control-Allow-Methods", "GET,POST,OPTIONS")
+
+	var allowedOrigins string
 	if len(rules) > 0 {
-		resp.Header.Set("Access-Control-Allow-Headers", "authorization, content-type, server")
-		resp.Header.Set("Access-Control-Allow-Methods", "GET,POST,OPTIONS")
-		allowedOrigins := strings.Join(rules, ",")
-		resp.Header.Set("Access-Control-Allow-Origin", allowedOrigins)
+		allowedOrigins = strings.Join(rules, ",")
+	} else {
+		allowedOrigins = "*" // default value if no rules are found
 	}
+	resp.Header.Set("Access-Control-Allow-Origin", allowedOrigins)
+
 	return nil
 }
 
@@ -78,7 +83,7 @@ func (a *AllowedOriginFilter) getRulesForScope(ctx context.Context, app *db.App)
 		log.Error("couldn't get rules", "app", app.HashId(), "err", err)
 	} else {
 		for _, rule := range rules {
-			if rule.RuleType != ALLOWED_ORIGIN || !rule.Active {
+			if rule.RuleType != ALLOWED_ORIGIN || !rule.Active { //TODO: Fix. Deleting does not make a rule Inactive, it just sets a delete date
 				continue
 			}
 			origins = append(origins, rule.Value)

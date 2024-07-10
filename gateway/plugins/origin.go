@@ -83,7 +83,7 @@ func (a *AllowedOriginFilter) getRulesForScope(ctx context.Context, app *db.App)
 		log.Error("couldn't get rules", "app", app.HashId(), "err", err)
 	} else {
 		for _, rule := range rules {
-			if rule.RuleType != ALLOWED_ORIGIN || !rule.Active { //TODO: Fix. Deleting does not make a rule Inactive, it just sets a delete date
+			if rule.RuleType != ALLOWED_ORIGIN || !rule.Active {
 				continue
 			}
 			origins = append(origins, rule.Value)

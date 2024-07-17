@@ -72,6 +72,7 @@ func (p *ProductFilter) getRulesForScope(ctx context.Context, app *db.App) []str
 	} else {
 		for _, rule := range rules {
 			if rule.RuleType != ALLOWED_PRODUCTS || !rule.Active {
+				log.Info("blocking product", "product", rule.Value)
 				continue
 			}
 			log.Info("allowing product", "product", rule.Value)

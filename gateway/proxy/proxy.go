@@ -93,17 +93,25 @@ func setupProxy(remote *url.URL) *httputil.ReverseProxy {
 		req.URL = target.URL()
 
 		for _, p := range (*reg).plugins {
+			log.Info("Checking proxy filter", "filter", p.Name())
 			h, ok := p.(PreHandler)
 			if ok {
+				log.Info("Ran prehandler ok", "filter", p.Name())
 				select {
 				case <-req.Context().Done():
+					log.Info("Context Done, returning.", "filter", p.Name())
 					return
 				default:
+					log.Info("Running Handle Request for Proxy filter", "filter", p.Name())
 					err := h.HandleRequest(req)
+					log.Info("Handle Request executed for Proxy filter", "filter", p.Name())
 					if err != nil {
+						log.Error("Failed running HandleRequest proxy filter", "filter", p.Name())
 						cancel(err)
 					}
 				}
+			} else {
+				log.Error("Failed ran prehandler for proxy filter", "filter", p.Name())
 			}
 		}
 

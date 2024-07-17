@@ -31,24 +31,22 @@ func (p *ProductFilter) Load() {
 func (p *ProductFilter) HandleRequest(req *http.Request) error {
 	ctx := req.Context()
 	product := proxy.PluckProductName(req)
-	log.Info("Plucked product name", "product", product)
+
 	app := &db.App{
 		Id: proxy.PluckAppId(req),
 	}
-	log.Info("Plucked app ID", "appID", app.Id)
+
 	err := app.Lookup(ctx)
 	if err != nil {
 		return proxy.NewHTTPError(http.StatusNotFound)
 	}
 
 	rules := p.getRulesForScope(ctx, app)
-	log.Info("Retrieved rules for scope", "rules", rules)
 
 	allow := (len(rules) == 0)
-	log.Info("Initial allow value", "allow", allow)
 
 	for _, rule := range rules {
-		log.Info("Checking rule against product", "rule", rule, "product", product)
+		log.Debug("Checking rule against product", "rule", rule, "product", product)
 		if rule == product {
 			allow = true
 			break
@@ -60,7 +58,7 @@ func (p *ProductFilter) HandleRequest(req *http.Request) error {
 		return proxy.NewHTTPError(http.StatusUnauthorized)
 	}
 
-	log.Info("Request allowed", "product", product)
+	log.Debug("Request allowed", "product", product)
 	return nil
 }
 
@@ -72,10 +70,10 @@ func (p *ProductFilter) getRulesForScope(ctx context.Context, app *db.App) []str
 	} else {
 		for _, rule := range rules {
 			if rule.RuleType != ALLOWED_PRODUCTS || !rule.Active {
-				log.Info("blocking product", "product", rule.Value)
+				log.Debug("blocking product", "product", rule.Value)
 				continue
 			}
-			log.Info("allowing product", "product", rule.Value)
+			log.Debug("allowing product", "product", rule.Value)
 			products = append(products, rule.Value)
 		}
 	}

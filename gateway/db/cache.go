@@ -6,12 +6,13 @@ import (
 	"fmt"
 	log "log/slog"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
+	rl "github.com/go-redis/redis_rate/v10"
 	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
-    rl "github.com/go-redis/redis_rate/v10"
 
 	"porters/common"
 )
@@ -207,15 +208,25 @@ func (a *App) Rules(ctx context.Context) (Apprules, error) {
 			log.Error("error during scan", "err", err)
 			continue
 		}
-		id := key
+
+        // Extract the actual ID from the Redis key
+        parts := strings.Split(key, ":")
+        if len(parts) != 3 || parts[0] != APPRULE {
+            log.Error("Invalid key format", "key", key)
+            continue
+        }
+        appId := parts[1]
+        appRuleId := parts[2]
+
 		active, _ := strconv.ParseBool(result["active"])
 		cachedAt, _ := time.Parse(time.RFC3339, result["cachedAt"])
 		ar := Apprule{
-            Id: id,
+            Id: appRuleId,
             Active: active,
             Value: result["value"],
 			RuleType: result["ruleType"],
 			CachedAt: cachedAt,
+			App: App{Id: appId},
 		}
 
 		// Check if the Apprule needs to be refreshed

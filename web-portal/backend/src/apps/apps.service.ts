@@ -271,6 +271,7 @@ export class AppsService {
         },
       },
       data: {
+        active: false,
         deletedAt: new Date(),
       },
     });

@@ -1,10 +1,10 @@
 {
   "index": "Introduction",
-  "for_contributors" : {
-    "title": "For Contributors"
-  },
   "for_users" : {
     "title": "For Users"
+  },
+  "for_contributors" : {
+    "title": "For Contributors"
   },
   "contact": {
     "title": "Contact ↗",

@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"database/sql"
+    "fmt"
 	"errors"
 	log "log/slog"
 	"sync"
@@ -141,7 +142,8 @@ func (ar *Apprule) fetch(ctx context.Context) error {
 	row := db.QueryRowContext(ctx, `SELECT "AppRule".id, "AppRule".value, "AppRule".active, "RuleType".name FROM "AppRule", "RuleType" WHERE "AppRule".id = $1 AND "AppRule"."ruleId" = "RuleType".id`, ar.Id)
 	err := row.Scan(&ar.Id, &ar.Value, &ar.Active, &ar.RuleType)
 	if err != nil {
-		return err
+        log.Error("Error during row.Scan", "err", err, "appruleId", ar.Id)
+        return fmt.Errorf("failed to fetch Apprule with ID %s: %w", ar.Id, err)
 	}
 	return nil
 }

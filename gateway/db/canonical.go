@@ -138,13 +138,11 @@ func (p *Product) fetch(ctx context.Context) error {
 
 func (ar *Apprule) fetch(ctx context.Context) error {
 	db := getCanonicalDB()
-	row := db.QueryRowContext(ctx, `SELECT "AppRule".id, "AppRule".appId, "AppRule".value, "AppRule".active, "RuleType".name FROM "AppRule", "RuleType" WHERE "AppRule".id = $1 AND "AppRule"."ruleId" = "RuleType".id`, ar.Id)
-	var appId string
-	err := row.Scan(&ar.Id, &appId, &ar.Value, &ar.Active, &ar.RuleType)
+	row := db.QueryRowContext(ctx, `SELECT "AppRule".id, "AppRule".value, "AppRule".active, "RuleType".name FROM "AppRule", "RuleType" WHERE "AppRule".id = $1 AND "AppRule"."ruleId" = "RuleType".id`, ar.Id)
+	err := row.Scan(&ar.Id, &ar.Value, &ar.Active, &ar.RuleType)
 	if err != nil {
 		return err
 	}
-	ar.App.Id = appId
 	return nil
 }
 

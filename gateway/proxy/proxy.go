@@ -26,7 +26,7 @@ func Start() {
 		log.Error("unable to parse proxy to", "err", err)
 		panic("unable to start with invalid remote url")
 	}
-	log.Debug("proxying to remote", "url", remote)
+	log.Info("proxying to remote", "url", remote)
 
 	handler := func(proxy *httputil.ReverseProxy) func(http.ResponseWriter, *http.Request) {
 		return func(resp http.ResponseWriter, req *http.Request) {

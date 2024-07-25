@@ -10,6 +10,10 @@ import { connectKitTheme } from "@frontend/styles/connectkit-theme";
 export const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID!;
 export const NEXT_PUBLIC_APP_URL = process.env.NEXT_PUBLIC_APP_URL!;
 
+export const ETH_MAINNET_NODE = process.env.ETH_MAINNET_NODE;
+export const ETH_BASE_NODE = process.env.ETH_BASE_NODE;
+export const ETH_GNOSIS_NODE = process.env.ETH_GNOSIS_NODE;
+export const ETH_OPTIMISM_NODE = process.env.ETH_OPTIMISM_NODE;
 
 // Create wagmiConfig
 export const chains = [mainnet, optimism, base, gnosis] as const;
@@ -18,12 +22,10 @@ export const config = createConfig(
   getDefaultConfig({
     chains: [mainnet, base, gnosis, optimism],
     transports: {
-      [mainnet.id]: http(
-          `https://eth-mainnet.rpc.grove.city/v1/1eec3963`
-      ),
-      [base.id]: http(`https://base-mainnet.rpc.grove.city/v1/1eec3963`),
-      [gnosis.id]: http(`https://gnosischain-mainnet.rpc.grove.city/v1/1eec3963`),
-      [optimism.id]: http(`https://optimism-mainnet.rpc.grove.city/v1/1eec3963`),
+      [mainnet.id]: http(ETH_MAINNET_NODE),
+      [base.id]: http(ETH_BASE_NODE),
+      [gnosis.id]: http(ETH_GNOSIS_NODE),
+      [optimism.id]: http(ETH_OPTIMISM_NODE),
     },
     walletConnectProjectId: projectId,
     appName: "Porters RPC Gateway",

@@ -168,7 +168,7 @@ func setupProxy(remote *url.URL) *httputil.ReverseProxy {
 		var httpErr *HTTPError
 		cause := context.Cause(ctx)
 
-		log.Info("proxy.go > revProxy.ErrorHandler > New Usage Updater Failure", "cause", cause)
+		log.Info("proxy.go > revProxy.ErrorHandler", "cause", cause)
 		updater := db.NewUsageUpdater(ctx, "failure")
 		common.GetTaskQueue().Add(updater)
 

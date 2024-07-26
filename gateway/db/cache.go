@@ -149,7 +149,10 @@ func (t *Tenant) Lookup(ctx context.Context) error {
 		} else {
 			t.Active, _ = strconv.ParseBool(result["active"])
 			t.Balance, _ = strconv.Atoi(result["balance"])
-			t.CachedAt, _ = time.Parse(time.RFC3339, result["cachedAt"])
+			t.CachedAt, err = time.Parse(time.RFC3339, result["cachedAt"])
+			if err != nil {
+				log.Error("Failed retrieving cache for tenant", "tenantId", t.Key())
+			}
 		}
 
 		log.Info("cache.go > Lookup > Setting Tenant context", "tenantId", t.Id)

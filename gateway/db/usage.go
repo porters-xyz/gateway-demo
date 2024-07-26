@@ -28,7 +28,7 @@ func NewUsageUpdater(ctx context.Context, status string) *UsageUpdater {
 		log.Error("usage.go > NewUsageUpdater > Failed to get product from context")
 	} else {
 		updater.product = entity.(*Product)
-		log.Info("usage.go > retrieved product entity", "updater", updater)
+		log.Info("usage.go > NewUsageUpdater > retrieved product entity", "product", updater.product)
 	}
 
 	log.Info("usage.go > NewUsageUpdater > Attempting to read app from context")
@@ -37,22 +37,31 @@ func NewUsageUpdater(ctx context.Context, status string) *UsageUpdater {
 		log.Error("usage.go > NewUsageUpdater > Failed to get app from context")
 	} else {
 		updater.app = entity.(*App)
-		log.Info("usage.go > retrieved app entity", "updater", updater)
+		log.Info("usage.go > NewUsageUpdater > retrieved app entity", "app", updater.app)
+
+		// Ensure Tenant is loaded in context
+		if updater.app.Tenant.Id != "" { // Check if Tenant Id is not empty to ensure it's initialized
+			log.Info("usage.go > NewUsageUpdater > Begin Tenant Lookup for tenant with id", "tenantId", updater.app.Tenant.Id)
+			updater.app.Tenant.Lookup(ctx)
+			log.Info("usage.go > NewUsageUpdater > Finished Tenant Lookup for tenant with id", "tenantId", updater.app.Tenant.Id)
+		} else {
+			log.Error("usage.go > NewUsageUpdater > app.Tenant is not initialized", "appId", updater.app.Id)
+		}
 	}
 
-	//Ensure Tenant is loaded in context
-	log.Info("usage.go > NewUsageUpdater > Begin Tenant Lookup for tenant with id", "updater", updater)
-	updater.app.Tenant.Lookup(ctx)
-	log.Info("usage.go > NewUsageUpdater > Finished Tenant Lookup for tenant with id", "updater", updater)
-
-	entity, ok = common.FromContext(ctx, TENANT)
-	if !ok || entity == nil {
-		log.Error("usage.go > NewUsageUpdater > Failed to get tenant from context", "tenantId", updater.app.Tenant.Id, "appId", updater.app.Id, "product", updater.product.Id)
+	// Ensure tenant is retrieved from context
+	if updater.app.Tenant.Id != "" {
+		entity, ok = common.FromContext(ctx, TENANT)
+		if !ok || entity == nil {
+			log.Error("usage.go > NewUsageUpdater > Failed to get tenant from context", "tenantId", updater.app.Tenant.Id, "appId", updater.app.Id, "product", updater.product)
+		} else {
+			tenant := entity.(*Tenant)
+			log.Info("usage.go > retrieved tenant entity", "tenant", tenant)
+			updater.balancekey = fmt.Sprintf("BALANCE:%s", tenant.Id)
+			updater.tenant = tenant
+		}
 	} else {
-		tenant := entity.(*Tenant)
-		log.Info("usage.go > retrieved tenant entity", "tenant", tenant)
-		updater.balancekey = fmt.Sprintf("BALANCE:%s", tenant.Id)
-		updater.tenant = tenant
+		log.Error("usage.go > NewUsageUpdater > app.Tenant is not properly initialized", "appId", updater.app.Id)
 	}
 
 	return updater

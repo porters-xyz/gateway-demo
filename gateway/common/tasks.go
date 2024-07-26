@@ -3,6 +3,7 @@ package common
 import (
 	"errors"
 	log "log/slog"
+	"reflect"
 	"sync"
 	"time"
 )
@@ -86,16 +87,19 @@ func (q *TaskQueue) CloseQueue() {
 }
 
 func (q *TaskQueue) Add(runnable Runnable) {
+	log.Info("Adding runnable to queue", "delayable", runnable)
 	q.tasks <- runnable
 	JobGauge.WithLabelValues("task").Inc()
 }
 
 func (q *TaskQueue) Delay(delayable Delayable) {
+	log.Info("Adding delayed task to queue", "delayable", delayable)
 	q.delayed <- delayable
 	JobGauge.WithLabelValues("delayed").Inc()
 }
 
 func (q *TaskQueue) ReportError(err error) {
+	log.Info("Adding error task to queue", "err", err)
 	q.errors <- err
 	JobGauge.WithLabelValues("error").Inc()
 }
@@ -129,7 +133,8 @@ func processTask(task Runnable, q *TaskQueue) {
 		}
 	}()
 
-	log.Info("Processing task", "task", task)
+	taskType := reflect.TypeOf(task).String()
+	log.Info("Processing task", "task", task, "taskType", taskType)
 
 	switch t := task.(type) {
 	case Combinable:

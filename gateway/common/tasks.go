@@ -100,18 +100,44 @@ func (q *TaskQueue) ReportError(err error) {
 	JobGauge.WithLabelValues("error").Inc()
 }
 
+// func worker(q *TaskQueue) {
+// 	for task := range q.tasks {
+//         log.Info("Processing task", "task", task)
+// 		switch t := task.(type) {
+// 		case Combinable:
+// 			task.(Combinable).Combine(q.tasks)
+// 		case Runnable:
+// 			task.Run()
+// 		default:
+// 			log.Warn("unspecified task", "task", task, "type", t)
+// 		}
+// 		JobGauge.WithLabelValues("task").Set(float64(len(q.tasks)))
+// 	}
+// }
+
 func worker(q *TaskQueue) {
 	for task := range q.tasks {
-        log.Info("Processing task", "task", task)
-		switch t := task.(type) {
-		case Combinable:
-			task.(Combinable).Combine(q.tasks)
-		case Runnable:
-			task.Run()
-		default:
-			log.Warn("unspecified task", "task", task, "type", t)
-		}
+		processTask(task, q)
 		JobGauge.WithLabelValues("task").Set(float64(len(q.tasks)))
+	}
+}
+
+func processTask(task Runnable, q *TaskQueue) {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Error("Recovered in worker", "error", r)
+		}
+	}()
+
+	log.Info("Processing task", "task", task)
+
+	switch t := task.(type) {
+	case Combinable:
+		task.(Combinable).Combine(q.tasks)
+	case Runnable:
+		task.Run()
+	default:
+		log.Debug("unspecified task", "task", task, "type", t)
 	}
 }
 

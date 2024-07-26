@@ -299,38 +299,61 @@ func RelaytxFromKey(ctx context.Context, key string) (*Relaytx, bool) {
 
 // Refresh does the psql calls to build cache
 func (t *Tenant) refresh(ctx context.Context) error {
+	log.Info("Refreshing tenant", "tenantId", t.Id)
 	err := t.fetch(ctx)
 	if err != nil {
-		log.Error("something's wrong", "tenant", t.Id, "err", err)
+		log.Error("Failed to fetch tenant", "tenantId", t.Id, "error", err)
 		return err
-	} else {
-		err := t.canonicalBalance(ctx)
-		if err != nil {
-			log.Error("error getting balance", "tenant", t.Id, "err", err)
-		}
-		t.cache(ctx)
 	}
+
+	err = t.canonicalBalance(ctx)
+	if err != nil {
+		log.Error("Failed to get canonical balance", "tenantId", t.Id, "error", err)
+		return err
+	}
+
+	err = t.cache(ctx)
+	if err != nil {
+		log.Error("Failed to cache tenant", "tenantId", t.Id, "error", err)
+		return err
+	}
+
 	return nil
 }
 
 func (a *App) refresh(ctx context.Context) error {
+	if a == nil {
+		log.Error("App is nil, cannot refresh")
+		return errors.New("App is nil")
+	}
+
+	log.Info("Refreshing app", "appId", a.Id)
 	err := a.fetch(ctx)
 	if err != nil {
-		log.Error("err seen refreshing app", "app", a.HashId(), "err", err)
+		log.Error("Failed to fetch app", "appId", a.Id, "error", err)
 		a.MissedAt = time.Now()
 	} else {
 		a.Tenant.Lookup(ctx)
 	}
-	a.cache(ctx)
+
+	err = a.cache(ctx)
+	if err != nil {
+		log.Error("Failed to cache app", "appId", a.Id, "error", err)
+		return err
+	}
 
 	rules, err := a.fetchRules(ctx)
 	if err != nil {
-		log.Error("error accessing rules", "app", a.HashId(), "err", err)
+		log.Error("Failed to fetch rules", "appId", a.Id, "error", err)
 		return err
 	}
 	for _, r := range rules {
-		r.cache(ctx)
+		err := r.cache(ctx)
+		if err != nil {
+			log.Error("Failed to cache rule", "ruleId", r.Id, "error", err)
+		}
 	}
+
 	return nil
 }
 
@@ -355,9 +378,11 @@ func (p *Product) refresh(ctx context.Context) error {
 }
 
 func (t *RefreshTask) Run() {
+	log.Info("Running refresh task", "refreshable", t.ref)
 	ctx := context.Background()
 	err := t.ref.refresh(ctx)
 	if err != nil {
+		log.Error("Failed to refresh", "error", err)
 		common.GetTaskQueue().ReportError(errors.New(t.Error()))
 	}
 }

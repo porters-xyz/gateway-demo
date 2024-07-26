@@ -90,6 +90,10 @@ func setupProxy(remote *url.URL) *httputil.ReverseProxy {
 			cancel(ChainNotSupportedError)
 		}
 		target := utils.NewTarget(remote, poktId)
+		
+		//TODO
+		log.Info("new target", "remote", remote, "poktId", poktId);
+
 		req.URL = target.URL()
 
 		for _, p := range (*reg).plugins {

@@ -18,14 +18,13 @@ import (
 )
 
 const (
-    ACCOUNT_SET = "VALID_ACCOUNTS"
-    REDIS = "redis"
+	ACCOUNT_SET  = "VALID_ACCOUNTS"
+	REDIS        = "redis"
 	MISSED_FALSE = "0001-01-01T00:00:00Z"
 )
 
 // access redis functions through this object
 type Cache struct {
-
 }
 
 type RefreshTask struct {
@@ -56,10 +55,10 @@ func getCache() *redis.Client {
 		if err != nil {
 			log.Warn("valid REDIS_URL not provided", "err", err)
 			opts = &redis.Options{
-                Addr: common.GetConfig(common.REDIS_ADDR),
+				Addr:     common.GetConfig(common.REDIS_ADDR),
 				Username: common.GetConfig(common.REDIS_USER),
 				Password: common.GetConfig(common.REDIS_PASSWORD),
-                DB: 0,
+				DB:       0,
 			}
 		}
 		client = redis.NewClient(opts)
@@ -209,24 +208,24 @@ func (a *App) Rules(ctx context.Context) (Apprules, error) {
 			continue
 		}
 
-        // Extract the actual ID from the Redis key
-        parts := strings.Split(key, ":")
-        if len(parts) != 3 || parts[0] != APPRULE {
-            log.Error("Invalid key format", "key", key)
-            continue
-        }
-        appId := parts[1]
-        appRuleId := parts[2]
+		// Extract the actual ID from the Redis key
+		parts := strings.Split(key, ":")
+		if len(parts) != 3 || parts[0] != APPRULE {
+			log.Error("Invalid key format", "key", key)
+			continue
+		}
+		appId := parts[1]
+		appRuleId := parts[2]
 
 		active, _ := strconv.ParseBool(result["active"])
 		cachedAt, _ := time.Parse(time.RFC3339, result["cachedAt"])
 		ar := Apprule{
-            Id: appRuleId,
-            Active: active,
-            Value: result["value"],
+			Id:       appRuleId,
+			Active:   active,
+			Value:    result["value"],
 			RuleType: result["ruleType"],
 			CachedAt: cachedAt,
-			App: App{Id: appId},
+			App:      App{Id: appId},
 		}
 
 		// Check if the Apprule needs to be refreshed
@@ -279,7 +278,14 @@ func (p *Product) Lookup(ctx context.Context) error {
 
 func RelaytxFromKey(ctx context.Context, key string) (*Relaytx, bool) {
 	relaycount := GetIntVal(ctx, key)
+	log.Info("Relay count", "relaycount", relaycount)
+
 	rtx := reverseRelaytxKey(key)
+	log.Info("Reverse relay key", "rtx", rtx)
+
+	log.Info("AppId", "AppId", rtx.AppId)
+	log.Info("ProductName", "ProductName", rtx.ProductName)
+
 	if relaycount > 0 && rtx.AppId != "" && rtx.ProductName != "" {
 		uuid := uuid.New()
 		rtx.Id = uuid.String()
@@ -440,14 +446,14 @@ func DecrementCounter(ctx context.Context, key string, amount int) int {
 
 // returns false if counter already exists
 func InitCounter(ctx context.Context, key string, initValue int) (bool, error) {
-    return getCache().SetNX(ctx, key, initValue, 2 * time.Minute).Result()
+	return getCache().SetNX(ctx, key, initValue, 2*time.Minute).Result()
 }
 
 func ReconcileRelays(ctx context.Context, rtx *Relaytx) (func() bool, error) {
 	// Can ignore new value
 	_, err := getCache().DecrBy(ctx, rtx.Key(), int64(rtx.Amount)).Result()
 	if err != nil {
-        return func() bool {return false}, err
+		return func() bool { return false }, err
 	}
 
 	updateFunc := func() bool {

@@ -75,7 +75,7 @@ func NewUsageUpdater(ctx context.Context, status string) *UsageUpdater {
 }
 
 func logContext(ctx context.Context) {
-	for k, v := range ctx.Value().(map[string]interface{}) {
+	for k, v := range ctx.Value(ctx).(map[string]interface{}) {
 		log.Info("context value", "key", k, "value", v)
 	}
 }

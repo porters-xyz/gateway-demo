@@ -34,11 +34,15 @@ func NewUsageUpdater(ctx context.Context, status string) *UsageUpdater {
 		log.Error("usage.go > NewUsageUpdater > Failed to get app from context")
 	} else {
 		updater.app = entity.(*App)
+
+		//Ensure Tenant is loaded in context
+		updater.app.Tenant.Lookup(ctx)
 	}
 
 	entity, ok = common.FromContext(ctx, TENANT)
 	if !ok || entity == nil {
 		log.Error("usage.go > NewUsageUpdater > Failed to get tenant from context")
+
 	} else {
 		tenant := entity.(*Tenant)
 		updater.balancekey = fmt.Sprintf("BALANCE:%s", tenant.Id)
@@ -50,7 +54,7 @@ func NewUsageUpdater(ctx context.Context, status string) *UsageUpdater {
 
 func (u *UsageUpdater) Run() {
 	if u.app == nil || u.tenant == nil || u.product == nil {
-		log.Error("Invalid request, usage not reported", "app", u.app, "tenant", u.tenant, "product", u.product)
+		log.Error("usage.go > UsageUpdated > Invalid request, usage not reported", "app", u.app, "tenant", u.tenant, "product", u.product)
 		return
 	}
 	if u.status == "success" {

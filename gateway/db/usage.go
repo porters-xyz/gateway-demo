@@ -22,6 +22,7 @@ func NewUsageUpdater(ctx context.Context, status string) *UsageUpdater {
 		status: status,
 	}
 
+	log.Info("usage.go > NewUsageUpdater > Attempting to read product from context")
 	entity, ok := common.FromContext(ctx, PRODUCT)
 	if !ok || entity == nil {
 		log.Error("usage.go > NewUsageUpdater > Failed to get product from context")
@@ -30,6 +31,7 @@ func NewUsageUpdater(ctx context.Context, status string) *UsageUpdater {
 		log.Info("usage.go > retrieved product entity", "product", updater.product)
 	}
 
+	log.Info("usage.go > NewUsageUpdater > Attempting to read app from context")
 	entity, ok = common.FromContext(ctx, APP)
 	if !ok || entity == nil {
 		log.Error("usage.go > NewUsageUpdater > Failed to get app from context")
@@ -39,9 +41,9 @@ func NewUsageUpdater(ctx context.Context, status string) *UsageUpdater {
 	}
 
 	//Ensure Tenant is loaded in context
-	log.Info("usage.go > NewUsageUpdater > Begin Tenant Lookup for tenant with id", "tenantId", updater.app.Tenant.Id)
+	log.Info("usage.go > NewUsageUpdater > Begin Tenant Lookup for tenant with id", "updater", updater)
 	updater.app.Tenant.Lookup(ctx)
-	log.Info("usage.go > NewUsageUpdater > Finished Tenant Lookup for tenant with id", "tenantId", updater.app.Tenant.Id)
+	log.Info("usage.go > NewUsageUpdater > Finished Tenant Lookup for tenant with id", "updater", updater)
 
 	entity, ok = common.FromContext(ctx, TENANT)
 	if !ok || entity == nil {

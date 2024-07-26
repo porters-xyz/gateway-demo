@@ -61,7 +61,6 @@ func (b *BalanceTracker) HandleRequest(req *http.Request) error {
 	ctx = common.UpdateContext(ctx, bal)
 	ctx = common.UpdateContext(ctx, app)
 	// TODO Check that balance is greater than or equal to req weight
-	log.Info("balance", "bal", bal)
 
 	if bal.cachedBalance > 0 {
 		lifecycle := proxy.SetStageComplete(ctx, proxy.BalanceCheck|proxy.AccountLookup)

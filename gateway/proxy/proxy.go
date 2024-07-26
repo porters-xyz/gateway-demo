@@ -155,7 +155,6 @@ func setupProxy(remote *url.URL) *httputil.ReverseProxy {
 		}
 
 		if resp.StatusCode < 400 && err == nil {
-			log.Info("proxy.go > revProxy.ModifyResponse > New Usage Updater Success")
 			updater := db.NewUsageUpdater(ctx, "success")
 			common.GetTaskQueue().Add(updater)
 		}
@@ -168,7 +167,7 @@ func setupProxy(remote *url.URL) *httputil.ReverseProxy {
 		var httpErr *HTTPError
 		cause := context.Cause(ctx)
 
-		log.Info("proxy.go > revProxy.ErrorHandler", "cause", cause)
+		log.Error("Error during relay attempt", "cause", cause)
 		updater := db.NewUsageUpdater(ctx, "failure")
 		common.GetTaskQueue().Add(updater)
 

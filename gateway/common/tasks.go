@@ -3,7 +3,6 @@ package common
 import (
 	"errors"
 	log "log/slog"
-	"reflect"
 	"sync"
 	"time"
 )
@@ -89,37 +88,19 @@ func (q *TaskQueue) CloseQueue() {
 }
 
 func (q *TaskQueue) Add(runnable Runnable) {
-	log.Info("tasks.go > Add > Adding runnable to queue")
 	q.tasks <- runnable
 	JobGauge.WithLabelValues("task").Inc()
 }
 
 func (q *TaskQueue) Delay(delayable Delayable) {
-	log.Info("Adding delayed task to queue")
 	q.delayed <- delayable
 	JobGauge.WithLabelValues("delayed").Inc()
 }
 
 func (q *TaskQueue) ReportError(err error) {
-	log.Info("Adding error task to queue")
 	q.errors <- err
 	JobGauge.WithLabelValues("error").Inc()
 }
-
-// func worker(q *TaskQueue) {
-// 	for task := range q.tasks {
-//         log.Info("Processing task", "task", task)
-// 		switch t := task.(type) {
-// 		case Combinable:
-// 			task.(Combinable).Combine(q.tasks)
-// 		case Runnable:
-// 			task.Run()
-// 		default:
-// 			log.Warn("unspecified task", "task", task, "type", t)
-// 		}
-// 		JobGauge.WithLabelValues("task").Set(float64(len(q.tasks)))
-// 	}
-// }
 
 func worker(q *TaskQueue) {
 	for task := range q.tasks {
@@ -135,16 +116,13 @@ func processTask(task Runnable, q *TaskQueue) {
 		}
 	}()
 
-	taskType := reflect.TypeOf(task).String()
-	log.Info("Processing task", "task", task, "taskType", taskType)
-
 	switch t := task.(type) {
 	case Combinable:
 		task.(Combinable).Combine(q.tasks)
 	case Runnable:
 		task.Run()
 	default:
-		log.Debug("unspecified task", "task", task, "type", t)
+		log.Warn("unspecified task", "task", task, "type", t)
 	}
 }
 

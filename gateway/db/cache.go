@@ -136,6 +136,7 @@ func (p *Product) cache(ctx context.Context) error {
 }
 
 func (t *Tenant) Lookup(ctx context.Context) error {
+	log.Info("cache.go > Lookup > Looking up Tenant from context")
 	fromContext, ok := common.FromContext(ctx, TENANT)
 	if ok {
 		*t = *fromContext.(*Tenant)
@@ -151,10 +152,11 @@ func (t *Tenant) Lookup(ctx context.Context) error {
 			t.CachedAt, _ = time.Parse(time.RFC3339, result["cachedAt"])
 		}
 
+		log.Info("cache.go > Lookup > Setting Tenant context", "tenantId", t.Id)
 		common.UpdateContext(ctx, t)
 
 		if expired(t) {
-			log.Info("Tenant cache expired. Refreshing", "tenantId", t.Id)
+			log.Info("cache.go > Lookup > Tenant cache expired. Refreshing", "tenantId", t.Id)
 			common.GetTaskQueue().Add(&RefreshTask{
 				ref: t,
 			})
@@ -185,6 +187,8 @@ func (a *App) Lookup(ctx context.Context) error {
 			a.Tenant.Id = result["tenant"]
 			a.Tenant.Lookup(ctx)
 		}
+
+		log.Info("cache.go > Lookup > Setting App context", "appId", a.Id)
 		common.UpdateContext(ctx, a)
 
 		if expired(a) {
@@ -267,6 +271,7 @@ func (p *Product) Lookup(ctx context.Context) error {
 			p.Active, _ = strconv.ParseBool(result["active"])
 		}
 
+		log.Info("cache.go > Lookup > Setting Product context", "productId", p.Id)
 		common.UpdateContext(ctx, p)
 
 		if expired(p) {
@@ -302,22 +307,22 @@ func RelaytxFromKey(ctx context.Context, key string) (*Relaytx, bool) {
 
 // Refresh does the psql calls to build cache
 func (t *Tenant) refresh(ctx context.Context) error {
-	log.Info("Refreshing tenant", "tenantId", t.Id)
+	log.Info("cache.go > refresh > Refreshing tenant", "tenantId", t.Id)
 	err := t.fetch(ctx)
 	if err != nil {
-		log.Error("Failed to fetch tenant", "tenantId", t.Id, "error", err)
+		log.Error("cache.go > refresh > Failed to fetch tenant", "tenantId", t.Id, "error", err)
 		return err
 	}
 
 	err = t.canonicalBalance(ctx)
 	if err != nil {
-		log.Error("Failed to get canonical balance", "tenantId", t.Id, "error", err)
+		log.Error("cache.go > refresh > Failed to get canonical balance", "tenantId", t.Id, "error", err)
 		return err
 	}
 
 	err = t.cache(ctx)
 	if err != nil {
-		log.Error("Failed to cache tenant", "tenantId", t.Id, "error", err)
+		log.Error("cache.go > refresh > Failed to cache tenant", "tenantId", t.Id, "error", err)
 		return err
 	}
 

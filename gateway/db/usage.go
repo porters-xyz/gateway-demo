@@ -24,21 +24,21 @@ func NewUsageUpdater(ctx context.Context, status string) *UsageUpdater {
 
 	entity, ok := common.FromContext(ctx, PRODUCT)
 	if !ok || entity == nil {
-		log.Error("Failed to get product from context")
+		log.Error("usage.go > NewUsageUpdater > Failed to get product from context")
 	} else {
 		updater.product = entity.(*Product)
 	}
 
 	entity, ok = common.FromContext(ctx, APP)
 	if !ok || entity == nil {
-		log.Error("Failed to get app from context")
+		log.Error("usage.go > NewUsageUpdater > Failed to get app from context")
 	} else {
 		updater.app = entity.(*App)
 	}
 
 	entity, ok = common.FromContext(ctx, TENANT)
 	if !ok || entity == nil {
-		log.Error("Failed to get tenant from context")
+		log.Error("usage.go > NewUsageUpdater > Failed to get tenant from context")
 	} else {
 		tenant := entity.(*Tenant)
 		updater.balancekey = fmt.Sprintf("BALANCE:%s", tenant.Id)

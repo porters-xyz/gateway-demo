@@ -87,7 +87,7 @@ func (q *TaskQueue) CloseQueue() {
 }
 
 func (q *TaskQueue) Add(runnable Runnable) {
-	log.Info("Adding runnable to queue", "delayable", runnable)
+	log.Info("Adding runnable to queue", "runnable", runnable)
 	q.tasks <- runnable
 	JobGauge.WithLabelValues("task").Inc()
 }

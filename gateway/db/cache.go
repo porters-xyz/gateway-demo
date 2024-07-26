@@ -278,13 +278,13 @@ func (p *Product) Lookup(ctx context.Context) error {
 
 func RelaytxFromKey(ctx context.Context, key string) (*Relaytx, bool) {
 	relaycount := GetIntVal(ctx, key)
-	log.Info("Relay count", "relaycount", relaycount)
+	//log.Info("Relay count", "relaycount", relaycount)
 
 	rtx := reverseRelaytxKey(key)
-	log.Info("Reverse relay key", "rtx", rtx)
+	//log.Info("Reverse relay key", "rtx", rtx)
 
-	log.Info("AppId", "AppId", rtx.AppId)
-	log.Info("ProductName", "ProductName", rtx.ProductName)
+	//log.Info("AppId", "AppId", rtx.AppId)
+	//log.Info("ProductName", "ProductName", rtx.ProductName)
 
 	if relaycount > 0 && rtx.AppId != "" && rtx.ProductName != "" {
 		uuid := uuid.New()

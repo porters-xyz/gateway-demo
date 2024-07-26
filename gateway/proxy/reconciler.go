@@ -64,6 +64,7 @@ func (r *Reconciler) spawnTasks() {
 }
 
 func (t *reconcileTask) Run() {
+	log.Info("Running reconcile task", "relaytx", t.relaytx)
 	ctx := context.Background()
 	replayfunc, err := db.ReconcileRelays(ctx, t.relaytx)
 	if err != nil {

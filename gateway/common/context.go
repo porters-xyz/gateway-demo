@@ -1,41 +1,43 @@
 package common
 
 import (
-    "context"
-    "time"
+	"context"
+	log "log/slog"
+	"time"
 )
 
 const (
-    INSTRUMENT string = "INSTRUMENT_START"
+	INSTRUMENT string = "INSTRUMENT_START"
 )
 
 type Contextable interface {
-    ContextKey() string
+	ContextKey() string
 }
 
 type Instrument struct {
-    Timestamp time.Time
+	Timestamp time.Time
 }
 
 func UpdateContext(ctx context.Context, entity Contextable) context.Context {
-    return context.WithValue(ctx, entity.ContextKey(), entity)
+	log.Info("context.go > UpdateContext > Updating context", "entity", entity.ContextKey())
+	return context.WithValue(ctx, entity.ContextKey(), entity)
 }
 
 func FromContext(ctx context.Context, contextkey string) (any, bool) {
-    value := ctx.Value(contextkey)
-    if value != nil {
-        return value, true
-    } else {
-        return nil, false
-    }
+	value := ctx.Value(contextkey)
+	if value != nil {
+		return value, true
+	} else {
+		return nil, false
+	}
 }
 
 func StartInstrument() *Instrument {
-    return &Instrument{
-        Timestamp: time.Now(),
-    }
+	return &Instrument{
+		Timestamp: time.Now(),
+	}
 }
 
 func (i *Instrument) ContextKey() string {
-    return INSTRUMENT
+	return INSTRUMENT
 }

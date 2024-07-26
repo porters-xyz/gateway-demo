@@ -28,7 +28,7 @@ func NewUsageUpdater(ctx context.Context, status string) *UsageUpdater {
 		log.Error("usage.go > NewUsageUpdater > Failed to get product from context")
 	} else {
 		updater.product = entity.(*Product)
-		log.Info("usage.go > retrieved product entity", "product", updater.product)
+		log.Info("usage.go > retrieved product entity", "updater", updater)
 	}
 
 	log.Info("usage.go > NewUsageUpdater > Attempting to read app from context")
@@ -37,7 +37,7 @@ func NewUsageUpdater(ctx context.Context, status string) *UsageUpdater {
 		log.Error("usage.go > NewUsageUpdater > Failed to get app from context")
 	} else {
 		updater.app = entity.(*App)
-		log.Info("usage.go > retrieved app entity", "app", updater.app)
+		log.Info("usage.go > retrieved app entity", "updater", updater)
 	}
 
 	//Ensure Tenant is loaded in context

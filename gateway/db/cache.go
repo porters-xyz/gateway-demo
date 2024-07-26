@@ -89,7 +89,7 @@ func (t *Tenant) cache(ctx context.Context) error {
 	err := getCache().HSet(ctx, t.Key(),
 		"active", t.Active,
 		"balance", t.Balance,
-		"cached", cached).Err()
+		"cachedAt", cached).Err()
 	if err != nil {
 		return err
 	}
@@ -101,7 +101,7 @@ func (a *App) cache(ctx context.Context) error {
 	err := getCache().HSet(ctx, a.Key(),
 		"active", a.Active,
 		"tenant", a.Tenant.Id,
-		"cached", cached,
+		"cachedAt", cached,
 		"missedAt", a.MissedAt).Err()
 	if err != nil {
 		return err

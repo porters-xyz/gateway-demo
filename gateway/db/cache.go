@@ -154,6 +154,7 @@ func (t *Tenant) Lookup(ctx context.Context) error {
 		common.UpdateContext(ctx, t)
 
 		if expired(t) {
+			log.Info("Tenant cache expired. Refreshing", "tenantId", t.Id)
 			common.GetTaskQueue().Add(&RefreshTask{
 				ref: t,
 			})
@@ -187,6 +188,7 @@ func (a *App) Lookup(ctx context.Context) error {
 		common.UpdateContext(ctx, a)
 
 		if expired(a) {
+			log.Info("App cache expired. Refreshing", "appId", a.Id)
 			common.GetTaskQueue().Add(&RefreshTask{
 				ref: a,
 			})
@@ -230,7 +232,7 @@ func (a *App) Rules(ctx context.Context) (Apprules, error) {
 
 		// Check if the Apprule needs to be refreshed
 		if expired(&ar) {
-			log.Debug("Apprule is expired, adding refresh task", "apprule", ar.Id)
+			log.Info("Apprule cache is expired. Refreshing", "apprule", ar.Id)
 			common.GetTaskQueue().Add(&RefreshTask{
 				ref: &ar,
 			})
@@ -268,6 +270,7 @@ func (p *Product) Lookup(ctx context.Context) error {
 		common.UpdateContext(ctx, p)
 
 		if expired(p) {
+			log.Info("Product cache expired. Refreshing", "productId", p.Id)
 			common.GetTaskQueue().Add(&RefreshTask{
 				ref: p,
 			})

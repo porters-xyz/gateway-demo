@@ -87,19 +87,19 @@ func (q *TaskQueue) CloseQueue() {
 }
 
 func (q *TaskQueue) Add(runnable Runnable) {
-	log.Info("Adding runnable to queue", "runnable", runnable)
+	log.Info("Adding runnable to queue")
 	q.tasks <- runnable
 	JobGauge.WithLabelValues("task").Inc()
 }
 
 func (q *TaskQueue) Delay(delayable Delayable) {
-	log.Info("Adding delayed task to queue", "delayable", delayable)
+	log.Info("Adding delayed task to queue")
 	q.delayed <- delayable
 	JobGauge.WithLabelValues("delayed").Inc()
 }
 
 func (q *TaskQueue) ReportError(err error) {
-	log.Info("Adding error task to queue", "err", err)
+	log.Info("Adding error task to queue")
 	q.errors <- err
 	JobGauge.WithLabelValues("error").Inc()
 }

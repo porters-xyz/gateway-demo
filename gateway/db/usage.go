@@ -12,9 +12,8 @@ import (
 type UsageUpdater struct {
 	status     string
 	balancekey string
-	app        *App
-	tenant     *Tenant
-	product    *Product
+	app        App
+	product    Product
 }
 
 func NewUsageUpdater(ctx context.Context, status string) *UsageUpdater {
@@ -26,38 +25,40 @@ func NewUsageUpdater(ctx context.Context, status string) *UsageUpdater {
 	if !ok || entity == nil {
 		log.Error("usage.go > NewUsageUpdater > Failed to get product from context")
 	} else {
-		updater.product = entity.(*Product)
+		updater.product = entity.(Product)
 	}
 
 	entity, ok = common.FromContext(ctx, APP)
 	if !ok || entity == nil {
 		log.Error("usage.go > NewUsageUpdater > Failed to get app from context")
 	} else {
-		updater.app = entity.(*App)
+		updater.app = entity.(App)
+		updater.balancekey = fmt.Sprintf("BALANCE:%s", updater.app.Tenant.Id)
 	}
 
-	//Ensure Tenant is loaded in context
-	log.Info("usage.go > NewUsageUpdater > Begin Tenant Lookup for tenant with id", "tenantId", updater.app.Tenant.Id)
-	updater.app.Tenant.Lookup(ctx)
-	log.Info("usage.go > NewUsageUpdater > Finished Tenant Lookup for tenant with id", "tenantId", updater.app.Tenant.Id)
+	// //Ensure Tenant is loaded in context
+	// log.Info("usage.go > NewUsageUpdater > Begin Tenant Lookup for tenant with id", "tenantId", updater.app.Tenant.Id)
+	// updater.app.Tenant.Lookup(ctx)
+	// log.Info("usage.go > NewUsageUpdater > Finished Tenant Lookup for tenant with id", "tenantId", updater.app.Tenant.Id)
 
-	entity, ok = common.FromContext(ctx, TENANT)
-	if !ok || entity == nil {
-		log.Error("usage.go > NewUsageUpdater > Failed to get tenant from context", "tenantId", updater.app.Tenant.Id, "appId", updater.app.Id, "product", updater.product.Id)
-	} else {
-		tenant := entity.(*Tenant)
-		updater.balancekey = fmt.Sprintf("BALANCE:%s", tenant.Id)
-		updater.tenant = tenant
-	}
+	// entity, ok = common.FromContext(ctx, TENANT)
+	// if !ok || entity == nil {
+	// 	log.Error("usage.go > NewUsageUpdater > Failed to get tenant from context", "tenantId", updater.app.Tenant.Id, "appId", updater.app.Id, "product", updater.product.Id)
+	// } else {
+	// 	tenant := entity.(Tenant)
+	// 	updater.balancekey = fmt.Sprintf("BALANCE:%s", tenant.Id)
+	// 	updater.tenant = tenant
+	// }
 
 	return updater
 }
 
 func (u *UsageUpdater) Run() {
-	if u.app == nil || u.product == nil {
-		log.Error("usage.go > UsageUpdated > Invalid request, usage not reported", "app", u.app, "product", u.product)
-		return
-	}
+	// if u.app == nil || u.product == nil {
+	// 	log.Error("usage.go > UsageUpdated > Invalid request, usage not reported", "app", u.app, "product", u.product)
+	// 	return
+	// }
+	log.Error("usage.go > UsageUpdated > Attempting usage reporte", "app", u.app, "product", u.product)
 
 	if u.status == "success" {
 		ctx := context.Background()

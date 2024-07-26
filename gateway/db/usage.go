@@ -31,6 +31,7 @@ func NewUsageUpdater(ctx context.Context, status string) *UsageUpdater {
 		log.Info("usage.go > NewUsageUpdater > retrieved product entity", "product", updater.product)
 	}
 
+	logContext(ctx)
 	log.Info("usage.go > NewUsageUpdater > Attempting to read app from context")
 	entity, ok = common.FromContext(ctx, APP)
 	if !ok || entity == nil {
@@ -38,15 +39,21 @@ func NewUsageUpdater(ctx context.Context, status string) *UsageUpdater {
 	} else {
 		updater.app = entity.(*App)
 		log.Info("usage.go > NewUsageUpdater > retrieved app entity", "app", updater.app)
+	}
 
-		// Ensure Tenant is loaded in context
-		if updater.app.Tenant.Id != "" { // Check if Tenant Id is not empty to ensure it's initialized
-			log.Info("usage.go > NewUsageUpdater > Begin Tenant Lookup for tenant with id", "tenantId", updater.app.Tenant.Id)
-			updater.app.Tenant.Lookup(ctx)
-			log.Info("usage.go > NewUsageUpdater > Finished Tenant Lookup for tenant with id", "tenantId", updater.app.Tenant.Id)
-		} else {
-			log.Error("usage.go > NewUsageUpdater > app.Tenant is not initialized", "appId", updater.app.Id)
-		}
+	// Ensure app is not nil before accessing Tenant
+	if updater.app == nil {
+		log.Error("usage.go > NewUsageUpdater > app is nil")
+		return updater
+	}
+
+	// Ensure Tenant is loaded in context only if app is not nil
+	if updater.app.Tenant.Id != "" { // Check if Tenant Id is not empty to ensure it's initialized
+		log.Info("usage.go > NewUsageUpdater > Begin Tenant Lookup for tenant with id", "tenantId", updater.app.Tenant.Id)
+		updater.app.Tenant.Lookup(ctx)
+		log.Info("usage.go > NewUsageUpdater > Finished Tenant Lookup for tenant with id", "tenantId", updater.app.Tenant.Id)
+	} else {
+		log.Error("usage.go > NewUsageUpdater > app.Tenant is not initialized", "appId", updater.app.Id)
 	}
 
 	// Ensure tenant is retrieved from context
@@ -65,6 +72,12 @@ func NewUsageUpdater(ctx context.Context, status string) *UsageUpdater {
 	}
 
 	return updater
+}
+
+func logContext(ctx context.Context) {
+	for k, v := range ctx.Value().(map[string]interface{}) {
+		log.Info("context value", "key", k, "value", v)
+	}
 }
 
 func (u *UsageUpdater) Run() {

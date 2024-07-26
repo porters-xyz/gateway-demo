@@ -19,7 +19,7 @@ type Instrument struct {
 }
 
 func UpdateContext(ctx context.Context, entity Contextable) context.Context {
-	log.Info("context.go > UpdateContext > Updating context", "entity", entity.ContextKey())
+	log.Info("*** Updating context ***", "entity", entity)
 	return context.WithValue(ctx, entity.ContextKey(), entity)
 }
 

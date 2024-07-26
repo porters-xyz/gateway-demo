@@ -31,7 +31,6 @@ func NewUsageUpdater(ctx context.Context, status string) *UsageUpdater {
 		log.Info("usage.go > NewUsageUpdater > retrieved product entity", "product", updater.product)
 	}
 
-	logContext(ctx)
 	log.Info("usage.go > NewUsageUpdater > Attempting to read app from context")
 	entity, ok = common.FromContext(ctx, APP)
 	if !ok || entity == nil {
@@ -72,12 +71,6 @@ func NewUsageUpdater(ctx context.Context, status string) *UsageUpdater {
 	}
 
 	return updater
-}
-
-func logContext(ctx context.Context) {
-	for k, v := range ctx.Value(ctx).(map[string]interface{}) {
-		log.Info("context value", "key", k, "value", v)
-	}
 }
 
 func (u *UsageUpdater) Run() {

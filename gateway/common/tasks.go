@@ -56,19 +56,15 @@ func GetTaskQueue() *TaskQueue {
 	return qInst
 }
 
-// TODO: Undo once stable!!
-// Currently operates as single threaded to debug issue with prod environment
 func (q *TaskQueue) SetupWorkers() {
+	// TODO: Undo once stable!!
 	// numWorkers := GetConfigInt(NUM_WORKERS)
-	// for i := 0; i < numWorkers; i++ {
-	// 	go worker(q)
-	// }
-	// go delayWorker(q)
-	// go errWorker(q)
-
-	worker(q)
-	delayWorker(q)
-	errWorker(q)
+	numWorkers := 1
+	for i := 0; i < numWorkers; i++ {
+		go worker(q)
+	}
+	go delayWorker(q)
+	go errWorker(q)
 }
 
 // use this for graceful shutdown

@@ -140,8 +140,8 @@ func (t *Tenant) Lookup(ctx context.Context) (context.Context, error) {
 		log.Info("cache.go > Tenant Lookup > Retrieving from context", "t", t)
 		*t = *fromContext.(*Tenant)
 	} else {
+		log.Info("cache.go > Tenant Lookup > Tenant not in context, retrieving", "t", t)
 		key := t.Key()
-		t.Id = key
 		result, err := getCache().HGetAll(ctx, key).Result()
 		if err != nil || len(result) == 0 {
 			log.Debug("tenant cache missing", "key", key)

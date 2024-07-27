@@ -141,6 +141,7 @@ func (t *Tenant) Lookup(ctx context.Context) (context.Context, error) {
 		*t = *fromContext.(*Tenant)
 	} else {
 		key := t.Key()
+		t.Id = key
 		result, err := getCache().HGetAll(ctx, key).Result()
 		if err != nil || len(result) == 0 {
 			log.Debug("tenant cache missing", "key", key)

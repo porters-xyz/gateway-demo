@@ -391,7 +391,8 @@ func (a *App) refresh(ctx context.Context) error {
 	log.Debug("Refreshing app", "appId", a.Id)
 	err := a.fetch(ctx)
 	if err != nil {
-		log.Error("Failed to fetch app", "appId", a.Id, "error", err)
+		//Can be set to log.Error, but lots of false positives will show due to context cancellation
+		log.Debug("Failed to fetch app", "appId", a.Id, "error", err)
 		a.MissedAt = time.Now()
 	} else {
 		log.Debug("Updating Tenant via Lookup")
@@ -400,7 +401,8 @@ func (a *App) refresh(ctx context.Context) error {
 
 	err = a.cache(ctx)
 	if err != nil {
-		log.Error("Failed to cache app", "appId", a.Id, "error", err)
+		//Can be set to log.Error, but lots of false positives will show due to context cancellation
+		log.Debug("Failed to cache app", "appId", a.Id, "error", err)
 		return err
 	}
 

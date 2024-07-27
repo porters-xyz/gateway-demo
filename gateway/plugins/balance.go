@@ -62,7 +62,7 @@ func (b *BalanceTracker) HandleRequest(req *http.Request) error {
 	ctx = common.UpdateContext(ctx, bal)
 	ctx = common.UpdateContext(ctx, app)
 
-	log.Info("Balance for app", "appId", app.Id, "bal", bal)
+	log.Info("Balance for app", "appId", app.Id, "bal", bal.cachedBalance)
 
 	if bal.cachedBalance > 0 {
 		lifecycle := proxy.SetStageComplete(ctx, proxy.BalanceCheck|proxy.AccountLookup)
@@ -86,14 +86,19 @@ func (c *balancecache) ContextKey() string {
 }
 
 func (c *balancecache) Lookup(ctx context.Context) error {
+    log.Info("Balance Lookup", "key", c.Key(), "balance", c.tenant.Balance);
+
 	created, err := db.InitCounter(ctx, c.Key(), c.tenant.Balance)
 	if err != nil {
+        log.Error("Error on db.InitCounter", "key", c.Key(), "balance", c.tenant.Balance)
 		return err
 	}
 	if created {
-		c.cachedBalance = c.tenant.Balance
+        c.cachedBalance = c.tenant.Balance
+        log.Info("Balance Lookup Created", "balance", c.tenant.Balance)
 	} else {
 		c.cachedBalance = db.GetIntVal(ctx, c.Key())
+        log.Info("Balance Lookup Exists", "key", c.Key(), "balance", c.cachedBalance)
 	}
 	return nil
 }

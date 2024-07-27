@@ -18,7 +18,8 @@ type UsageUpdater struct {
 
 func NewUsageUpdater(ctx context.Context, status string) *UsageUpdater {
 	updater := &UsageUpdater{
-		status: status,
+		status:     status,
+		balancekey: "balance",
 	}
 
 	entity, ok := common.FromContext(ctx, PRODUCT)
@@ -53,13 +54,13 @@ func (u *UsageUpdater) Run() {
 
 	if u.status == "success" {
 		ctx := context.Background()
-		DecrementCounter(ctx, u.balancekey, u.product.Weight)
+		DecrementCounterField(ctx, u.app.Tenant.Key(), u.balancekey, u.product.Weight)
 
 		use := &Relaytx{
 			AppId:       u.app.Id,
 			ProductName: u.product.Name,
 		}
-		IncrementCounter(ctx, use.Key(), u.product.Weight)
+		IncrementCounterField(ctx, use.Key(), u.balancekey, u.product.Weight)
 	}
 	common.EndpointUsage.WithLabelValues(u.app.HashId(), u.app.Tenant.Id, u.product.Name, u.status).Inc()
 }

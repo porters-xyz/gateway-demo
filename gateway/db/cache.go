@@ -515,7 +515,7 @@ func DecrementField(ctx context.Context, decr Decrementable, amount int) int {
 	return int(newVal)
 }
 
-func IncrementCounter(ctx context.Context, key string, amount int) int {
+func IncrementCounterKey(ctx context.Context, key string, amount int) int {
 	incrBy := int64(amount)
 	newVal, err := getCache().IncrBy(ctx, key, incrBy).Result()
 	if err != nil {
@@ -524,18 +524,38 @@ func IncrementCounter(ctx context.Context, key string, amount int) int {
 	return int(newVal)
 }
 
-func DecrementCounter(ctx context.Context, key string, amount int) int {
-	decrBy := int64(amount)
-	newVal, err := getCache().DecrBy(ctx, key, decrBy).Result()
+func IncrementCounterField(ctx context.Context, key string, field string, amount int) int {
+	incrBy := int64(amount)
+
+	newVal, err := getCache().HIncrBy(ctx, key, field, incrBy).Result()
 	if err != nil {
+		log.Error("Error incrementing counter", "key", key, "field", field, "amount", amount, "error", err)
 		return -1
 	}
+	log.Info("Incremented counter", "key", key, "field", field, "newVal", newVal)
 	return int(newVal)
 }
 
-// returns false if counter already exists
-func InitCounter(ctx context.Context, key string, initValue int) (bool, error) {
-	return getCache().SetNX(ctx, key, initValue, 2*time.Minute).Result()
+func DecrementCounterField(ctx context.Context, key string, field string, amount int) int {
+	decrBy := int64(amount)
+
+	newVal, err := getCache().HIncrBy(ctx, key, field, -decrBy).Result()
+	if err != nil {
+		log.Error("Error decrementing counter", "key", key, "field", field, "amount", amount, "error", err)
+		return -1
+	}
+	log.Info("Decremented counter", "key", key, "field", field, "newVal", newVal)
+	return int(newVal)
+}
+
+func InitCounter(ctx context.Context, key string, field string, initValue int) (bool, error) {
+	success, err := getCache().HSetNX(ctx, key, field, initValue).Result()
+	if err != nil {
+		log.Error("Error initializing counter", "key", key, "field", field, "initValue", initValue, "error", err)
+		return false, err
+	}
+	log.Info("Initialized counter", "key", key, "field", field, "success", success)
+	return success, nil
 }
 
 func ReconcileRelays(ctx context.Context, rtx *Relaytx) (func() bool, error) {

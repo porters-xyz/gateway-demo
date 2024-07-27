@@ -48,6 +48,8 @@ func (a *AllowedOriginFilter) HandleRequest(req *http.Request) error {
 		return proxy.NewHTTPError(http.StatusUnauthorized)
 	}
 
+	*req = *req.WithContext(ctx)
+
 	return nil
 }
 

@@ -155,6 +155,7 @@ func setupProxy(remote *url.URL) *httputil.ReverseProxy {
 		}
 
 		if resp.StatusCode < 400 && err == nil {
+			log.Info("Response", "resp", resp)
 			updater := db.NewUsageUpdater(ctx, "success")
 			common.GetTaskQueue().Add(updater)
 		}

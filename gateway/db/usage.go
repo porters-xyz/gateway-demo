@@ -29,18 +29,18 @@ func NewUsageUpdater(ctx context.Context, status string) *UsageUpdater {
 
 	entity, ok := common.FromContext(ctx, PRODUCT)
 	if !ok || entity == nil {
-		log.Error("usage.go > NewUsageUpdater > Failed to get product from context")
+		log.Error("Failed to get product from context")
 	} else {
 		updater.product = entity.(*Product)
-		log.Info("usage.go > NewUsageUpdater > retrieved product entity", "product", updater.product)
+		log.Debug("Retrieved product entity", "product", updater.product)
 	}
 
 	entity, ok = common.FromContext(ctx, APP)
 	if !ok || entity == nil {
-		log.Error("usage.go > NewUsageUpdater > Failed to get app from context")
+		log.Error("Failed to get app from context")
 	} else {
 		updater.app = entity.(*App)
-		log.Info("usage.go > NewUsageUpdater > retrieved app entity", "app", updater.app)
+		log.Debug("Retrieved app entity", "app", updater.app)
 	}
 
 	// Ensure app is not nil before accessing Tenant
@@ -56,7 +56,7 @@ func NewUsageUpdater(ctx context.Context, status string) *UsageUpdater {
 			log.Error("usage.go > NewUsageUpdater > Failed to get tenant from context", "tenantId", updater.app.Tenant.Id, "appId", updater.app.Id, "product", updater.product)
 		} else {
 			tenant := entity.(*Tenant)
-			log.Info("usage.go > retrieved tenant entity", "tenant", tenant)
+			log.Debug("Retrieved tenant entity", "tenant", tenant)
 			updater.balancekey = fmt.Sprintf("BALANCE:%s", tenant.Id)
 			updater.tenant = tenant
 		}

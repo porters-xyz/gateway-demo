@@ -65,11 +65,13 @@ func (b *BalanceTracker) HandleRequest(req *http.Request) error {
 	if bal.cachedBalance > 0 {
 		lifecycle := proxy.SetStageComplete(ctx, proxy.BalanceCheck|proxy.AccountLookup)
 		ctx = common.UpdateContext(ctx, lifecycle)
-		*req = *req.WithContext(ctx)
 	} else {
 		log.Error("no balance remaining", "app", app.HashId())
 		return proxy.BalanceExceededError
 	}
+
+	*req = *req.WithContext(ctx)
+
 	return nil
 }
 

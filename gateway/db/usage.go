@@ -13,7 +13,6 @@ type UsageUpdater struct {
 	status     string
 	balancekey string
 	app        *App
-	tenant     *Tenant
 	product    *Product
 }
 
@@ -50,27 +49,12 @@ func NewUsageUpdater(ctx context.Context, status string) *UsageUpdater {
 		return updater
 	}
 
-	// Ensure tenant is retrieved from context
-	if updater.app.Tenant.Id != "" {
-		entity, ok = common.FromContext(ctx, TENANT)
-		if !ok || entity == nil {
-			log.Error("usage.go > NewUsageUpdater > Failed to get tenant from context", "tenantId", updater.app.Tenant.Id, "appId", updater.app.Id, "product", updater.product)
-		} else {
-			tenant := entity.(*Tenant)
-			log.Debug("Retrieved tenant entity", "tenant", tenant)
-			updater.balancekey = fmt.Sprintf("BALANCE:%s", tenant.Id)
-			updater.tenant = tenant
-		}
-	} else {
-		log.Error("usage.go > NewUsageUpdater > app.Tenant is not properly initialized", "appId", updater.app.Id)
-	}
-
 	return updater
 }
 
 func (u *UsageUpdater) Run() {
-	if u.app == nil || u.tenant == nil || u.product == nil {
-		log.Error("usage.go > UsageUpdated > Invalid request, usage not reported", "app", u.app, "tenant", u.tenant, "product", u.product)
+	if u.app == nil || u.product == nil {
+		log.Error("usage.go > UsageUpdated > Invalid request, usage not reported", "app", u.app, "product", u.product)
 		return
 	}
 

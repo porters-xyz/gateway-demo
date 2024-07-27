@@ -60,7 +60,7 @@ func (u *UsageUpdater) Run() {
 			AppId:       u.app.Id,
 			ProductName: u.product.Name,
 		}
-		IncrementCounterField(ctx, use.Key(), u.balancekey, u.product.Weight)
+		IncrementCounterKey(ctx, use.Key(), u.product.Weight)
 	}
 	common.EndpointUsage.WithLabelValues(u.app.HashId(), u.app.Tenant.Id, u.product.Name, u.status).Inc()
 }

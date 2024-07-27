@@ -519,6 +519,7 @@ func IncrementCounterKey(ctx context.Context, key string, amount int) int {
 	incrBy := int64(amount)
 	newVal, err := getCache().IncrBy(ctx, key, incrBy).Result()
 	if err != nil {
+		log.Error("Error incrementing counter (key)", "key", key, "amount", amount, "error", err)
 		return -1
 	}
 	return int(newVal)
@@ -529,10 +530,9 @@ func IncrementCounterField(ctx context.Context, key string, field string, amount
 
 	newVal, err := getCache().HIncrBy(ctx, key, field, incrBy).Result()
 	if err != nil {
-		log.Error("Error incrementing counter", "key", key, "field", field, "amount", amount, "error", err)
+		log.Error("Error incrementing counter (field)", "key", key, "field", field, "amount", amount, "error", err)
 		return -1
 	}
-	log.Info("Incremented counter", "key", key, "field", field, "newVal", newVal)
 	return int(newVal)
 }
 
@@ -544,7 +544,6 @@ func DecrementCounterField(ctx context.Context, key string, field string, amount
 		log.Error("Error decrementing counter", "key", key, "field", field, "amount", amount, "error", err)
 		return -1
 	}
-	log.Info("Decremented counter", "key", key, "field", field, "newVal", newVal)
 	return int(newVal)
 }
 

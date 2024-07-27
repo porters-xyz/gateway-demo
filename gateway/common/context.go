@@ -19,7 +19,7 @@ type Instrument struct {
 }
 
 func UpdateContext(ctx context.Context, entity Contextable) context.Context {
-	log.Info("*** Updating context ***", "entity", entity)
+	log.Info("*** Updating context ***", "key", entity.ContextKey(), "entity", entity)
 	return context.WithValue(ctx, entity.ContextKey(), entity)
 }
 
@@ -30,6 +30,10 @@ func FromContext(ctx context.Context, contextkey string) (any, bool) {
 	} else {
 		return nil, false
 	}
+}
+
+func LogContext(ctx context.Context, contextkey string) {
+	log.Info("Context Value for", "key", contextkey, "val", ctx.Value(contextkey))
 }
 
 func StartInstrument() *Instrument {

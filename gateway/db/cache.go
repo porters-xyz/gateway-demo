@@ -135,7 +135,6 @@ func (p *Product) cache(ctx context.Context) error {
 }
 
 func (t *Tenant) Lookup(ctx context.Context) error {
-	log.Info("cache.go > Lookup > Looking up Tenant from context")
 	fromContext, ok := common.FromContext(ctx, TENANT)
 	if ok {
 		*t = *fromContext.(*Tenant)
@@ -148,14 +147,27 @@ func (t *Tenant) Lookup(ctx context.Context) error {
 		} else {
 			t.Active, _ = strconv.ParseBool(result["active"])
 			t.Balance, _ = strconv.Atoi(result["balance"])
-			t.CachedAt, _ = time.Parse(time.RFC3339, result["cachedAt"])
 
-			log.Info("cache.go > Lookup > retrieved tenant", "tenant", t)
+			//We have to do this because in an older version some redis keys were "cached" not "cachedAt" due to a bug
+			if cachedAtStr := result["cachedAt"]; cachedAtStr != "" {
+				cachedAt, err := time.Parse(time.RFC3339, cachedAtStr)
+				if err != nil {
+					log.Error("Failed to parse cachedAt date", "tenantId", t.Id, "error", err)
+				} else {
+					t.CachedAt = cachedAt
+				}
+			} else if cachedStr := result["cached"]; cachedStr != "" {
+				cachedAt, err := time.Parse(time.RFC3339, cachedStr)
+				if err != nil {
+					log.Error("Failed to parse cached date", "tenantId", t.Id, "error", err)
+				} else {
+					t.CachedAt = cachedAt
+				}
+			}
 		}
 
-		log.Info("cache.go > Lookup > Setting Tenant context", "tenantId", t.Id)
 		common.UpdateContext(ctx, t)
-		log.Info("cache.go > Lookup > Finished setting Tenant context", "tenantId", t.Id)
+		common.LogContext(ctx, TENANT)
 
 		if expired(t) {
 			log.Info("cache.go > Lookup > Tenant cache expired. Refreshing", "tenantId", t.Id)
@@ -186,12 +198,31 @@ func (a *App) Lookup(ctx context.Context) error {
 		} else {
 			log.Debug("got app from cache", "app", a.HashId())
 			a.Active, _ = strconv.ParseBool(result["active"])
+
+			//We have to do this because in an older version some redis keys were "cached" not "cachedAt" due to a bug
+			if cachedAtStr := result["cachedAt"]; cachedAtStr != "" {
+				cachedAt, err := time.Parse(time.RFC3339, cachedAtStr)
+				if err != nil {
+					log.Error("Failed to parse cachedAt date", "appId", a.Id, "error", err)
+				} else {
+					a.CachedAt = cachedAt
+				}
+			} else if cachedStr := result["cached"]; cachedStr != "" {
+				cachedAt, err := time.Parse(time.RFC3339, cachedStr)
+				if err != nil {
+					log.Error("Failed to parse cached date", "appId", a.Id, "error", err)
+				} else {
+					a.CachedAt = cachedAt
+				}
+			}
+
 			a.Tenant.Id = result["tenant"]
 			a.Tenant.Lookup(ctx)
 		}
 
 		log.Info("cache.go > Lookup > Setting App context", "appId", a.Id)
 		common.UpdateContext(ctx, a)
+		common.LogContext(ctx, APP)
 
 		if expired(a) {
 			log.Info("App cache expired. Refreshing", "appId", a.Id)
@@ -271,6 +302,23 @@ func (p *Product) Lookup(ctx context.Context) error {
 			p.PoktId, _ = result["poktId"]
 			p.Weight, _ = strconv.Atoi(result["weight"])
 			p.Active, _ = strconv.ParseBool(result["active"])
+
+			//We have to do this because in an older version some redis keys were "cached" not "cachedAt" due to a bug
+			if cachedAtStr := result["cachedAt"]; cachedAtStr != "" {
+				cachedAt, err := time.Parse(time.RFC3339, cachedAtStr)
+				if err != nil {
+					log.Error("Failed to parse cachedAt product", "product", p.Id, "error", err)
+				} else {
+					p.CachedAt = cachedAt
+				}
+			} else if cachedStr := result["cached"]; cachedStr != "" {
+				cachedAt, err := time.Parse(time.RFC3339, cachedStr)
+				if err != nil {
+					log.Error("Failed to parse cached product", "product", p.Id, "error", err)
+				} else {
+					p.CachedAt = cachedAt
+				}
+			}
 		}
 
 		log.Info("cache.go > Lookup > Setting Product context", "productId", p.Id)

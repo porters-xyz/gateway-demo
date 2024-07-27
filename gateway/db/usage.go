@@ -22,7 +22,11 @@ func NewUsageUpdater(ctx context.Context, status string) *UsageUpdater {
 		status: status,
 	}
 
-	log.Info("usage.go > NewUsageUpdater > Attempting to read product from context")
+	log.Info("NewUsageUpdater Being")
+	common.LogContext(ctx, PRODUCT)
+	common.LogContext(ctx, APP)
+	common.LogContext(ctx, TENANT)
+
 	entity, ok := common.FromContext(ctx, PRODUCT)
 	if !ok || entity == nil {
 		log.Error("usage.go > NewUsageUpdater > Failed to get product from context")
@@ -31,7 +35,6 @@ func NewUsageUpdater(ctx context.Context, status string) *UsageUpdater {
 		log.Info("usage.go > NewUsageUpdater > retrieved product entity", "product", updater.product)
 	}
 
-	log.Info("usage.go > NewUsageUpdater > Attempting to read app from context")
 	entity, ok = common.FromContext(ctx, APP)
 	if !ok || entity == nil {
 		log.Error("usage.go > NewUsageUpdater > Failed to get app from context")
@@ -44,15 +47,6 @@ func NewUsageUpdater(ctx context.Context, status string) *UsageUpdater {
 	if updater.app == nil {
 		log.Error("usage.go > NewUsageUpdater > app is nil")
 		return updater
-	}
-
-	// Ensure Tenant is loaded in context only if app is not nil
-	if updater.app.Tenant.Id != "" { // Check if Tenant Id is not empty to ensure it's initialized
-		log.Info("usage.go > NewUsageUpdater > Begin Tenant Lookup for tenant with id", "tenantId", updater.app.Tenant.Id)
-		updater.app.Tenant.Lookup(ctx)
-		log.Info("usage.go > NewUsageUpdater > Finished Tenant Lookup for tenant with id", "tenantId", updater.app.Tenant.Id)
-	} else {
-		log.Error("usage.go > NewUsageUpdater > app.Tenant is not initialized", "appId", updater.app.Id)
 	}
 
 	// Ensure tenant is retrieved from context

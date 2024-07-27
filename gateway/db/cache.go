@@ -137,6 +137,7 @@ func (p *Product) cache(ctx context.Context) error {
 func (t *Tenant) Lookup(ctx context.Context) (context.Context, error) {
 	fromContext, ok := common.FromContext(ctx, TENANT)
 	if ok {
+		log.Info("cache.go > Tenant Lookup > Retrieving from context", "t", t)
 		*t = *fromContext.(*Tenant)
 	} else {
 		key := t.Key()
@@ -166,6 +167,7 @@ func (t *Tenant) Lookup(ctx context.Context) (context.Context, error) {
 			}
 		}
 
+		log.Info("cache.go > Tenant Lookup > Updating Context", "t", t)
 		ctx = common.UpdateContext(ctx, t)
 		common.LogContext(ctx, TENANT)
 
@@ -218,6 +220,8 @@ func (a *App) Lookup(ctx context.Context) (context.Context, error) {
 			}
 
 			a.Tenant.Id = result["tenant"]
+
+			log.Info("cache.go > App Lookup > Updating Tenant")
 			ctx, _ = a.Tenant.Lookup(ctx)
 		}
 
@@ -392,6 +396,7 @@ func (a *App) refresh(ctx context.Context) error {
 		log.Error("Failed to fetch app", "appId", a.Id, "error", err)
 		a.MissedAt = time.Now()
 	} else {
+		log.Info("cache.go > App refresh > Updating Tenant")
 		ctx, _ = a.Tenant.Lookup(ctx)
 	}
 

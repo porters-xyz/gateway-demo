@@ -86,19 +86,21 @@ func (c *balancecache) ContextKey() string {
 }
 
 func (c *balancecache) Lookup(ctx context.Context) error {
-    log.Info("Balance Lookup", "key", c.Key(), "balance", c.tenant.Balance);
+	// log.Info("Balance Lookup", "key", c.Key(), "balance", c.tenant.Balance);
 
-	created, err := db.InitCounter(ctx, c.Key(), c.tenant.Balance)
-	if err != nil {
-        log.Error("Error on db.InitCounter", "key", c.Key(), "balance", c.tenant.Balance)
-		return err
-	}
-	if created {
-        c.cachedBalance = c.tenant.Balance
-        log.Info("Balance Lookup Created", "balance", c.tenant.Balance)
-	} else {
-		c.cachedBalance = db.GetIntVal(ctx, c.Key())
-        log.Info("Balance Lookup Exists", "key", c.Key(), "balance", c.cachedBalance)
-	}
+	// created, err := db.InitCounter(ctx, c.Key(), c.tenant.Balance)
+	// if err != nil {
+	//     log.Error("Error on db.InitCounter", "key", c.Key(), "balance", c.tenant.Balance)
+	// 	return err
+	// }
+	// if created {
+	//     c.cachedBalance = c.tenant.Balance
+	//     log.Info("Balance Lookup Created", "balance", c.tenant.Balance)
+	// } else {
+	// 	c.cachedBalance = db.GetIntVal(ctx, c.Key())
+	//     log.Info("Balance Lookup Exists", "key", c.Key(), "balance", c.cachedBalance)
+	// }
+	c.cachedBalance = c.tenant.Balance
+
 	return nil
 }

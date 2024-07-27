@@ -137,10 +137,10 @@ func (p *Product) cache(ctx context.Context) error {
 func (t *Tenant) Lookup(ctx context.Context) (context.Context, error) {
 	fromContext, ok := common.FromContext(ctx, TENANT)
 	if ok {
-		log.Info("cache.go > Tenant Lookup > Retrieving from context", "t", t)
+		log.Debug("Retrieving Tenant from context", "t", t)
 		*t = *fromContext.(*Tenant)
 	} else {
-		log.Info("cache.go > Tenant Lookup > Tenant not in context, retrieving", "t", t)
+		log.Debug("Tenant not in context, retrieving from cache or db", "t", t)
 		key := t.Key()
 		result, err := getCache().HGetAll(ctx, key).Result()
 		if err != nil || len(result) == 0 {
@@ -168,12 +168,10 @@ func (t *Tenant) Lookup(ctx context.Context) (context.Context, error) {
 			}
 		}
 
-		log.Info("cache.go > Tenant Lookup > Updating Context", "t", t)
 		ctx = common.UpdateContext(ctx, t)
-		common.LogContext(ctx, TENANT)
 
 		if expired(t) {
-			log.Info("cache.go > Lookup > Tenant cache expired. Refreshing", "tenantId", t.Id)
+			log.Debug("Tenant cache expired. Queing refresh", "tenantId", t.Id)
 			common.GetTaskQueue().Add(&RefreshTask{
 				ref: t,
 			})
@@ -222,16 +220,15 @@ func (a *App) Lookup(ctx context.Context) (context.Context, error) {
 
 			a.Tenant.Id = result["tenant"]
 
-			log.Info("cache.go > App Lookup > Updating Tenant")
+			log.Debug("Updating Tenant via Lookup")
 			ctx, _ = a.Tenant.Lookup(ctx)
 		}
 
-		log.Info("cache.go > Lookup > Setting App context", "appId", a.Id)
+		log.Debug("Setting App context", "appId", a.Id)
 		ctx = common.UpdateContext(ctx, a)
-		common.LogContext(ctx, APP)
 
 		if expired(a) {
-			log.Info("App cache expired. Refreshing", "appId", a.Id)
+			log.Debug("App cache expired. Refreshing", "appId", a.Id)
 			common.GetTaskQueue().Add(&RefreshTask{
 				ref: a,
 			})
@@ -275,7 +272,7 @@ func (a *App) Rules(ctx context.Context) (Apprules, error) {
 
 		// Check if the Apprule needs to be refreshed
 		if expired(&ar) {
-			log.Info("Apprule cache is expired. Refreshing", "apprule", ar.Id)
+			log.Debug("Apprule cache is expired. Refreshing", "apprule", ar.Id)
 			common.GetTaskQueue().Add(&RefreshTask{
 				ref: &ar,
 			})
@@ -327,11 +324,11 @@ func (p *Product) Lookup(ctx context.Context) (context.Context, error) {
 			}
 		}
 
-		log.Info("cache.go > Lookup > Setting Product context", "productId", p.Id)
+		log.Debug("Setting Product context", "productId", p.Id)
 		ctx = common.UpdateContext(ctx, p)
 
 		if expired(p) {
-			log.Info("Product cache expired. Refreshing", "productId", p.Id)
+			log.Debug("Product cache expired. Refreshing", "productId", p.Id)
 			common.GetTaskQueue().Add(&RefreshTask{
 				ref: p,
 			})
@@ -342,13 +339,13 @@ func (p *Product) Lookup(ctx context.Context) (context.Context, error) {
 
 func RelaytxFromKey(ctx context.Context, key string) (*Relaytx, bool) {
 	relaycount := GetIntVal(ctx, key)
-	//log.Info("Relay count", "relaycount", relaycount)
+	log.Debug("RelaytxFromKey, Relay count", "relaycount", relaycount)
 
 	rtx := reverseRelaytxKey(key)
-	//log.Info("Reverse relay key", "rtx", rtx)
+	log.Debug("Reverse relay key", "rtx", rtx)
 
-	//log.Info("AppId", "AppId", rtx.AppId)
-	//log.Info("ProductName", "ProductName", rtx.ProductName)
+	log.Debug("AppId", "AppId", rtx.AppId)
+	log.Debug("ProductName", "ProductName", rtx.ProductName)
 
 	if relaycount > 0 && rtx.AppId != "" && rtx.ProductName != "" {
 		uuid := uuid.New()
@@ -363,22 +360,22 @@ func RelaytxFromKey(ctx context.Context, key string) (*Relaytx, bool) {
 
 // Refresh does the psql calls to build cache
 func (t *Tenant) refresh(ctx context.Context) error {
-	log.Info("cache.go > refresh > Refreshing tenant", "tenantId", t.Id)
+	log.Debug("Refreshing tenant", "tenantId", t.Id)
 	err := t.fetch(ctx)
 	if err != nil {
-		log.Error("cache.go > refresh > Failed to fetch tenant", "tenantId", t.Id, "error", err)
+		log.Error("Failed to fetch tenant", "tenantId", t.Id, "error", err)
 		return err
 	}
 
 	err = t.canonicalBalance(ctx)
 	if err != nil {
-		log.Error("cache.go > refresh > Failed to get canonical balance", "tenantId", t.Id, "error", err)
+		log.Error("Failed to get canonical balance", "tenantId", t.Id, "error", err)
 		return err
 	}
 
 	err = t.cache(ctx)
 	if err != nil {
-		log.Error("cache.go > refresh > Failed to cache tenant", "tenantId", t.Id, "error", err)
+		log.Error("Failed to cache tenant", "tenantId", t.Id, "error", err)
 		return err
 	}
 
@@ -391,13 +388,13 @@ func (a *App) refresh(ctx context.Context) error {
 		return errors.New("App is nil")
 	}
 
-	log.Info("Refreshing app", "appId", a.Id)
+	log.Debug("Refreshing app", "appId", a.Id)
 	err := a.fetch(ctx)
 	if err != nil {
 		log.Error("Failed to fetch app", "appId", a.Id, "error", err)
 		a.MissedAt = time.Now()
 	} else {
-		log.Info("cache.go > App refresh > Updating Tenant")
+		log.Debug("Updating Tenant via Lookup")
 		ctx, _ = a.Tenant.Lookup(ctx)
 	}
 
@@ -443,7 +440,7 @@ func (p *Product) refresh(ctx context.Context) error {
 }
 
 func (t *RefreshTask) Run() {
-	log.Info("Running refresh task", "refreshable", t.ref)
+	log.Debug("Running refresh task", "refreshable", t.ref)
 	ctx := context.Background()
 	err := t.ref.refresh(ctx)
 	if err != nil {

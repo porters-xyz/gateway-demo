@@ -167,20 +167,18 @@ func setupProxy(remote *url.URL) *httputil.ReverseProxy {
 		ctx := req.Context()
 		var httpErr *HTTPError
 		cause := context.Cause(ctx)
+		log.Error("Error during relay attempt", "cause", cause)
 
 		//While we are getting the context, when handling the error state we have no guarantee the app has been set
 		//So we must assume it has not...
 		appId := PluckAppId(req)
-		log.Info("ErrorHandler Pluck App Id", "appId", appId)
 
 		app := &db.App{Id: appId}
 		ctx, err = app.Lookup(ctx)
 
-		log.Error("Error during relay attempt", "cause", cause)
 		updater := db.NewUsageUpdater(ctx, "failure")
 		common.GetTaskQueue().Add(updater)
 
-		log.Debug("cancel cause", "cause", cause)
 		if errors.As(cause, &httpErr) {
 			status := httpErr.code
 			http.Error(resp, http.StatusText(status), status)

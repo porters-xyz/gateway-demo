@@ -21,12 +21,6 @@ func NewUsageUpdater(ctx context.Context, status string) *UsageUpdater {
 		status: status,
 	}
 
-	log.Info("NewUsageUpdater Begin", "status", status)
-
-	common.LogContext(ctx, PRODUCT)
-	common.LogContext(ctx, APP)
-	common.LogContext(ctx, TENANT)
-
 	entity, ok := common.FromContext(ctx, PRODUCT)
 	if !ok || entity == nil {
 		log.Error("Failed to get product from context")
@@ -43,9 +37,8 @@ func NewUsageUpdater(ctx context.Context, status string) *UsageUpdater {
 		log.Debug("Retrieved app entity", "app", updater.app)
 	}
 
-	// Ensure app is not nil before accessing Tenant
 	if updater.app == nil {
-		log.Error("usage.go > NewUsageUpdater > app is nil")
+		log.Error("App is nil when constructing new UsageUpdater")
 		return updater
 	}
 
@@ -54,7 +47,7 @@ func NewUsageUpdater(ctx context.Context, status string) *UsageUpdater {
 
 func (u *UsageUpdater) Run() {
 	if u.app == nil || u.product == nil {
-		log.Error("usage.go > UsageUpdated > Invalid request, usage not reported", "app", u.app, "product", u.product)
+		log.Error("Invalid request, usage not reported", "app", u.app, "product", u.product)
 		return
 	}
 

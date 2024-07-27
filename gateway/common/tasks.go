@@ -56,9 +56,9 @@ func GetTaskQueue() *TaskQueue {
 }
 
 func (q *TaskQueue) SetupWorkers() {
-	// TODO: Undo once stable!!
-	// numWorkers := GetConfigInt(NUM_WORKERS)
-	numWorkers := 1
+	// When debugging, may be worth setting to 1 worker, to avoid multiple threads cross emitting logs
+	numWorkers := GetConfigInt(NUM_WORKERS)
+
 	for i := 0; i < numWorkers; i++ {
 		go worker(q)
 	}

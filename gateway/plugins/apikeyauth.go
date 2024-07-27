@@ -39,7 +39,7 @@ func (a *ApiKeyAuth) HandleRequest(req *http.Request) error {
     if validApiKey(apiKey) {
         appId := proxy.PluckAppId(req)
         app := &db.App{Id: appId}
-        err := app.Lookup(ctx)
+        ctx, err := app.Lookup(ctx)
         if err != nil {
             return proxy.NewHTTPError(http.StatusBadGateway)
         }

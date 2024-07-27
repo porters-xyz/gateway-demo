@@ -205,7 +205,7 @@ func lookupPoktId(req *http.Request) (string, bool) {
 	ctx := req.Context()
 	name := PluckProductName(req)
 	product := &db.Product{Name: name}
-	err := product.Lookup(ctx)
+	ctx, err := product.Lookup(ctx)
 	if err != nil {
 		log.Error("product not found", "product", product.Name, "err", err)
 		return "", false

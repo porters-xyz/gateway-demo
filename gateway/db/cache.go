@@ -134,7 +134,7 @@ func (p *Product) cache(ctx context.Context) error {
 	return nil
 }
 
-func (t *Tenant) Lookup(ctx context.Context) error {
+func (t *Tenant) Lookup(ctx context.Context) (context.Context, error) {
 	fromContext, ok := common.FromContext(ctx, TENANT)
 	if ok {
 		*t = *fromContext.(*Tenant)
@@ -166,7 +166,7 @@ func (t *Tenant) Lookup(ctx context.Context) error {
 			}
 		}
 
-		common.UpdateContext(ctx, t)
+		ctx = common.UpdateContext(ctx, t)
 		common.LogContext(ctx, TENANT)
 
 		if expired(t) {
@@ -176,10 +176,11 @@ func (t *Tenant) Lookup(ctx context.Context) error {
 			})
 		}
 	}
-	return nil
+
+	return ctx, nil
 }
 
-func (a *App) Lookup(ctx context.Context) error {
+func (a *App) Lookup(ctx context.Context) (context.Context, error) {
 	fromContext, ok := common.FromContext(ctx, APP)
 	if ok {
 		*a = *fromContext.(*App)
@@ -217,11 +218,11 @@ func (a *App) Lookup(ctx context.Context) error {
 			}
 
 			a.Tenant.Id = result["tenant"]
-			a.Tenant.Lookup(ctx)
+			ctx, _ = a.Tenant.Lookup(ctx)
 		}
 
 		log.Info("cache.go > Lookup > Setting App context", "appId", a.Id)
-		common.UpdateContext(ctx, a)
+		ctx = common.UpdateContext(ctx, a)
 		common.LogContext(ctx, APP)
 
 		if expired(a) {
@@ -231,7 +232,7 @@ func (a *App) Lookup(ctx context.Context) error {
 			})
 		}
 	}
-	return nil
+	return ctx, nil
 }
 
 func (a *App) Rules(ctx context.Context) (Apprules, error) {
@@ -281,7 +282,7 @@ func (a *App) Rules(ctx context.Context) (Apprules, error) {
 }
 
 // Lookup by name, p should have a valid "Name" set before lookup
-func (p *Product) Lookup(ctx context.Context) error {
+func (p *Product) Lookup(ctx context.Context) (context.Context, error) {
 	fromContext, ok := common.FromContext(ctx, PRODUCT)
 	if ok {
 		*p = *fromContext.(*Product)
@@ -322,7 +323,7 @@ func (p *Product) Lookup(ctx context.Context) error {
 		}
 
 		log.Info("cache.go > Lookup > Setting Product context", "productId", p.Id)
-		common.UpdateContext(ctx, p)
+		ctx = common.UpdateContext(ctx, p)
 
 		if expired(p) {
 			log.Info("Product cache expired. Refreshing", "productId", p.Id)
@@ -331,7 +332,7 @@ func (p *Product) Lookup(ctx context.Context) error {
 			})
 		}
 	}
-	return nil
+	return ctx, nil
 }
 
 func RelaytxFromKey(ctx context.Context, key string) (*Relaytx, bool) {
@@ -391,7 +392,7 @@ func (a *App) refresh(ctx context.Context) error {
 		log.Error("Failed to fetch app", "appId", a.Id, "error", err)
 		a.MissedAt = time.Now()
 	} else {
-		a.Tenant.Lookup(ctx)
+		ctx, _ = a.Tenant.Lookup(ctx)
 	}
 
 	err = a.cache(ctx)

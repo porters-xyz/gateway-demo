@@ -46,7 +46,7 @@ func (b *BalanceTracker) HandleRequest(req *http.Request) error {
 	ctx := req.Context()
 	appId := proxy.PluckAppId(req)
 	app := &db.App{Id: appId}
-	err := app.Lookup(ctx)
+	ctx, err := app.Lookup(ctx)
 	if err != nil {
 		return proxy.NewHTTPError(http.StatusNotFound)
 	}

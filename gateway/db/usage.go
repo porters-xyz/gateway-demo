@@ -22,7 +22,8 @@ func NewUsageUpdater(ctx context.Context, status string) *UsageUpdater {
 		status: status,
 	}
 
-	log.Info("NewUsageUpdater Begin")
+	log.Info("NewUsageUpdater Begin", "status", status)
+
 	common.LogContext(ctx, PRODUCT)
 	common.LogContext(ctx, APP)
 	common.LogContext(ctx, TENANT)

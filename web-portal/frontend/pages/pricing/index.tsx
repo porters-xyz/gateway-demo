@@ -46,7 +46,7 @@ export default function Pricing() {
             </Center>
             <Center  my={20} >
             <Text c='carrot' pr={5} style={{fontSize: 26}}>$3.33</Text>
-            <Text style={{fontSize: 20}}>{`until June 30th 2024!`} </Text>
+            <Text style={{fontSize: 20}}>{`for a limited time only!`} </Text>
             </Center>
           </Box>
           <CommonLinks/>

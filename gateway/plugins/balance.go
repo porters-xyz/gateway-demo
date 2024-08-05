@@ -58,15 +58,17 @@ func (b *BalanceTracker) HandleRequest(req *http.Request) error {
 	if err != nil {
 		return proxy.NewHTTPError(http.StatusNotFound)
 	}
+
 	ctx = common.UpdateContext(ctx, bal)
 	ctx = common.UpdateContext(ctx, app)
-	// TODO Check that balance is greater than or equal to req weight
+
+	log.Info("Balance for app", "appId", app.Id, "bal", bal.cachedBalance)
 
 	if bal.cachedBalance > 0 {
 		lifecycle := proxy.SetStageComplete(ctx, proxy.BalanceCheck|proxy.AccountLookup)
 		ctx = common.UpdateContext(ctx, lifecycle)
 	} else {
-		log.Error("no balance remaining", "app", app.HashId())
+		log.Error("no balance remaining", "app", app.Id)
 		return proxy.BalanceExceededError
 	}
 
@@ -84,14 +86,6 @@ func (c *balancecache) ContextKey() string {
 }
 
 func (c *balancecache) Lookup(ctx context.Context) error {
-	created, err := db.InitCounter(ctx, c.Key(), c.tenant.Balance)
-	if err != nil {
-		return err
-	}
-	if created {
-		c.cachedBalance = c.tenant.Balance
-	} else {
-		c.cachedBalance = db.GetIntVal(ctx, c.Key())
-	}
+	c.cachedBalance = c.tenant.Balance
 	return nil
 }

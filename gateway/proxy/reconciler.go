@@ -49,7 +49,12 @@ func (r *Reconciler) spawnTasks() {
 			log.Debug("Reconciling tasks for key", "rtxkey", rtxkey)
 
 			rtx, ok := db.RelaytxFromKey(ctx, rtxkey)
+
 			if ok {
+				if rtx.Amount != 0 {
+					log.Info("Reconciling transactions for", "key", rtxkey)
+				}
+
 				task := &reconcileTask{
 					relaytx: rtx,
 				}

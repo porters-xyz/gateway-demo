@@ -43,6 +43,7 @@ func Start() {
 
 	_ = addHealthcheckRoute(router)
 	_ = addMetricsRoute(router)
+	_ = addMetricsKitRoute(router, proxyUrl)
 
 	port := fmt.Sprintf(":%d", common.GetConfigInt(common.PORT))
 	server = &http.Server{Addr: port, Handler: router}

@@ -19,6 +19,11 @@ services:
     build:
       context: ./services/postgres
     image: porters-schema:latest
+    env_file:
+      - .env
+    networks:
+      - portal
+    command: tail -f /dev/null
 
   frontend:
     env_file:
@@ -81,7 +86,7 @@ services:
     ports:
       - "8080:8080"
     env_file:
-      - ./.env
+      - ./.kit.env
     networks:
       - gateway
 

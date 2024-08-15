@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	"porters/common"
 )
@@ -40,7 +41,7 @@ func addHealthcheckRoute(r *mux.Router) *mux.Router {
 
 func addMetricsRoute(r *mux.Router) *mux.Router {
 	subrouter := r.PathPrefix("/metrics").Subrouter()
-	subrouter.HandleFunc("", metricsHandler)
+	subrouter.Handle("", promhttp.Handler())
 	return subrouter
 }
 

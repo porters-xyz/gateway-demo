@@ -10,33 +10,12 @@ import (
 	"strings"
 
 	"porters/common"
-
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 type Machine struct {
 	ID         string `json:"id"`
 	InstanceID string `json:"instance_id"`
 	Region     string `json:"region"`
-}
-
-func metricsHandler(w http.ResponseWriter, r *http.Request) {
-	// Commenting due to issue with metrics capturing
-
-	// Retrieve the expected API key from environment variables
-	expectedApiKey := common.GetConfig(common.GATEWAY_API_KEY)
-
-	// Get the API key from the request headers
-	apiKey := r.Header.Get("api-key")
-
-	// Check if the request is from localhost or the correct API key is provided
-	if strings.HasPrefix(r.RemoteAddr, "127.0.0.1") || strings.HasPrefix(r.RemoteAddr, "::1") || apiKey == expectedApiKey {
-		// Delegate the request to the Prometheus handler
-		promhttp.Handler().ServeHTTP(w, r)
-	} else {
-		// If neither condition is true, return unauthorized
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-	}
 }
 
 func qosNodesHandler(w http.ResponseWriter, r *http.Request, proxyToUrl, region string) {

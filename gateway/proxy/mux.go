@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	"porters/common"
 )
@@ -41,16 +40,16 @@ func addHealthcheckRoute(r *mux.Router) *mux.Router {
 
 func addMetricsRoute(r *mux.Router) *mux.Router {
 	subrouter := r.PathPrefix("/metrics").Subrouter()
-	subrouter.Handle("", promhttp.Handler())
+	subrouter.HandleFunc("", metricsHandler)
 	return subrouter
 }
 
 // Since the Gateway Kit is on an internal private network, with only the Gateway having access to it, we proxy a gateway-kit/metrics endpoint to expose the data to POKTScan
 func addMetricsKitRoute(r *mux.Router, proxyToUrl string) *mux.Router {
-	subrouter := r.PathPrefix("/gateway-kit/metrics").Subrouter()
+	subrouter := r.PathPrefix("/gateway-kit/qosnodes").Subrouter()
 	subrouter.HandleFunc("/{region}", func(w http.ResponseWriter, r *http.Request) {
 		region := mux.Vars(r)["region"]
-		kitMetricsHandler(w, r, proxyToUrl, region)
+		qosNodesHandler(w, r, proxyToUrl, region)
 	})
 	return subrouter
 }

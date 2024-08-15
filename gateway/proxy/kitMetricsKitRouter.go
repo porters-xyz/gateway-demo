@@ -7,9 +7,12 @@ import (
 	"io"
 	log "log/slog"
 	"net/http"
+	"os"
 	"strings"
 
 	"porters/common"
+
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 type Machine struct {
@@ -18,7 +21,33 @@ type Machine struct {
 	Region     string `json:"region"`
 }
 
-func kitMetricsHandler(w http.ResponseWriter, r *http.Request, proxyToUrl, region string) {
+func metricsHandler(w http.ResponseWriter, r *http.Request) {
+	// Retrieve the expected API key from environment variables
+	expectedApiKey := os.Getenv("GATEWAY_API_KEY")
+
+	// Get the API key from the request headers
+	apiKey := r.Header.Get("api-key")
+
+	// Validate the API key
+	if apiKey == "" || apiKey != expectedApiKey {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	// Delegate the request to the Prometheus handler
+	promhttp.Handler().ServeHTTP(w, r)
+}
+
+func qosNodesHandler(w http.ResponseWriter, r *http.Request, proxyToUrl, region string) {
+	// in order to call this endpoint, the user must pass the `GATEWAY_REQUEST_API_KEY` in the header
+	expectedApiKey := common.GetConfig(common.GATEWAY_REQUEST_API_KEY)
+	apiKey := r.Header.Get("api-key")
+
+	if apiKey == "" || apiKey != expectedApiKey {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
 	flyApiKey := common.GetConfig(common.FLY_API_KEY)
 	// Fetch the machines from Fly.io
 	machines, err := fetchMachines(flyApiKey)
@@ -44,7 +73,7 @@ func kitMetricsHandler(w http.ResponseWriter, r *http.Request, proxyToUrl, regio
 	log.Info("Retrieved Machine ID for gatewaykit", "Machine ID", machineID)
 
 	// Construct the metrics URL
-	kitMetricsUrl := fmt.Sprintf("%s/metrics", proxyToUrl)
+	kitMetricsUrl := fmt.Sprintf("%s/qosnodes", proxyToUrl)
 
 	log.Info("Calling metrics endpoint", "kitMetricsUrl", kitMetricsUrl)
 
@@ -55,8 +84,11 @@ func kitMetricsHandler(w http.ResponseWriter, r *http.Request, proxyToUrl, regio
 		return
 	}
 
-	// Add the fly-force-instance-id header
+	gatewayApiKey := common.GetConfig(common.GATEWAY_API_KEY)
+
+	//add the headers
 	req.Header.Set("fly-force-instance-id", machineID)
+	req.Header.Set("x-api-key", gatewayApiKey)
 
 	// Forward the request to the kit's /metrics endpoint
 	client := &http.Client{}

@@ -11,9 +11,9 @@ import (
 )
 
 const (
-    APP_PATH string = "appId"
-    PRODUCT_NAME    = "product"
-    HEALTH          = "health"
+	APP_PATH     string = "appId"
+	PRODUCT_NAME        = "product"
+	HEALTH              = "health"
 )
 
 func PluckAppId(req *http.Request) string {
@@ -48,8 +48,9 @@ func addMetricsRoute(r *mux.Router) *mux.Router {
 // Since the Gateway Kit is on an internal private network, with only the Gateway having access to it, we proxy a gateway-kit/metrics endpoint to expose the data to POKTScan
 func addMetricsKitRoute(r *mux.Router, proxyToUrl string) *mux.Router {
 	subrouter := r.PathPrefix("/gateway-kit/metrics").Subrouter()
-	subrouter.HandleFunc("", func(w http.ResponseWriter, r *http.Request) {
-		kitMetricsHandler(w, r, proxyToUrl)
+	subrouter.HandleFunc("/{region}", func(w http.ResponseWriter, r *http.Request) {
+		region := mux.Vars(r)["region"]
+		kitMetricsHandler(w, r, proxyToUrl, region)
 	})
 	return subrouter
 }

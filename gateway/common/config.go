@@ -24,6 +24,8 @@ const (
 	INSTRUMENT_ENABLED        = "ENABLE_INSTRUMENT"
 	LOG_LEVEL                 = "LOG_LEVEL"
 	LOG_HTTP_RESPONSE         = "LOG_HTTP_RESPONSE"
+	FLY_API_KEY               = "FLY_API_KEY"
+	FLY_GATEWAY_URI           = "FLY_GATEWAY_URI"
 )
 
 // This may evolve to include config outside env, or use .env file for

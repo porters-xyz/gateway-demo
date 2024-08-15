@@ -7,7 +7,6 @@ import (
 	"io"
 	log "log/slog"
 	"net/http"
-	"os"
 	"strings"
 
 	"porters/common"
@@ -22,17 +21,19 @@ type Machine struct {
 }
 
 func metricsHandler(w http.ResponseWriter, r *http.Request) {
-	// Retrieve the expected API key from environment variables
-	expectedApiKey := os.Getenv("GATEWAY_API_KEY")
+	// Commenting due to issue with metrics capturing
 
-	// Get the API key from the request headers
-	apiKey := r.Header.Get("api-key")
+	// // Retrieve the expected API key from environment variables
+	// expectedApiKey := os.Getenv("GATEWAY_API_KEY")
 
-	// Validate the API key
-	if apiKey == "" || apiKey != expectedApiKey {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		return
-	}
+	// // Get the API key from the request headers
+	// apiKey := r.Header.Get("api-key")
+
+	// // Validate the API key
+	// if apiKey == "" || apiKey != expectedApiKey {
+	// 	http.Error(w, "Unauthorized", http.StatusUnauthorized)
+	// 	return
+	// }
 
 	// Delegate the request to the Prometheus handler
 	promhttp.Handler().ServeHTTP(w, r)

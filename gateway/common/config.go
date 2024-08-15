@@ -26,6 +26,8 @@ const (
 	LOG_HTTP_RESPONSE         = "LOG_HTTP_RESPONSE"
 	FLY_API_KEY               = "FLY_API_KEY"
 	FLY_GATEWAY_URI           = "FLY_GATEWAY_URI"
+	GATEWAY_API_KEY           = "GATEWAY_API_KEY"
+	GATEWAY_REQUEST_API_KEY   = "GATEWAY_REQUEST_API_KEY"
 )
 
 // This may evolve to include config outside env, or use .env file for

@@ -36,7 +36,7 @@ func (p *ProductFilter) HandleRequest(req *http.Request) error {
 		Id: proxy.PluckAppId(req),
 	}
 
-	err := app.Lookup(ctx)
+	ctx, err := app.Lookup(ctx)
 	if err != nil {
 		return proxy.NewHTTPError(http.StatusNotFound)
 	}

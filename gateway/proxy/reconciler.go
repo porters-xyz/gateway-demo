@@ -46,18 +46,28 @@ func (r *Reconciler) spawnTasks() {
 		for iter.Next(ctx) {
 			rtxkey := iter.Val() // use for building relaytx
 
+			log.Debug("Reconciling tasks for key", "rtxkey", rtxkey)
+
 			rtx, ok := db.RelaytxFromKey(ctx, rtxkey)
+
 			if ok {
+				if rtx.Amount != 0 {
+					log.Info("Reconciling transactions for", "key", rtxkey)
+				}
+
 				task := &reconcileTask{
 					relaytx: rtx,
 				}
 				queue.Add(task)
+
+				log.Debug("Queued task", "rtxkey", rtxkey)
 			}
 		}
 	}
 }
 
 func (t *reconcileTask) Run() {
+	log.Info("Running reconcile task", "relaytx", t.relaytx)
 	ctx := context.Background()
 	replayfunc, err := db.ReconcileRelays(ctx, t.relaytx)
 	if err != nil {

@@ -30,6 +30,7 @@ jspm_packages/
 .env.test.local
 .env.production.local
 .env.local
+*.env
 
 # Next.js build output
 .next
@@ -56,3 +57,4 @@ docs/pnpm-lock.yaml
 
 # IGNORE BUN LOCKB FILES
 **/bun.lockb
+gateway/.vscode/*

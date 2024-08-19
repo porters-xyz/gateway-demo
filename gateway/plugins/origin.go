@@ -36,7 +36,7 @@ func (a *AllowedOriginFilter) HandleRequest(req *http.Request) error {
 	app := &db.App{
 		Id: proxy.PluckAppId(req),
 	}
-	err := app.Lookup(ctx)
+	ctx, err := app.Lookup(ctx)
 	if err != nil {
 		return proxy.NewHTTPError(http.StatusNotFound)
 	}
@@ -48,6 +48,8 @@ func (a *AllowedOriginFilter) HandleRequest(req *http.Request) error {
 		return proxy.NewHTTPError(http.StatusUnauthorized)
 	}
 
+	*req = *req.WithContext(ctx)
+
 	return nil
 }
 
@@ -56,7 +58,7 @@ func (a *AllowedOriginFilter) HandleResponse(resp *http.Response) error {
 	app := &db.App{
 		Id: proxy.PluckAppId(resp.Request),
 	}
-	err := app.Lookup(ctx)
+	ctx, err := app.Lookup(ctx)
 	if err != nil {
 		return nil // don't modify header
 	}

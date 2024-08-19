@@ -43,7 +43,7 @@ func (l *LeakyBucketPlugin) HandleRequest(req *http.Request) error {
     ctx := req.Context()
     appId := proxy.PluckAppId(req)
     app := &db.App{Id: appId}
-    err := app.Lookup(ctx)
+    ctx, err := app.Lookup(ctx)
     if err != nil {
         log.Error("unable to lookup app", "app", app.HashId(), "err", err)
     }

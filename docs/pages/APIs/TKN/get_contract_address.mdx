@@ -1,0 +1,55 @@
+# Get Contract Address
+`GET /token/:portersAppId/contract-address/:ticker`
+
+## Description
+Fetches the Ethereum contract address associated with the specified ENS name.
+
+## Parameters
+- **portersAppId (string)**: The application ID used to authenticate the request with the provider.
+- **ticker (string)**: The ticker symbol of the token, expected to resolve to an ENS name (e.g., "usdc" for "usdc.tkn.eth").
+
+## Response
+
+### Success (200 OK)
+
+```
+{
+  "response": {
+    "address": "0xAbC123...",
+  },
+  "status": "success"
+}
+```
+
+### Error (4xx/5xx)
+
+```
+{
+  "response": {
+    "error": "Error message describing what went wrong."
+  },
+  "status": "error"
+}
+```
+
+## Possible Errors
+- **400 BAD REQUEST**: Returned when the input parameters are missing or invalid.
+- **404 NOT FOUND**: Returned when the ENS name cannot be resolved to a contract address.
+- **500 INTERNAL SERVER ERROR**: Returned when an unexpected error occurs, such as network failures or unhandled exceptions.
+
+# Example
+
+## Request
+
+`GET /token/myAppId/contract-address/usdc`
+
+## Response
+
+```
+{
+    "response": {
+        "address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
+    },
+    "status": "success"
+}
+```

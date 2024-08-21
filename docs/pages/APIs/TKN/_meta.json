@@ -1,0 +1,8 @@
+{
+    "intro": "Introduction",
+    "get_contract_address": "Get Contract Address",
+    "get_contract_metadata": "Get Contract Metadata",
+    "get_token_balance": "Get Token Balance",
+    "get_token_price_data": "Get Token Price Data"
+  }
+  

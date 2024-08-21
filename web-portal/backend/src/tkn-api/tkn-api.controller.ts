@@ -64,10 +64,12 @@ export class TknApiController {
   @Get(':portersAppId/contract-address/:ticker')
   async getTokenContractAddress(@Param('portersAppId') appId: string, @Param('ticker') ticker: string) {
     try {
+      console.log('calling getTokenContractAddress');
       const provider = new JsonRpcProvider(`https://eth-mainnet.rpc.porters.xyz/${appId}`);
 
       const contractAddress = await provider.resolveName(`${ticker}.tkn.eth`);
       if (!contractAddress) {
+        console.error('ENS name resolution failed. Contract address not found.');
         throw new HttpException(
           {
             status: HttpStatus.NOT_FOUND,
@@ -77,6 +79,7 @@ export class TknApiController {
         );
       }
 
+      console.log('finished calling getTokenContractAddress');
       return { response: { address: contractAddress }, status: 'success' };
     } catch (err) {
       if (err instanceof HttpException) {

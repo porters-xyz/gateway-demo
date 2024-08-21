@@ -66,6 +66,9 @@ export class TknApiController {
     try {
       console.log('calling getTokenContractAddress');
       const provider = new JsonRpcProvider(`https://eth-mainnet.rpc.porters.xyz/${appId}`);
+      
+      console.log(`set provider to https://eth-mainnet.rpc.porters.xyz/${appId}`);
+      console.log(`attempting to resolve ${ticker}.tkn.eth`);
 
       const contractAddress = await provider.resolveName(`${ticker}.tkn.eth`);
       if (!contractAddress) {

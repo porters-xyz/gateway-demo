@@ -1,0 +1,87 @@
+# Get Token Price Data
+`GET /token/:portersAppId/:ticker/price`
+
+## Description
+Fetches the current price of a specific token against Wrapped Ether (WETH) on Uniswap V3, using the 0.3% fee tier.
+
+## Parameters
+- portersAppId (string): The application ID used to authenticate the request with the provider.
+- ticker (string): The ticker symbol of the token, used to fetch the corresponding price data.
+
+## Response
+
+### Success (200 OK)
+
+```
+{
+  "response": {
+    "message": "The price of TKN is 0.123456 WETH on Uniswap.",
+    "token0": {
+      "chainId": 1,
+      "address": "0xAbC123...",
+      "decimals": 18,
+      "symbol": "TKN",
+      "name": "Token Name"
+    },
+    "token1": {
+      "chainId": 1,
+      "address": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+      "decimals": 18,
+      "symbol": "WETH",
+      "name": "Wrapped Ether"
+    },
+    "price": "0.123456"
+  },
+  "status": "success"
+}
+```
+
+### Error (4xx/5xx)
+
+```
+{
+  "response": {
+    "error": "Error message describing what went wrong."
+  },
+  "status": "error"
+}
+```
+
+## Possible Errors
+- **404 NOT FOUND**: Returned when the ENS name cannot be resolved to a contract address or if the pool does not exist for the provided token pair and fee tier.
+- **500 INTERNAL SERVER ERROR**: Returned when there is a problem fetching data from the Uniswap pool, such as:
+  - The pool does not exist for the provided token pair and fee tier.
+  - An invalid tick value is received from the pool contract.
+  - Any other unexpected error occurs during the process.
+
+# Example
+
+## Request
+
+`GET /token/myAppId/usdc/price`
+
+## Response
+
+```
+{
+  "response": {
+    "message": "The price of USDC is 0.123456 WETH on Uniswap.",
+    "token0": {
+      "chainId": 1,
+      "address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+      "decimals": 6,
+      "symbol": "USDC",
+      "name": "USD Coin"
+    },
+    "token1": {
+      "chainId": 1,
+      "address": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+      "decimals": 18,
+      "symbol": "WETH",
+      "name": "Wrapped Ether"
+    },
+    "price": "0.999999"
+  },
+  "status": "success"
+}
+```

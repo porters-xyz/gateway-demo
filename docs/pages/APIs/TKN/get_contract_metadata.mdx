@@ -1,0 +1,115 @@
+# Get Contract Metadata
+`GET /token/:portersAppId/:ticker/metadata`
+
+## Description
+Fetches metadata for a specific token based on the ticker symbol. The metadata includes details like contract address, token name, description, associated URLs, and addresses on various blockchains.
+
+## Parameters
+**portersAppId (string)**: The application ID used to authenticate the request with the provider.
+**ticker (string)**: The ticker symbol of the token, used to fetch the corresponding metadata.
+
+## Response
+
+### Success (200 OK)
+
+```
+{
+  "response": {
+    "info": {
+      "contractAddress": "0xAbC123...",
+      "name": "Token Name",
+      "url": "https://token.website",
+      "avatar": "https://token.avatar.url",
+      "description": "Token description",
+      "notice": "Important notice about the token",
+      "version": "1.0",
+      "decimals": 18,
+      "twitter": "https://twitter.com/token",
+      "github": "https://github.com/token",
+      "dweb": "https://dweb.link/token",
+      "addresses": {
+        "eth": "0xAbC123...",
+        "arbitrum": "0xArb123...",
+        "avax": "0xAvax123...",
+        "base": "0xBase123...",
+        "bsc": "0xBsc123...",
+        "cronos": "0xCro123...",
+        "fantom": "0xFtm123...",
+        "gnosis": "0xGno123...",
+        "goerli_testnet": "0xGoerli123...",
+        "near": "0xNear123...",
+        "optimism": "0xOp123...",
+        "polygon": "0xMatic123...",
+        "sepolia_testnet": "0xSepolia123...",
+        "solana": "0xSol123...",
+        "tron": "0xTrx123...",
+        "ziliqa": "0xZil123..."
+      }
+    }
+  },
+  "status": "success"
+}
+```
+
+### Error (4xx/5xx)
+
+```
+{
+  "response": {
+    "error": "Error message describing what went wrong."
+  },
+  "status": "error"
+}
+```
+
+## Possible Errors
+- 400 BAD REQUEST: Returned when the input parameters are missing or invalid.
+- 404 NOT FOUND: Returned when the ENS name cannot be resolved to a contract address.
+- 500 INTERNAL SERVER ERROR: Returned when an unexpected error occurs, such as issues fetching contract data or other unhandled exceptions.
+
+# Example
+
+## Request
+
+`GET /token/myAppId/usdt/metadata`
+
+## Response
+
+```
+{
+    "response": {
+        "info": {
+            "contractAddress": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+            "name": "Tether",
+            "url": "https://tether.to/",
+            "avatar": "https://gateway.tkn.xyz/ipfs/bafybeifyk25azxxtmoh52poyii5w2vmvcn7jtiecnqhilfmlriqs6t4jia",
+            "description": "Digital Dollar Token",
+            "notice": "",
+            "version": "0.0.1",
+            "decimals": "6",
+            "twitter": "tether_to",
+            "github": "",
+            "dweb": "0x",
+            "addresses": {
+                "eth": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+                "arbitrum": "0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9",
+                "avax": "0x9702230A8Ea53601f5cD2dc00fDBc13d4dF4A8c7",
+                "base": "0x0000000000000000000000000000000000000000",
+                "bsc": "0x55d398326f99059fF775485246999027B3197955",
+                "cronos": "0x66e428c3f67a68878562e79A0234c1F83c208770",
+                "fantom": "0x049d68029688eAbF473097a2fC38ef61633A3C7A",
+                "gnosis": "0x4ECaBa5870353805a9F068101A40E0f32ed605C6",
+                "goerli_testnet": "0x0000000000000000000000000000000000000000",
+                "near": "dac17f958d2ee523a2206206994597c13d831ec7.factory.bridge.near",
+                "optimism": "0x94b008aA00579c1307B0EF2c499aD98a8ce58e58",
+                "polygon": "0xc2132D05D31c914a87C6611C10748AEb04B58e8F",
+                "sepolia_testnet": "0x0000000000000000000000000000000000000000",
+                "solana": "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB",
+                "tron": "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t",
+                "ziliqa": "0x"
+            }
+        }
+    },
+    "status": "success"
+}
+```

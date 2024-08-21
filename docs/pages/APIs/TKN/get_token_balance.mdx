@@ -1,0 +1,86 @@
+# Get Token Balance
+`GET /token/:portersAppId/:ticker/balance`
+
+## Description
+Fetches the balance of a specific token for a given network and user account.
+
+## Parameters
+- **portersAppId (string)**: The application ID used to authenticate the request with the provider.
+- **ticker (string)**: The ticker symbol of the token, used to fetch the corresponding balance.
+- **network (string)**: The blockchain network on which the token resides (e.g., "eth", "bsc", "polygon"). Refer to Supported Networks section below.
+- **address (string)**: The address of the user account whose token balance is to be retrieved.
+
+### Supported Networks
+- *eth*, Ethereum Mainnet
+- *arbitrum*, Arbitrum
+- *avax*, Avalanche C-Chain
+- *base*, Base Mainnet
+- *bsc*, Binance Smart Chain
+- *gnosis*, Gnosis Mainnet
+- *optimism*, Optimism Mainnet
+- *polygon*, Polygon
+- *sepolia-testnet*, Sepolia Testnet
+
+
+## Response
+
+### Success (200 OK)
+
+```
+{
+    "response": {
+        "token": {
+            "token": "USDC",
+            "network": "eth",
+            "address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
+        },
+        "account": {
+            "address": "0x1234...abcd",
+            "balance": "1000.00"
+        }
+    },
+"status": "success"
+}
+```
+
+### Error (4xx/5xx)
+
+```
+{
+    "response": {
+        "error": "Error message describing what went wrong."
+    },
+    "status": "error"
+}
+```
+
+
+## Possible Errors
+- **400 BAD REQUEST**: Returned when the network is not supported for the specified token.
+- **404 NOT FOUND**: Returned when the ENS name cannot be resolved to a contract address.
+- **500 INTERNAL SERVER ERROR**: Returned when an unexpected error occurs, such as issues fetching the token balance or other unhandled exceptions.
+
+# Example
+
+## Request
+
+`GET /token/myAppId/usdc/balance?network=eth&address=0x1234...abcd`
+
+## Response
+
+```
+{
+    "response": {
+        "token": {
+            "token": "USDC",
+            "network": "eth",
+            "address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
+        },
+        "account": {
+            "address": "0x1234...abcd",
+            "balance": "1000.00"
+        }
+    },
+    "status": "success"
+}
+```

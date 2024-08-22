@@ -71,6 +71,7 @@ export class TknApiController {
       console.log(`attempting to resolve ${ticker}.tkn.eth`);
 
       const contractAddress = await provider.resolveName(`${ticker}.tkn.eth`);
+      console.log('contractAddress resolved', contractAddress)
       if (!contractAddress) {
         console.error('ENS name resolution failed. Contract address not found.');
         throw new HttpException(
@@ -85,22 +86,14 @@ export class TknApiController {
       console.log('finished calling getTokenContractAddress');
       return { response: { address: contractAddress }, status: 'success' };
     } catch (err) {
-      if (err instanceof HttpException) {
-        // Re-throw custom HttpExceptions to be handled by NestJS
-        throw err;
-      } else {
-        // Log unexpected errors
-        console.error('Unexpected error:', err);
-
-        // Return a generic error response
-        throw new HttpException(
-          {
-            status: HttpStatus.INTERNAL_SERVER_ERROR,
-            error: 'An unexpected error occurred. Please try again later.',
-          },
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        );
-      }
+      console.error('Unexpected error:', err.message, err.stack);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: 'An unexpected error occurred. Please try again later.',
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 

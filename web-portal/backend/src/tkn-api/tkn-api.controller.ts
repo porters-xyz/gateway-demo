@@ -60,6 +60,13 @@ export class TknApiController {
     return { message: 'pong' };
   }
 
+  @Get('test')
+  async getLatestBlock() {
+    const provider = new JsonRpcProvider(`https://eth.llamarpc.com`);
+    const blockNumber = await provider.getBlockNumber();
+    return { blockNumber: blockNumber };
+  }
+
   //Get token contract address
   @Get(':portersAppId/contract-address/:ticker')
   async getTokenContractAddress(@Param('portersAppId') appId: string, @Param('ticker') ticker: string) {

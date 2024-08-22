@@ -75,35 +75,53 @@ export class TknApiController {
     }
 
     return new Promise((resolve, reject) => {
-      const url = new URL(blockchainUri);
-      const protocol = url.protocol === 'https:' ? https : http;
+      try {
+        const url = new URL(blockchainUri);
+        const options = {
+          hostname: url.hostname,
+          port: url.port || 443, // Use port 443 if not specified (default for HTTPS)
+          path: url.pathname,
+          method: 'GET',
+          headers: {
+            'Host': url.hostname, // Explicitly set the Host header
+          }
+        };
 
-      const req = protocol.get(blockchainUri, (res) => {
-        const { statusCode } = res;
+        const req = https.request(options, (res) => {
+          const { statusCode } = res;
 
-        if (statusCode && statusCode >= 200 && statusCode < 300) {
-          resolve({ message: 'Endpoint is reachable', statusCode });
-        } else {
+          if (statusCode && statusCode >= 200 && statusCode < 300) {
+            resolve({ message: 'Endpoint is reachable', statusCode });
+          } else {
+            reject(
+              new HttpException(
+                { error: `Failed to reach endpoint, status code: ${statusCode}` },
+                HttpStatus.INTERNAL_SERVER_ERROR
+              )
+            );
+          }
+        });
+
+        req.on('error', (err) => {
+          console.error(`Failed to ping ${blockchainUri}:`, err.message);
           reject(
             new HttpException(
-              { error: `Failed to reach endpoint, status code: ${statusCode}` },
+              { error: 'Failed to reach endpoint', details: err.message },
               HttpStatus.INTERNAL_SERVER_ERROR
             )
           );
-        }
-      });
+        });
 
-      req.on('error', (err) => {
-        console.error(`Failed to ping ${blockchainUri}:`, err.message);
+        req.end();
+      } catch (error) {
+        console.error(`Error processing URL ${blockchainUri}:`, error.message);
         reject(
           new HttpException(
-            { error: 'Failed to reach endpoint', details: err.message },
-            HttpStatus.INTERNAL_SERVER_ERROR
+            { error: 'Invalid URL provided', details: error.message },
+            HttpStatus.BAD_REQUEST
           )
         );
-      });
-
-      req.end();
+      }
     });
   }
 

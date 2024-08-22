@@ -4,6 +4,7 @@ import { getCoderByCoinName } from "@ensdomains/address-encoder";
 import { ethers, JsonRpcProvider } from 'ethers';
 import { Token, CurrencyAmount, TradeType } from '@uniswap/sdk-core';
 import { Pool } from '@uniswap/v3-sdk';
+import Web3 from 'web3';
 
 const contentHash = require('content-hash')
 
@@ -72,8 +73,8 @@ export class TknApiController {
     }
 
     try {
-      const provider = new JsonRpcProvider(blockchainUri);
-      const blockNumber = await provider.getBlockNumber();
+      const web3 = new Web3(new Web3.providers.HttpProvider(blockchainUri));
+      const blockNumber = await web3.eth.getBlockNumber();
       return { blockNumber: blockNumber };
     } catch (error) {
       console.error(`Failed to get block number from ${blockchainUri}:`, error.message);

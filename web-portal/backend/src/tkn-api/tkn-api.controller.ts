@@ -1,4 +1,4 @@
-import { Controller, Get, HttpException, HttpStatus, Param, Query } from '@nestjs/common';
+import { Body, Controller, Get, HttpException, HttpStatus, Param, Post, Query } from '@nestjs/common';
 import { Public } from '../decorator/public.decorator';
 import { getCoderByCoinName } from "@ensdomains/address-encoder";
 import { ethers, JsonRpcProvider } from 'ethers';
@@ -60,11 +60,28 @@ export class TknApiController {
     return { message: 'pong' };
   }
 
-  @Get('test')
-  async getLatestBlock() {
-    const provider = new JsonRpcProvider(`https://eth.llamarpc.com`);
-    const blockNumber = await provider.getBlockNumber();
-    return { blockNumber: blockNumber };
+  @Post('test')
+  async getLatestBlock(@Body() body: { blockchainUri: string }) {
+    const { blockchainUri } = body;
+
+    if (!blockchainUri) {
+      throw new HttpException(
+        { error: 'blockchainUri is required in the request body' },
+        HttpStatus.BAD_REQUEST
+      );
+    }
+
+    try {
+      const provider = new JsonRpcProvider(blockchainUri);
+      const blockNumber = await provider.getBlockNumber();
+      return { blockNumber: blockNumber };
+    } catch (error) {
+      console.error(`Failed to get block number from ${blockchainUri}:`, error.message);
+      throw new HttpException(
+        { error: 'Failed to fetch block number', details: error.message },
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
   }
 
   //Get token contract address

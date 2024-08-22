@@ -5,6 +5,8 @@ import { ethers, JsonRpcProvider } from 'ethers';
 import { Token, CurrencyAmount, TradeType } from '@uniswap/sdk-core';
 import { Pool } from '@uniswap/v3-sdk';
 import Web3 from 'web3';
+import * as https from 'https';
+import * as http from 'http';
 
 const contentHash = require('content-hash')
 
@@ -62,7 +64,7 @@ export class TknApiController {
   }
 
   @Post('test')
-  async getLatestBlock(@Body() body: { blockchainUri: string }) {
+  async pingEndpoint(@Body() body: { blockchainUri: string }) {
     const { blockchainUri } = body;
 
     if (!blockchainUri) {
@@ -72,17 +74,37 @@ export class TknApiController {
       );
     }
 
-    try {
-      const web3 = new Web3(new Web3.providers.HttpProvider(blockchainUri));
-      const blockNumber = await web3.eth.getBlockNumber();
-      return { blockNumber: blockNumber };
-    } catch (error) {
-      console.error(`Failed to get block number from ${blockchainUri}:`, error.message);
-      throw new HttpException(
-        { error: 'Failed to fetch block number', details: error.message },
-        HttpStatus.INTERNAL_SERVER_ERROR
-      );
-    }
+    return new Promise((resolve, reject) => {
+      const url = new URL(blockchainUri);
+      const protocol = url.protocol === 'https:' ? https : http;
+
+      const req = protocol.get(blockchainUri, (res) => {
+        const { statusCode } = res;
+
+        if (statusCode && statusCode >= 200 && statusCode < 300) {
+          resolve({ message: 'Endpoint is reachable', statusCode });
+        } else {
+          reject(
+            new HttpException(
+              { error: `Failed to reach endpoint, status code: ${statusCode}` },
+              HttpStatus.INTERNAL_SERVER_ERROR
+            )
+          );
+        }
+      });
+
+      req.on('error', (err) => {
+        console.error(`Failed to ping ${blockchainUri}:`, err.message);
+        reject(
+          new HttpException(
+            { error: 'Failed to reach endpoint', details: err.message },
+            HttpStatus.INTERNAL_SERVER_ERROR
+          )
+        );
+      });
+
+      req.end();
+    });
   }
 
   //Get token contract address

@@ -30,10 +30,16 @@ func Start() {
 
 	handler := func(proxy *httputil.ReverseProxy) func(http.ResponseWriter, *http.Request) {
 		return func(resp http.ResponseWriter, req *http.Request) {
-			if common.Enabled(common.LOG_HTTP_REQUEST) {
-				log.Info("Received request: %s %s from %s with User-Agent: %s", req.Method, req.URL, req.RemoteAddr, req.UserAgent())
+			//Note this is used for debugging purposes only and is not meant to be on by default. Logs are automatically removed every 30 days.
+			// Log request if URL path matches any of the filters
+			if common.Enabled(common.LOG_HTTP_REQUEST) && common.ShouldLogRequest(req.URL.Path) {
+				log.Info("Received request",
+					"method", req.Method,
+					"url", req.URL.String(),
+					"remoteAddr", req.RemoteAddr,
+					"userAgent", req.UserAgent(),
+				)
 			}
-
 			setupContext(req)
 			proxy.ServeHTTP(resp, req)
 		}

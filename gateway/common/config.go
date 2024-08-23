@@ -22,10 +22,11 @@ const (
 	REDIS_USER                     = "REDIS_USER"
 	REDIS_PASSWORD                 = "REDIS_PASSWORD"
 	INSTRUMENT_ENABLED             = "ENABLE_INSTRUMENT"
-	LOG_LEVEL                      = "LOG_LEVEL"          //Used for debugging purposes
-	LOG_HTTP_REQUEST               = "LOG_HTTP_REQUEST"   //Used for debugging purposes
-	LOG_HTTP_RESPONSE              = "LOG_HTTP_RESPONSE"  //Used for debugging purposes
-	LOG_BALANCE_UPDATE             = "LOG_BALANCE_UPDATE" //Used for debugging purposes
+	LOG_LEVEL                      = "LOG_LEVEL"               //Used for debugging purposes
+	LOG_HTTP_REQUEST               = "LOG_HTTP_REQUEST"        //Used for debugging purposes
+	LOG_HTTP_REQUEST_FILTER        = "LOG_HTTP_REQUEST_FILTER" //Used for debugging purposes
+	LOG_HTTP_RESPONSE              = "LOG_HTTP_RESPONSE"       //Used for debugging purposes
+	LOG_BALANCE_UPDATE             = "LOG_BALANCE_UPDATE"      //Used for debugging purposes
 	FLY_API_KEY                    = "FLY_API_KEY"
 	FLY_GATEWAY_URI                = "FLY_GATEWAY_URI"
 	GATEWAY_API_KEY                = "GATEWAY_API_KEY"
@@ -57,6 +58,7 @@ func setupConfig() *Config {
 		config.defaults[LOG_HTTP_REQUEST] = "false"
 		config.defaults[LOG_HTTP_RESPONSE] = "false"
 		config.defaults[LOG_BALANCE_UPDATE] = "false"
+		config.defaults[LOG_HTTP_REQUEST_FILTER] = ""
 
 		level := parseLogLevel(os.Getenv(LOG_LEVEL))
 		config.SetLogLevel(level)
@@ -120,4 +122,22 @@ func (c *Config) SetLogLevel(level log.Level) {
 	c.loglevel.Set(level)
 	logger := log.New(log.NewTextHandler(os.Stdout, &log.HandlerOptions{Level: c.loglevel}))
 	log.SetDefault(logger)
+}
+
+// shouldLogRequest checks if the request URL path matches any of the specified filters in common.LOG_HTTP_FILTER_APP.
+// If the filter list is empty, it logs all requests.
+func ShouldLogRequest(urlPath string) bool {
+	filters := GetConfig(LOG_HTTP_REQUEST_FILTER)
+	if filters == "" {
+		// If no filters are specified, log everything
+		return true
+	}
+
+	filterList := strings.Split(filters, ",")
+	for _, filter := range filterList {
+		if strings.Contains(urlPath, filter) {
+			return true
+		}
+	}
+	return false
 }

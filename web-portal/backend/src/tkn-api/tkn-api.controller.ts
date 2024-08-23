@@ -1,45 +1,12 @@
-import { Controller, Get, HttpException, HttpStatus, Param, Query } from '@nestjs/common';
+import { Body, Controller, Get, HttpException, HttpStatus, Param, Post, Query } from '@nestjs/common';
 import { Public } from '../decorator/public.decorator';
 import { getCoderByCoinName } from "@ensdomains/address-encoder";
-import { ethers, JsonRpcProvider } from 'ethers';
-import { Token, CurrencyAmount, TradeType } from '@uniswap/sdk-core';
+import { ethers } from 'ethers';
+import { Token } from '@uniswap/sdk-core';
 import { Pool } from '@uniswap/v3-sdk';
-
+import { PortersJsonRpcProvider } from '../providers/rpc/PortersJsonRpcProvider';
+import { TokenInfo } from './models/TokenInfo';
 const contentHash = require('content-hash')
-
-interface AddressInfo {
-  eth: string;
-  optimism: string;
-  arbitrum: string;
-  avax: string;
-  bsc: string;
-  base: string;
-  cronos: string;
-  fantom: string;
-  gnosis: string;
-  polygon: string;
-  goerli_testnet: string;
-  sepolia_testnet: string;
-  near: string;
-  solana: string;
-  tron: string;
-  ziliqa: string;
-}
-
-interface TokenInfo {
-  contractAddress: string;
-  name: string;
-  url: string;
-  avatar: string;
-  description: string;
-  notice: string;
-  version: string;
-  decimals: string;
-  twitter: string;
-  github: string;
-  dweb: string; // Assuming this is a string representation of the bytes
-  addresses: AddressInfo;
-}
 
 const interface_abi = [{ "inputs": [], "stateMutability": "nonpayable", "type": "constructor" }, { "inputs": [{ "internalType": "string", "name": "_name", "type": "string" }], "name": "addressFor", "outputs": [{ "internalType": "address", "name": "", "type": "address" }], "stateMutability": "view", "type": "function" }, { "inputs": [{ "internalType": "string", "name": "_name", "type": "string" }], "name": "addressesFor", "outputs": [{ "components": [{ "internalType": "address payable", "name": "arb1_address", "type": "address" }, { "internalType": "address payable", "name": "avaxc_address", "type": "address" }, { "internalType": "address payable", "name": "base_address", "type": "address" }, { "internalType": "address payable", "name": "bsc_address", "type": "address" }, { "internalType": "address payable", "name": "cro_address", "type": "address" }, { "internalType": "address payable", "name": "ftm_address", "type": "address" }, { "internalType": "address payable", "name": "gno_address", "type": "address" }, { "internalType": "address payable", "name": "matic_address", "type": "address" }, { "internalType": "bytes", "name": "near_address", "type": "bytes" }, { "internalType": "address payable", "name": "op_address", "type": "address" }, { "internalType": "bytes", "name": "sol_address", "type": "bytes" }, { "internalType": "bytes", "name": "trx_address", "type": "bytes" }, { "internalType": "bytes", "name": "zil_address", "type": "bytes" }, { "internalType": "address payable", "name": "goerli_address", "type": "address" }, { "internalType": "address payable", "name": "sepolia_address", "type": "address" }], "internalType": "struct TNS.TokenAddresses", "name": "", "type": "tuple" }], "stateMutability": "view", "type": "function" }, { "inputs": [{ "internalType": "address", "name": "user", "type": "address" }, { "internalType": "string", "name": "tickerSymbol", "type": "string" }], "name": "balanceWithTicker", "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }], "stateMutability": "view", "type": "function" }, { "inputs": [{ "internalType": "string", "name": "_name", "type": "string" }], "name": "dataFor", "outputs": [{ "components": [{ "internalType": "address", "name": "contractAddress", "type": "address" }, { "internalType": "string", "name": "name", "type": "string" }, { "internalType": "string", "name": "url", "type": "string" }, { "internalType": "string", "name": "avatar", "type": "string" }, { "internalType": "string", "name": "description", "type": "string" }, { "internalType": "string", "name": "notice", "type": "string" }, { "internalType": "string", "name": "version", "type": "string" }, { "internalType": "string", "name": "decimals", "type": "string" }, { "internalType": "string", "name": "twitter", "type": "string" }, { "internalType": "string", "name": "github", "type": "string" }, { "internalType": "bytes", "name": "dweb", "type": "bytes" }, { "internalType": "address payable", "name": "arb1_address", "type": "address" }, { "internalType": "address payable", "name": "avaxc_address", "type": "address" }, { "internalType": "address payable", "name": "base_address", "type": "address" }, { "internalType": "address payable", "name": "bsc_address", "type": "address" }, { "internalType": "address payable", "name": "cro_address", "type": "address" }, { "internalType": "address payable", "name": "ftm_address", "type": "address" }, { "internalType": "address payable", "name": "gno_address", "type": "address" }, { "internalType": "address payable", "name": "matic_address", "type": "address" }, { "internalType": "bytes", "name": "near_address", "type": "bytes" }, { "internalType": "address payable", "name": "op_address", "type": "address" }, { "internalType": "bytes", "name": "sol_address", "type": "bytes" }, { "internalType": "bytes", "name": "trx_address", "type": "bytes" }, { "internalType": "bytes", "name": "zil_address", "type": "bytes" }, { "internalType": "address payable", "name": "goerli_address", "type": "address" }, { "internalType": "address payable", "name": "sepolia_address", "type": "address" }], "internalType": "struct TNS.Metadata", "name": "", "type": "tuple" }], "stateMutability": "view", "type": "function" }, { "inputs": [{ "internalType": "bytes32", "name": "namehash", "type": "bytes32" }], "name": "gasEfficientFetch", "outputs": [{ "internalType": "address", "name": "", "type": "address" }], "stateMutability": "view", "type": "function" }, { "inputs": [{ "internalType": "uint256", "name": "_chainId", "type": "uint256" }, { "internalType": "string", "name": "_name", "type": "string" }], "name": "getContractForChain", "outputs": [{ "internalType": "bytes", "name": "", "type": "bytes" }], "stateMutability": "view", "type": "function" }, { "inputs": [{ "internalType": "string", "name": "_name", "type": "string" }], "name": "infoFor", "outputs": [{ "components": [{ "internalType": "address", "name": "contractAddress", "type": "address" }, { "internalType": "string", "name": "name", "type": "string" }, { "internalType": "string", "name": "url", "type": "string" }, { "internalType": "string", "name": "avatar", "type": "string" }, { "internalType": "string", "name": "description", "type": "string" }, { "internalType": "string", "name": "notice", "type": "string" }, { "internalType": "string", "name": "version", "type": "string" }, { "internalType": "string", "name": "decimals", "type": "string" }, { "internalType": "string", "name": "twitter", "type": "string" }, { "internalType": "string", "name": "github", "type": "string" }, { "internalType": "bytes", "name": "dweb", "type": "bytes" }], "internalType": "struct TNS.TokenInfo", "name": "", "type": "tuple" }], "stateMutability": "view", "type": "function" }];
 
@@ -64,10 +31,16 @@ export class TknApiController {
   @Get(':portersAppId/contract-address/:ticker')
   async getTokenContractAddress(@Param('portersAppId') appId: string, @Param('ticker') ticker: string) {
     try {
-      const provider = new JsonRpcProvider(`https://eth-mainnet.rpc.porters.xyz/${appId}`);
+      console.log('calling getTokenContractAddress');
+      const provider = new PortersJsonRpcProvider(`https://eth-mainnet.rpc.porters.xyz/${appId}`);
+      
+      console.log(`set provider to https://eth-mainnet.rpc.porters.xyz/${appId}`);
+      console.log(`attempting to resolve ${ticker}.tkn.eth`);
 
       const contractAddress = await provider.resolveName(`${ticker}.tkn.eth`);
+      console.log('contractAddress resolved', contractAddress)
       if (!contractAddress) {
+        console.error('ENS name resolution failed. Contract address not found.');
         throw new HttpException(
           {
             status: HttpStatus.NOT_FOUND,
@@ -77,24 +50,17 @@ export class TknApiController {
         );
       }
 
+      console.log('finished calling getTokenContractAddress');
       return { response: { address: contractAddress }, status: 'success' };
     } catch (err) {
-      if (err instanceof HttpException) {
-        // Re-throw custom HttpExceptions to be handled by NestJS
-        throw err;
-      } else {
-        // Log unexpected errors
-        console.error('Unexpected error:', err);
-
-        // Return a generic error response
-        throw new HttpException(
-          {
-            status: HttpStatus.INTERNAL_SERVER_ERROR,
-            error: 'An unexpected error occurred. Please try again later.',
-          },
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        );
-      }
+      console.error('Unexpected error:', err.message, err.stack);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: 'An unexpected error occurred. Please try again later.',
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
@@ -102,7 +68,7 @@ export class TknApiController {
   @Get(':portersAppId/:ticker/metadata')
   async getSingleDataPoint(@Param('portersAppId') appId: string, @Param('ticker') ticker: string) {
     try {
-      const provider = new JsonRpcProvider(`https://eth-mainnet.rpc.porters.xyz/${appId}`);
+      const provider = new PortersJsonRpcProvider(`https://eth-mainnet.rpc.porters.xyz/${appId}`);
 
       const contractAddress = await provider.resolveName("tkn.eth");
       if (!contractAddress) {
@@ -185,7 +151,7 @@ export class TknApiController {
   @Get(':portersAppId/:ticker/balance')
   async getTokenBalance(@Param('portersAppId') appId: string, @Param('ticker') ticker: string, @Query('network') network: string, @Query('address') accountAddress: string) {
     try {
-      const provider = new JsonRpcProvider(`https://eth-mainnet.rpc.porters.xyz/${appId}`);
+      const provider = new PortersJsonRpcProvider(`https://eth-mainnet.rpc.porters.xyz/${appId}`);
 
       const contractAddress = await provider.resolveName("tkn.eth");
       if (!contractAddress) {
@@ -286,7 +252,7 @@ export class TknApiController {
   @Get(':portersAppId/:ticker/price')
   async getPriceData(@Param('portersAppId') appId: string, @Param('ticker') ticker: string) {
     try {
-      const provider = new JsonRpcProvider(`https://eth-mainnet.rpc.porters.xyz/${appId}`);
+      const provider = new PortersJsonRpcProvider(`https://eth-mainnet.rpc.porters.xyz/${appId}`);
 
       const contractAddress = await provider.resolveName("tkn.eth");
       if (!contractAddress) {
@@ -385,7 +351,7 @@ export class TknApiController {
   private async getERC20Balance(account: string, tokenAddress: string, providerUrl: string) {
     try {
       // Initialize a provider
-      const provider = new JsonRpcProvider(providerUrl);
+      const provider = new PortersJsonRpcProvider(providerUrl);
 
       // Define the ERC-20 contract ABI (minimum required ABI)
       const erc20Abi = [

@@ -62,7 +62,9 @@ func (b *BalanceTracker) HandleRequest(req *http.Request) error {
 	ctx = common.UpdateContext(ctx, bal)
 	ctx = common.UpdateContext(ctx, app)
 
-	log.Info("Balance for app", "appId", app.Id, "bal", bal.cachedBalance)
+	if common.Enabled(common.LOG_BALANCE_UPDATE) {
+		log.Info("Balance for app", "appId", app.Id, "bal", bal.cachedBalance)
+	}
 
 	if bal.cachedBalance > 0 {
 		lifecycle := proxy.SetStageComplete(ctx, proxy.BalanceCheck|proxy.AccountLookup)

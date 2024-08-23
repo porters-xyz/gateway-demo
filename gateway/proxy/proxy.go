@@ -30,6 +30,10 @@ func Start() {
 
 	handler := func(proxy *httputil.ReverseProxy) func(http.ResponseWriter, *http.Request) {
 		return func(resp http.ResponseWriter, req *http.Request) {
+			if common.Enabled(common.LOG_HTTP_REQUEST) {
+				log.Info("Received request: %s %s from %s with User-Agent: %s", req.Method, req.URL, req.RemoteAddr, req.UserAgent())
+			}
+
 			setupContext(req)
 			proxy.ServeHTTP(resp, req)
 		}
@@ -155,12 +159,11 @@ func setupProxy(remote *url.URL) *httputil.ReverseProxy {
 			}
 		}
 
+		if common.Enabled(common.LOG_HTTP_RESPONSE) {
+			log.Info("Response", "resp", resp)
+		}
+
 		if resp.StatusCode < 400 && err == nil {
-
-			if common.Enabled(common.LOG_HTTP_RESPONSE) {
-				log.Info("Success response", "resp", resp)
-			}
-
 			updater := db.NewUsageUpdater(ctx, "success")
 			common.GetTaskQueue().Add(updater)
 		}

@@ -1,4 +1,4 @@
-import { AddressInfo } from "./models/AddressInfo";
+import { AddressInfo } from "./AddressInfo";
 
 export interface TokenInfo {
   contractAddress: string;

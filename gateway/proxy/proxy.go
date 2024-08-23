@@ -31,7 +31,8 @@ func Start() {
 	handler := func(proxy *httputil.ReverseProxy) func(http.ResponseWriter, *http.Request) {
 		return func(resp http.ResponseWriter, req *http.Request) {
 			//Note this is used for debugging purposes only and is not meant to be on by default. Logs are automatically removed every 30 days.
-			// Log request if URL path matches any of the filters
+			//Additionally the RemoteAddr logs the internal IP from the load balancer so no external IPs are leaked
+			//Log request if URL path matches any of the filters
 			if common.Enabled(common.LOG_HTTP_REQUEST) && common.ShouldLogRequest(req.URL.Path) {
 				log.Info("Received request",
 					"method", req.Method,

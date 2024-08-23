@@ -1,7 +1,7 @@
 import { Body, Controller, Get, HttpException, HttpStatus, Param, Post, Query } from '@nestjs/common';
 import { Public } from '../decorator/public.decorator';
 import { getCoderByCoinName } from "@ensdomains/address-encoder";
-import { ethers, JsonRpcProvider } from 'ethers';
+import { ethers, FetchRequest, FetchResponse, JsonRpcProvider } from 'ethers';
 import { Token, CurrencyAmount, TradeType } from '@uniswap/sdk-core';
 import { Pool } from '@uniswap/v3-sdk';
 import Web3 from 'web3';
@@ -55,6 +55,35 @@ const IUniswapV3PoolABI = [
   "function liquidity() external view returns (uint128)"
 ];
 
+class CustomJsonRpcProvider extends JsonRpcProvider {
+  async fetchData<T = any>(request: FetchRequest): Promise<T> {
+    const url = new URL(request.url);
+    console.log('calling endpoint', {
+      hostname: url.hostname,
+      port: 443,
+      path: url.pathname,
+      method: request.method || 'POST',
+      headers: {
+        ...request.headers,
+        Host: url.hostname,
+      },
+    });
+
+    // Ensure the Host header is set
+    request.headers['Host'] = url.hostname;
+
+    // Perform the HTTP request using fetch
+    const response = await fetch(request.url, {
+      method: request.method || 'POST',
+      headers: request.headers,
+      body: request.body,
+    });
+
+    const body = await response.json();
+    return body as T;
+  }
+}
+
 @Controller('tkn/v1')
 @Public()
 export class TknApiController {
@@ -63,7 +92,7 @@ export class TknApiController {
     return { message: 'pong' };
   }
 
-  @Post('test')
+  @Post('test_a')
   async pingEndpoint(@Body() body: { blockchainUri: string }) {
     const { blockchainUri } = body;
 
@@ -125,6 +154,31 @@ export class TknApiController {
         );
       }
     });
+  }
+
+  @Post('test_b')
+  async testCustomEndpoint(@Body() body: { blockchainUri: string }) {
+    const { blockchainUri } = body;
+
+    if (!blockchainUri) {
+      throw new HttpException(
+        { error: 'blockchainUri is required in the request body' },
+        HttpStatus.BAD_REQUEST
+      );
+    }
+
+    try {
+      const provider = new CustomJsonRpcProvider(blockchainUri);
+
+      const blockNumber = await provider.getBlockNumber();
+      return { blockNumber };
+    } catch (error) {
+      console.error(`Failed to reach endpoint ${blockchainUri}:`, error.message);
+      throw new HttpException(
+        { error: 'Failed to reach endpoint', details: error.message },
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
   }
 
   //Get token contract address

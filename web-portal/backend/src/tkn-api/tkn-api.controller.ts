@@ -92,7 +92,7 @@ export class TknApiController {
     return { message: 'pong' };
   }
 
-  @Post('test_a')
+  @Post('test')
   async pingEndpoint(@Body() body: { blockchainUri: string }) {
     const { blockchainUri } = body;
 
@@ -156,7 +156,7 @@ export class TknApiController {
     });
   }
 
-  @Post('test_b')
+  @Post('test/ethers')
   async testCustomEndpoint(@Body() body: { blockchainUri: string }) {
     const { blockchainUri } = body;
 

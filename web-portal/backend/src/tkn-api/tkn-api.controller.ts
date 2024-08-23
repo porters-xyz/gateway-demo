@@ -7,6 +7,7 @@ import { Pool } from '@uniswap/v3-sdk';
 import { PortersJsonRpcProvider } from '../providers/rpc/PortersJsonRpcProvider';
 import { TokenInfo } from './models/TokenInfo';
 const contentHash = require('content-hash')
+import * as https from 'https';
 
 const interface_abi = [{ "inputs": [], "stateMutability": "nonpayable", "type": "constructor" }, { "inputs": [{ "internalType": "string", "name": "_name", "type": "string" }], "name": "addressFor", "outputs": [{ "internalType": "address", "name": "", "type": "address" }], "stateMutability": "view", "type": "function" }, { "inputs": [{ "internalType": "string", "name": "_name", "type": "string" }], "name": "addressesFor", "outputs": [{ "components": [{ "internalType": "address payable", "name": "arb1_address", "type": "address" }, { "internalType": "address payable", "name": "avaxc_address", "type": "address" }, { "internalType": "address payable", "name": "base_address", "type": "address" }, { "internalType": "address payable", "name": "bsc_address", "type": "address" }, { "internalType": "address payable", "name": "cro_address", "type": "address" }, { "internalType": "address payable", "name": "ftm_address", "type": "address" }, { "internalType": "address payable", "name": "gno_address", "type": "address" }, { "internalType": "address payable", "name": "matic_address", "type": "address" }, { "internalType": "bytes", "name": "near_address", "type": "bytes" }, { "internalType": "address payable", "name": "op_address", "type": "address" }, { "internalType": "bytes", "name": "sol_address", "type": "bytes" }, { "internalType": "bytes", "name": "trx_address", "type": "bytes" }, { "internalType": "bytes", "name": "zil_address", "type": "bytes" }, { "internalType": "address payable", "name": "goerli_address", "type": "address" }, { "internalType": "address payable", "name": "sepolia_address", "type": "address" }], "internalType": "struct TNS.TokenAddresses", "name": "", "type": "tuple" }], "stateMutability": "view", "type": "function" }, { "inputs": [{ "internalType": "address", "name": "user", "type": "address" }, { "internalType": "string", "name": "tickerSymbol", "type": "string" }], "name": "balanceWithTicker", "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }], "stateMutability": "view", "type": "function" }, { "inputs": [{ "internalType": "string", "name": "_name", "type": "string" }], "name": "dataFor", "outputs": [{ "components": [{ "internalType": "address", "name": "contractAddress", "type": "address" }, { "internalType": "string", "name": "name", "type": "string" }, { "internalType": "string", "name": "url", "type": "string" }, { "internalType": "string", "name": "avatar", "type": "string" }, { "internalType": "string", "name": "description", "type": "string" }, { "internalType": "string", "name": "notice", "type": "string" }, { "internalType": "string", "name": "version", "type": "string" }, { "internalType": "string", "name": "decimals", "type": "string" }, { "internalType": "string", "name": "twitter", "type": "string" }, { "internalType": "string", "name": "github", "type": "string" }, { "internalType": "bytes", "name": "dweb", "type": "bytes" }, { "internalType": "address payable", "name": "arb1_address", "type": "address" }, { "internalType": "address payable", "name": "avaxc_address", "type": "address" }, { "internalType": "address payable", "name": "base_address", "type": "address" }, { "internalType": "address payable", "name": "bsc_address", "type": "address" }, { "internalType": "address payable", "name": "cro_address", "type": "address" }, { "internalType": "address payable", "name": "ftm_address", "type": "address" }, { "internalType": "address payable", "name": "gno_address", "type": "address" }, { "internalType": "address payable", "name": "matic_address", "type": "address" }, { "internalType": "bytes", "name": "near_address", "type": "bytes" }, { "internalType": "address payable", "name": "op_address", "type": "address" }, { "internalType": "bytes", "name": "sol_address", "type": "bytes" }, { "internalType": "bytes", "name": "trx_address", "type": "bytes" }, { "internalType": "bytes", "name": "zil_address", "type": "bytes" }, { "internalType": "address payable", "name": "goerli_address", "type": "address" }, { "internalType": "address payable", "name": "sepolia_address", "type": "address" }], "internalType": "struct TNS.Metadata", "name": "", "type": "tuple" }], "stateMutability": "view", "type": "function" }, { "inputs": [{ "internalType": "bytes32", "name": "namehash", "type": "bytes32" }], "name": "gasEfficientFetch", "outputs": [{ "internalType": "address", "name": "", "type": "address" }], "stateMutability": "view", "type": "function" }, { "inputs": [{ "internalType": "uint256", "name": "_chainId", "type": "uint256" }, { "internalType": "string", "name": "_name", "type": "string" }], "name": "getContractForChain", "outputs": [{ "internalType": "bytes", "name": "", "type": "bytes" }], "stateMutability": "view", "type": "function" }, { "inputs": [{ "internalType": "string", "name": "_name", "type": "string" }], "name": "infoFor", "outputs": [{ "components": [{ "internalType": "address", "name": "contractAddress", "type": "address" }, { "internalType": "string", "name": "name", "type": "string" }, { "internalType": "string", "name": "url", "type": "string" }, { "internalType": "string", "name": "avatar", "type": "string" }, { "internalType": "string", "name": "description", "type": "string" }, { "internalType": "string", "name": "notice", "type": "string" }, { "internalType": "string", "name": "version", "type": "string" }, { "internalType": "string", "name": "decimals", "type": "string" }, { "internalType": "string", "name": "twitter", "type": "string" }, { "internalType": "string", "name": "github", "type": "string" }, { "internalType": "bytes", "name": "dweb", "type": "bytes" }], "internalType": "struct TNS.TokenInfo", "name": "", "type": "tuple" }], "stateMutability": "view", "type": "function" }];
 
@@ -27,7 +28,71 @@ export class TknApiController {
     return { message: 'pong' };
   }
 
-  @Post('test')
+  @Post('pingEndpoint')
+  async pingEndpoint(@Body() body: { blockchainUri: string }) {
+    const { blockchainUri } = body;
+
+    if (!blockchainUri) {
+      throw new HttpException(
+        { error: 'blockchainUri is required in the request body' },
+        HttpStatus.BAD_REQUEST
+      );
+    }
+
+    return new Promise((resolve, reject) => {
+      try {
+        const url = new URL(blockchainUri);
+        const options = {
+          hostname: url.hostname,
+          port: url.port || 443, // Use port 443 if not specified (default for HTTPS)
+          path: url.pathname,
+          method: 'POST',
+          headers: {
+            'Host': url.hostname, // Explicitly set the Host header
+          }
+        };
+
+        console.log('calling endpoint', options);
+        
+        const req = https.request(options, (res) => {
+          const { statusCode } = res;
+
+          if (statusCode && statusCode >= 200 && statusCode < 300) {
+            resolve({ message: 'Endpoint is reachable', statusCode });
+          } else {
+            reject(
+              new HttpException(
+                { error: `Failed to reach endpoint, status code: ${statusCode}` },
+                HttpStatus.INTERNAL_SERVER_ERROR
+              )
+            );
+          }
+        });
+
+        req.on('error', (err) => {
+          console.error(`Failed to ping ${blockchainUri}:`, err.message);
+          reject(
+            new HttpException(
+              { error: 'Failed to reach endpoint', details: err.message },
+              HttpStatus.INTERNAL_SERVER_ERROR
+            )
+          );
+        });
+
+        req.end();
+      } catch (error) {
+        console.error(`Error processing URL ${blockchainUri}:`, error.message);
+        reject(
+          new HttpException(
+            { error: 'Invalid URL provided', details: error.message },
+            HttpStatus.BAD_REQUEST
+          )
+        );
+      }
+    });
+  }
+
+  @Post('testRpcProvider')
   async testCustomEndpoint(@Body() body: { blockchainUri: string }) {
     const { blockchainUri } = body;
 

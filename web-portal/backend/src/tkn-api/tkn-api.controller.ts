@@ -27,6 +27,31 @@ export class TknApiController {
     return { message: 'pong' };
   }
 
+  @Post('test')
+  async testCustomEndpoint(@Body() body: { blockchainUri: string }) {
+    const { blockchainUri } = body;
+
+    if (!blockchainUri) {
+      throw new HttpException(
+        { error: 'blockchainUri is required in the request body' },
+        HttpStatus.BAD_REQUEST
+      );
+    }
+
+    try {
+      const provider = new PortersJsonRpcProvider(blockchainUri);
+
+      const blockNumber = await provider.getBlockNumber();
+      return { blockNumber };
+    } catch (error) {
+      console.error(`Failed to reach endpoint ${blockchainUri}:`, error.message);
+      throw new HttpException(
+        { error: 'Failed to reach endpoint', details: error.message },
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
+
   //Get token contract address
   @Get(':portersAppId/contract-address/:ticker')
   async getTokenContractAddress(@Param('portersAppId') appId: string, @Param('ticker') ticker: string) {

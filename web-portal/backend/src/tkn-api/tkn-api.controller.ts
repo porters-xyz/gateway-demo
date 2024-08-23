@@ -81,12 +81,14 @@ export class TknApiController {
           hostname: url.hostname,
           port: url.port || 443, // Use port 443 if not specified (default for HTTPS)
           path: url.pathname,
-          method: 'GET',
+          method: 'POST',
           headers: {
             'Host': url.hostname, // Explicitly set the Host header
           }
         };
 
+        console.log('calling endpoint', options);
+        
         const req = https.request(options, (res) => {
           const { statusCode } = res;
 

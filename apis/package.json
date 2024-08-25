@@ -1,0 +1,29 @@
+{
+  "name": "porters-apis",
+  "version": "0.0.1",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@ensdomains/address-encoder": "^1.1.2",
+    "@ensdomains/ensjs": "^4.0.0",
+    "@uniswap/sdk-core": "^5.3.1",
+    "@uniswap/v3-sdk": "^3.13.1",
+    "content-hash": "^2.5.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "ethers": "^6.13.2",
+    "express": "^4.19.2",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22"
+  }
+}

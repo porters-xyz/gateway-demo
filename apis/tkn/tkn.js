@@ -7,6 +7,9 @@ const https = require('https');
 const contentHash = require('content-hash');
 const { getCoderByCoinName } = require('@ensdomains/address-encoder');
 
+const dns = require('dns');
+dns.setDefaultResultOrder('ipv4first');
+
 const interface_abi = require('./abis/tknInterfaceAbi.json');
 const IUniswapV3FactoryABI = require('./abis/uniswapV3FactoryAbi.json');
 const IUniswapV3PoolABI = require('./abis/uniswapV3PoolAbi.json');

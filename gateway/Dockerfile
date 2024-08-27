@@ -18,4 +18,4 @@ EXPOSE 9000 2345
 
 # CMD ["porters", "gateway"]
 # CMD to start Delve in headless mode and your application
-CMD ["dlv", "exec", "/go/bin/porters", "--headless", "--listen=:2345", "--api-version=2", "--accept-multiclient", "--", "gateway"]
+CMD ["dlv", "exec", "/go/bin/porters", "--headless", "--listen=:2345", "--api-version=2", "--accept-multiclient", "--", "gateway", "--host=0.0.0.0", "--port=9000"]

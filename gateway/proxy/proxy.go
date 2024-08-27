@@ -1,11 +1,9 @@
 package proxy
 
 import (
-	"bytes"
 	"context"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	log "log/slog"
 	"net/http"
 	"net/http/httputil"
@@ -36,51 +34,12 @@ func Start() {
 			//Additionally the RemoteAddr logs the internal IP from the load balancer so no external IPs are leaked
 			//Log request if URL path matches any of the filters
 			if common.Enabled(common.LOG_HTTP_REQUEST) && common.ShouldLogRequest(req.URL.Path) {
-				// log.Info("Received request",
-				// 	"method", req.Method,
-				// 	"url", req.URL.String(),
-				// 	"remoteAddr", req.RemoteAddr,
-				// 	"userAgent", req.UserAgent(),
-				// )
-
-				// Log Request Method and URL
-				log.Info("Received request", "method", req.Method, "url", req.URL.String())
-
-				// Log Remote Address and User Agent
-				log.Info("Request details", "remoteAddr", req.RemoteAddr, "userAgent", req.UserAgent())
-
-				// Log Request Headers
-				for name, values := range req.Header {
-					for _, value := range values {
-						log.Info("Request header", "name", name, "value", value)
-					}
-				}
-
-				// Log Request Body
-				bodyBytes, err := ioutil.ReadAll(req.Body)
-				if err != nil {
-					log.Error("Failed to read request body", "error", err)
-				} else {
-					log.Info("Request body", "body", string(bodyBytes))
-					// Re-assign the body if it needs to be read later
-					req.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
-				}
-
-				// Log TLS Details if present
-				if req.TLS != nil {
-					log.Info("TLS details", "version", req.TLS.Version, "cipherSuite", req.TLS.CipherSuite)
-				}
-
-				// Log Connection Details
-				localAddr := req.Context().Value(http.LocalAddrContextKey)
-				log.Info("Connection details", "localAddr", localAddr, "remoteAddr", req.RemoteAddr)
-
-				// Log Query Parameters
-				for name, values := range req.URL.Query() {
-					for _, value := range values {
-						log.Info("Query parameter", "name", name, "value", value)
-					}
-				}
+				log.Info("Received request",
+					"method", req.Method,
+					"url", req.URL.String(),
+					"remoteAddr", req.RemoteAddr,
+					"userAgent", req.UserAgent(),
+				)
 			}
 
 			setupContext(req)

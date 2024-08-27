@@ -83,9 +83,14 @@ func Start() {
 				}
 			}
 			setupContext(req)
-			log.Info("Starting to serve request via reverse proxy", "url", req.URL.String())
+
+			if common.Enabled(common.LOG_HTTP_REQUEST) && common.ShouldLogRequest(req.URL.Path) {
+				log.Info("Starting to serve request via reverse proxy", "url", req.URL.String())
+			}
 			proxy.ServeHTTP(resp, req)
-			log.Info("Finished serving request via reverse proxy", "url", req.URL.String())
+			if common.Enabled(common.LOG_HTTP_REQUEST) && common.ShouldLogRequest(req.URL.Path) {
+				log.Info("Finished serving request via reverse proxy", "url", req.URL.String())
+			}
 		}
 	}
 

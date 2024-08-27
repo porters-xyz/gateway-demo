@@ -102,16 +102,6 @@ func setupProxy(remote *url.URL) *httputil.ReverseProxy {
 
 	defaultDirector := revProxy.Director
 	revProxy.Director = func(req *http.Request) {
-		logEvent := common.Enabled(common.LOG_HTTP_REQUEST) && common.ShouldLogRequest(req.URL.Path)
-		if logEvent {
-			log.Info("Director Handler starting", "method", req.Method, "url", req.URL.String())
-		}
-
-		// Store the original URL in the context. Needed for logging
-		originalURL := req.URL.String()
-		ctx := context.WithValue(req.Context(), "originalURL", originalURL)
-		req = req.WithContext(ctx)
-
 		defaultDirector(req)
 
 		cancel := RequestCanceler(req)
@@ -123,10 +113,6 @@ func setupProxy(remote *url.URL) *httputil.ReverseProxy {
 		}
 		target := utils.NewTarget(remote, poktId)
 		req.URL = target.URL()
-
-		if logEvent {
-			log.Info("Director Handler set new target & starting plugins", "method", req.Method, "url", req.URL.String())
-		}
 
 		for _, p := range (*reg).plugins {
 			h, ok := p.(PreHandler)
@@ -144,27 +130,16 @@ func setupProxy(remote *url.URL) *httputil.ReverseProxy {
 			}
 		}
 
-		if logEvent {
-			log.Info("Director Handler finished calling plugins", "method", req.Method, "url", req.URL.String())
-		}
-
 		// Cancel if necessary lifecycle stages not completed
 		lifecycle := lifecycleFromContext(req.Context())
 		if !lifecycle.checkComplete() {
 			err := LifecycleIncompleteError
 			log.Debug("lifecycle incomplete", "mask", lifecycle)
 
-			if logEvent {
-				log.Info("Director Handler lifecycle incomplete", "method", req.Method, "url", req.URL.String())
-			}
-
 			cancel(err)
 		}
 
 		if common.Enabled(common.INSTRUMENT_ENABLED) {
-			if logEvent {
-				log.Info("Director Handler starting Instrument logging", "method", req.Method, "url", req.URL.String())
-			}
 			ctx := req.Context()
 			instr, ok := common.FromContext(ctx, common.INSTRUMENT)
 			if ok {
@@ -175,46 +150,22 @@ func setupProxy(remote *url.URL) *httputil.ReverseProxy {
 				ctx = common.UpdateContext(ctx, common.StartInstrument())
 				*req = *req.WithContext(ctx)
 			}
-			if logEvent {
-				log.Info("Director Handler finished Instrument logging", "method", req.Method, "url", req.URL.String())
-			}
-		}
-
-		if logEvent {
-			log.Info("Director Handler ready", "method", req.Method, "url", req.URL.String())
 		}
 	}
 
 	revProxy.ModifyResponse = func(resp *http.Response) error {
-		// Retrieve the original URL from the context
-		//originalURL, _ := resp.Request.Context().Value("originalURL").(string)
-
-		logEvent := common.Enabled(common.LOG_HTTP_REQUEST) //&& common.ShouldLogRequest(originalURL)
-		if logEvent {
-			log.Info("ModifyResponse Handler starting", "method", resp.Request.Method, "modifiedURL", resp.Request.URL.String())
-		}
-
 		ctx := resp.Request.Context()
 		defaultHeaders(resp)
 
 		if common.Enabled(common.INSTRUMENT_ENABLED) {
-			if logEvent {
-				log.Info("ModifyResponse Handler starting instrument logging", "method", resp.Request.Method, "modifiedURL", resp.Request.URL.String())
-			}
 			instr, ok := common.FromContext(ctx, common.INSTRUMENT)
 			if ok {
 				start := instr.(*common.Instrument).Timestamp
 				elapsed := time.Now().Sub(start)
 				common.LatencyHistogram.WithLabelValues("serve").Observe(float64(elapsed))
 			}
-			if logEvent {
-				log.Info("ModifyResponse Handler finished instrument logging", "method", resp.Request.Method, "modifiedURL", resp.Request.URL.String())
-			}
 		}
 
-		if logEvent {
-			log.Info("ModifyResponse Handler starting plugins", "method", resp.Request.Method, "modifiedURL", resp.Request.URL.String())
-		}
 		var err error
 		for _, p := range (*reg).plugins {
 			h, ok := p.(PostHandler)
@@ -226,28 +177,15 @@ func setupProxy(remote *url.URL) *httputil.ReverseProxy {
 			}
 		}
 
-		if logEvent {
-			log.Info("ModifyResponse Handler finished calling plugins", "method", resp.Request.Method, "modifiedURL", resp.Request.URL.String())
-		}
-
-		if common.Enabled(common.LOG_HTTP_RESPONSE) || logEvent {
+		if common.Enabled(common.LOG_HTTP_RESPONSE) {
 			log.Info("Response", "resp", resp)
 		}
 
 		if resp.StatusCode < 400 && err == nil {
-			if logEvent {
-				log.Info("ModifyResponse Handler adding usage updater", "method", resp.Request.Method, "modifiedURL", resp.Request.URL.String())
-			}
 			updater := db.NewUsageUpdater(ctx, "success")
 			common.GetTaskQueue().Add(updater)
-			if logEvent {
-				log.Info("ModifyResponse Handler finished adding usage updater", "method", resp.Request.Method, "modifiedURL", resp.Request.URL.String())
-			}
 		}
 
-		if logEvent {
-			log.Info("ModifyResponse Handler returning response error", "method", resp.Request.Method, "modifiedURL", resp.Request.URL.String(), "err", err)
-		}
 		return err
 	}
 

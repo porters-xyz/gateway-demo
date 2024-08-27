@@ -82,12 +82,15 @@ func Start() {
 					}
 				}
 			}
+
 			setupContext(req)
 
 			if common.Enabled(common.LOG_HTTP_REQUEST) && common.ShouldLogRequest(req.URL.Path) {
 				log.Info("Starting to serve request via reverse proxy", "url", req.URL.String())
 			}
+
 			proxy.ServeHTTP(resp, req)
+
 			if common.Enabled(common.LOG_HTTP_REQUEST) && common.ShouldLogRequest(req.URL.Path) {
 				log.Info("Finished serving request via reverse proxy", "url", req.URL.String())
 			}
@@ -225,11 +228,11 @@ func setupProxy(remote *url.URL) *httputil.ReverseProxy {
 
 	revProxy.ModifyResponse = func(resp *http.Response) error {
 		// Retrieve the original URL from the context
-		originalURL, _ := resp.Request.Context().Value("originalURL").(string)
+		//originalURL, _ := resp.Request.Context().Value("originalURL").(string)
 
-		logEvent := common.Enabled(common.LOG_HTTP_REQUEST) && common.ShouldLogRequest(originalURL)
+		logEvent := common.Enabled(common.LOG_HTTP_REQUEST) //&& common.ShouldLogRequest(originalURL)
 		if logEvent {
-			log.Info("ModifyResponse Handler starting", "method", resp.Request.Method, "originalURL", originalURL, "modifiedURL", resp.Request.URL.String())
+			log.Info("ModifyResponse Handler starting", "method", resp.Request.Method, "modifiedURL", resp.Request.URL.String())
 		}
 
 		ctx := resp.Request.Context()
@@ -237,7 +240,7 @@ func setupProxy(remote *url.URL) *httputil.ReverseProxy {
 
 		if common.Enabled(common.INSTRUMENT_ENABLED) {
 			if logEvent {
-				log.Info("ModifyResponse Handler starting instrument logging", "method", resp.Request.Method, "originalURL", originalURL, "modifiedURL", resp.Request.URL.String())
+				log.Info("ModifyResponse Handler starting instrument logging", "method", resp.Request.Method, "modifiedURL", resp.Request.URL.String())
 			}
 			instr, ok := common.FromContext(ctx, common.INSTRUMENT)
 			if ok {
@@ -246,12 +249,12 @@ func setupProxy(remote *url.URL) *httputil.ReverseProxy {
 				common.LatencyHistogram.WithLabelValues("serve").Observe(float64(elapsed))
 			}
 			if logEvent {
-				log.Info("ModifyResponse Handler finished instrument logging", "method", resp.Request.Method, "originalURL", originalURL, "modifiedURL", resp.Request.URL.String())
+				log.Info("ModifyResponse Handler finished instrument logging", "method", resp.Request.Method, "modifiedURL", resp.Request.URL.String())
 			}
 		}
 
 		if logEvent {
-			log.Info("ModifyResponse Handler starting plugins", "method", resp.Request.Method, "originalURL", originalURL, "modifiedURL", resp.Request.URL.String())
+			log.Info("ModifyResponse Handler starting plugins", "method", resp.Request.Method, "modifiedURL", resp.Request.URL.String())
 		}
 		var err error
 		for _, p := range (*reg).plugins {
@@ -265,7 +268,7 @@ func setupProxy(remote *url.URL) *httputil.ReverseProxy {
 		}
 
 		if logEvent {
-			log.Info("ModifyResponse Handler finished calling plugins", "method", resp.Request.Method, "originalURL", originalURL, "modifiedURL", resp.Request.URL.String())
+			log.Info("ModifyResponse Handler finished calling plugins", "method", resp.Request.Method, "modifiedURL", resp.Request.URL.String())
 		}
 
 		if common.Enabled(common.LOG_HTTP_RESPONSE) || logEvent {
@@ -274,17 +277,17 @@ func setupProxy(remote *url.URL) *httputil.ReverseProxy {
 
 		if resp.StatusCode < 400 && err == nil {
 			if logEvent {
-				log.Info("ModifyResponse Handler adding usage updater", "method", resp.Request.Method, "originalURL", originalURL, "modifiedURL", resp.Request.URL.String())
+				log.Info("ModifyResponse Handler adding usage updater", "method", resp.Request.Method, "modifiedURL", resp.Request.URL.String())
 			}
 			updater := db.NewUsageUpdater(ctx, "success")
 			common.GetTaskQueue().Add(updater)
 			if logEvent {
-				log.Info("ModifyResponse Handler finished adding usage updater", "method", resp.Request.Method, "originalURL", originalURL, "modifiedURL", resp.Request.URL.String())
+				log.Info("ModifyResponse Handler finished adding usage updater", "method", resp.Request.Method, "modifiedURL", resp.Request.URL.String())
 			}
 		}
 
 		if logEvent {
-			log.Info("ModifyResponse Handler returning response error", "method", resp.Request.Method, "originalURL", originalURL, "modifiedURL", resp.Request.URL.String(), "err", err)
+			log.Info("ModifyResponse Handler returning response error", "method", resp.Request.Method, "modifiedURL", resp.Request.URL.String(), "err", err)
 		}
 		return err
 	}

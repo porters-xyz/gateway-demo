@@ -15,7 +15,6 @@ import { SiweService } from './siwe/siwe.service';
 import { AuthGuard } from './guards/auth.guard';
 import { AppsService } from './apps/apps.service';
 import { AlertsModule } from './alerts/alerts.module';
-import { TknApiModule } from './tkn-api/tkn-api.module';
 
 @Module({
   imports: [
@@ -34,8 +33,7 @@ import { TknApiModule } from './tkn-api/tkn-api.module';
     OrgModule,
     UtilsModule,
     UsageModule,
-    AlertsModule,
-    TknApiModule
+    AlertsModule
   ],
   providers: [
     SiweService,

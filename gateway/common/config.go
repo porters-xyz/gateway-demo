@@ -10,24 +10,27 @@ import (
 
 // store config as constants for now
 const (
-	SHUTDOWN_DELAY     string = "SHUTDOWN_DELAY"
-	JOB_BUFFER_SIZE           = "JOB_BUFFER_SIZE"
-	NUM_WORKERS               = "NUM_WORKERS"
-	PROXY_TO                  = "PROXY_TO"
-	HOST                      = "HOST" // host to add subdomains to
-	PORT                      = "PORT"
-	DATABASE_URL              = "DATABASE_URL"
-	REDIS_URL                 = "REDIS_URL"
-	REDIS_ADDR                = "REDIS_ADDR"
-	REDIS_USER                = "REDIS_USER"
-	REDIS_PASSWORD            = "REDIS_PASSWORD"
-	INSTRUMENT_ENABLED        = "ENABLE_INSTRUMENT"
-	LOG_LEVEL                 = "LOG_LEVEL"
-	LOG_HTTP_RESPONSE         = "LOG_HTTP_RESPONSE"
-	FLY_API_KEY               = "FLY_API_KEY"
-	FLY_GATEWAY_URI           = "FLY_GATEWAY_URI"
-	GATEWAY_API_KEY           = "GATEWAY_API_KEY"
-	GATEWAY_REQUEST_API_KEY   = "GATEWAY_REQUEST_API_KEY"
+	SHUTDOWN_DELAY          string = "SHUTDOWN_DELAY"
+	JOB_BUFFER_SIZE                = "JOB_BUFFER_SIZE"
+	NUM_WORKERS                    = "NUM_WORKERS"
+	PROXY_TO                       = "PROXY_TO"
+	HOST                           = "HOST" // host to add subdomains to
+	PORT                           = "PORT"
+	DATABASE_URL                   = "DATABASE_URL"
+	REDIS_URL                      = "REDIS_URL"
+	REDIS_ADDR                     = "REDIS_ADDR"
+	REDIS_USER                     = "REDIS_USER"
+	REDIS_PASSWORD                 = "REDIS_PASSWORD"
+	INSTRUMENT_ENABLED             = "ENABLE_INSTRUMENT"
+	LOG_LEVEL                      = "LOG_LEVEL"               //Used for debugging purposes
+	LOG_HTTP_REQUEST               = "LOG_HTTP_REQUEST"        //Used for debugging purposes
+	LOG_HTTP_REQUEST_FILTER        = "LOG_HTTP_REQUEST_FILTER" //Used for debugging purposes
+	LOG_HTTP_RESPONSE              = "LOG_HTTP_RESPONSE"       //Used for debugging purposes
+	LOG_BALANCE_UPDATE             = "LOG_BALANCE_UPDATE"      //Used for debugging purposes
+	FLY_API_KEY                    = "FLY_API_KEY"
+	FLY_GATEWAY_URI                = "FLY_GATEWAY_URI"
+	GATEWAY_API_KEY                = "GATEWAY_API_KEY"
+	GATEWAY_REQUEST_API_KEY        = "GATEWAY_REQUEST_API_KEY"
 )
 
 // This may evolve to include config outside env, or use .env file for
@@ -52,7 +55,10 @@ func setupConfig() *Config {
 		config.defaults[HOST] = "localhost"
 		config.defaults[PORT] = "9000"
 		config.defaults[INSTRUMENT_ENABLED] = "false"
-		config.defaults[LOG_HTTP_RESPONSE] = "true"
+		config.defaults[LOG_HTTP_REQUEST] = "false"
+		config.defaults[LOG_HTTP_RESPONSE] = "false"
+		config.defaults[LOG_BALANCE_UPDATE] = "false"
+		config.defaults[LOG_HTTP_REQUEST_FILTER] = ""
 
 		level := parseLogLevel(os.Getenv(LOG_LEVEL))
 		config.SetLogLevel(level)
@@ -116,4 +122,22 @@ func (c *Config) SetLogLevel(level log.Level) {
 	c.loglevel.Set(level)
 	logger := log.New(log.NewTextHandler(os.Stdout, &log.HandlerOptions{Level: c.loglevel}))
 	log.SetDefault(logger)
+}
+
+// shouldLogRequest checks if the request URL path matches any of the specified filters in common.LOG_HTTP_FILTER_APP.
+// If the filter list is empty, it logs all requests.
+func ShouldLogRequest(urlPath string) bool {
+	filters := GetConfig(LOG_HTTP_REQUEST_FILTER)
+	if filters == "" {
+		// If no filters are specified, log everything
+		return true
+	}
+
+	filterList := strings.Split(filters, ",")
+	for _, filter := range filterList {
+		if strings.Contains(urlPath, filter) {
+			return true
+		}
+	}
+	return false
 }

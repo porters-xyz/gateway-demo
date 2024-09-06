@@ -90,7 +90,7 @@ export default function TOSpage() {
           <Title w='100%' order={2}>4. Privacy</Title>
           <Text>
             The Company does not store, process, or share personal data except the User&apos;s public Key tied to the PORTERs account. 
-            The User's public key is only stored and not shared at any time. The User may request the deletion of such data and 
+            The User&apos;s public key is only stored and not shared at any time. The User may request the deletion of such data and 
             the closure of the User&apos;s account via email to info@porters.xyz. The User understands that through their use of the 
             Services and the Platform, They consent to the collection and use of this information in accordance with the Terms.
           </Text>

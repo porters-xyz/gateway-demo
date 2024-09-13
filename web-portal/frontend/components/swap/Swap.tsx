@@ -54,17 +54,35 @@ const commonStyles = {
 const chainOptions = _.map(chains, "name").filter((c) => !c.includes("Eth") && !c.includes('Gno'));
 
 export default function Swap() {
-    // Network/Token data
-    const [selectedChainId, setSelectedChainId] = useState(10);
+    // State for selected chain and token data
+    const [selectedChainId, setSelectedChainId] = useState(10); // Initialize with default chain ID
+    const [selectedTokenData, setSelectedTokenData] = useState<IToken>(); // Initialize selected token data
+
+    // Determine the currently selected chain object based on selectedChainId
     const selectedChain = _.find(
         chains,
         (c) => Number(c.id) === Number(selectedChainId),
     );
-    const { data: tokenList } = useTokenList({ chainId: selectedChainId });
-    const defaultToken = _.first(tokenList) as IToken;
 
-    console.log('selectedChainId', selectedChainId);
-    console.log('supportedChains', supportedChains);
+    // Fetch the token list for the selected chain
+    const { data: tokenList } = useTokenList({ chainId: selectedChainId });
+    const defaultToken = _.first(tokenList) as IToken; // Default token from the list
+
+    console.log('selectedChainId', selectedChainId); // Log the selected chain ID
+    console.log('supportedChains', supportedChains); // Log the supported chains
+
+    // Effect to update token data when the chain changes
+    useEffect(() => {
+        if (!selectedTokenData || selectedTokenData.chainId !== selectedChainId) {
+            console.log('Updating token data due to chain change.');
+            setSelectedTokenData(defaultToken); // Set default token for the selected chain
+        }
+    }, [selectedChainId, defaultToken]);
+
+    // Effect to log the selected token data whenever it changes
+    useEffect(() => {
+        console.log('selectedTokenData updated:', selectedTokenData);
+    }, [selectedTokenData]);
 
     const exchangeProxy = _.get(
         _.find(supportedChains, { id: selectedChainId.toString() }),
@@ -85,8 +103,6 @@ export default function Swap() {
     const [hash, setHash] = useState();
     const { data } = useWaitForTransactionReceipt({ hash: sendTxData })
 
-    const [selectedTokenData, setSelectedTokenData] = useState<IToken>();
-
     const { values, getInputProps, setFieldValue } = useForm({
         validate: {
             sellAmount: (val) =>
@@ -103,7 +119,6 @@ export default function Swap() {
     });
 
     const { sellAmount, buyAmount } = values;
-
     const [opened, setOpened] = useState(false);
 
     // Data Fetching
@@ -121,7 +136,7 @@ export default function Swap() {
     });
 
     console.log('selectedTokenData', selectedTokenData);
-    
+
     const {
         data: quote,
         isLoading: isQuoteLoading,
@@ -183,7 +198,7 @@ export default function Swap() {
 
     const handleAllowance = async () => {
         console.log("Handling allowance with exchangeProxy:", exchangeProxy);
-        
+
         const txHash = await writeContractAsync({
             chainId: selectedChainId,
             address: quote?.sellTokenAddress,

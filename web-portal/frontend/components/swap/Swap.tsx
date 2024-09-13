@@ -68,20 +68,20 @@ export default function Swap() {
     const { data: tokenList } = useTokenList({ chainId: selectedChainId });
     const defaultToken = _.first(tokenList) as IToken; // Default token from the list
 
-    console.log('selectedChainId', selectedChainId); // Log the selected chain ID
-    console.log('supportedChains', supportedChains); // Log the supported chains
+    // console.log('selectedChainId', selectedChainId); // Log the selected chain ID
+    // console.log('supportedChains', supportedChains); // Log the supported chains
 
     // Effect to update token data when the chain changes
     useEffect(() => {
         if (!selectedTokenData || selectedTokenData.chainId !== selectedChainId) {
-            console.log('Updating token data due to chain change.');
+            // console.log('Updating token data due to chain change.');
             setSelectedTokenData(defaultToken); // Set default token for the selected chain
         }
     }, [selectedChainId, defaultToken]);
 
     // Effect to log the selected token data whenever it changes
     useEffect(() => {
-        console.log('selectedTokenData updated:', selectedTokenData);
+        // console.log('selectedTokenData updated:', selectedTokenData);
     }, [selectedTokenData]);
 
     const exchangeProxy = _.get(
@@ -89,7 +89,7 @@ export default function Swap() {
         "exchangeProxy",
     ) as unknown as Address;
 
-    console.log('exchangeProxy', exchangeProxy);
+    // console.log('exchangeProxy', exchangeProxy);
 
     // Utils
     const chainId = useChainId();
@@ -134,8 +134,6 @@ export default function Swap() {
         token: selectedTokenData?.address!,
         chainId: selectedTokenData?.chainId!,
     });
-
-    console.log('selectedTokenData', selectedTokenData);
 
     const {
         data: quote,
@@ -197,7 +195,7 @@ export default function Swap() {
     }, [sellAmount]);
 
     const handleAllowance = async () => {
-        console.log("Handling allowance with exchangeProxy:", exchangeProxy);
+        // console.log("Handling allowance with exchangeProxy:", exchangeProxy);
 
         const txHash = await writeContractAsync({
             chainId: selectedChainId,
@@ -212,10 +210,10 @@ export default function Swap() {
     };
 
     const handleSwap = () => {
-        console.log("Preparing to send transaction with the following details:");
-        console.log("To (exchangeProxy):", quote?.to);
-        console.log("Value:", quote?.value);
-        console.log("Data:", quote?.data);
+        // console.log("Preparing to send transaction with the following details:");
+        // console.log("To (exchangeProxy):", quote?.to);
+        // console.log("Value:", quote?.value);
+        // console.log("Data:", quote?.data);
 
         sendTransaction({
             to: quote?.to!,

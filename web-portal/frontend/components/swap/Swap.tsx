@@ -54,33 +54,54 @@ const commonStyles = {
 const chainOptions = _.map(chains, "name").filter((c) => !c.includes("Eth") && !c.includes('Gno'));
 
 export default function Swap() {
-    // Network/Token data
-    const [selectedChainId, setSelectedChainId] = useState(10);
+    // State for selected chain and token data
+    const [selectedChainId, setSelectedChainId] = useState(10); // Initialize with default chain ID
+    const [selectedTokenData, setSelectedTokenData] = useState<IToken>(); // Initialize selected token data
+
+    // Determine the currently selected chain object based on selectedChainId
     const selectedChain = _.find(
         chains,
         (c) => Number(c.id) === Number(selectedChainId),
     );
+
+    // Fetch the token list for the selected chain
     const { data: tokenList } = useTokenList({ chainId: selectedChainId });
-    const defaultToken = _.first(tokenList) as IToken;
+    const defaultToken = _.first(tokenList) as IToken; // Default token from the list
+
+    // console.log('selectedChainId', selectedChainId); // Log the selected chain ID
+    // console.log('supportedChains', supportedChains); // Log the supported chains
+
+    // Effect to update token data when the chain changes
+    useEffect(() => {
+        if (!selectedTokenData || selectedTokenData.chainId !== selectedChainId) {
+            // console.log('Updating token data due to chain change.');
+            setSelectedTokenData(defaultToken); // Set default token for the selected chain
+        }
+    }, [selectedChainId, defaultToken]);
+
+    // Effect to log the selected token data whenever it changes
+    useEffect(() => {
+        // console.log('selectedTokenData updated:', selectedTokenData);
+    }, [selectedTokenData]);
 
     const exchangeProxy = _.get(
-        _.find(supportedChains, { id: selectedChainId }),
+        _.find(supportedChains, { id: selectedChainId.toString() }),
         "exchangeProxy",
     ) as unknown as Address;
+
+    // console.log('exchangeProxy', exchangeProxy);
 
     // Utils
     const chainId = useChainId();
     const { switchChain } = useSwitchChain();
     const { writeContractAsync, isPending, isError, isSuccess } = useWriteContract();
-    const { sendTransaction,  data:sendTxData, isSuccess:isSubmitted } = useSendTransaction();
+    const { sendTransaction, data: sendTxData, isSuccess: isSubmitted } = useSendTransaction();
     const queryClient = useQueryClient();
 
     // UI States
     const setNotificationData = useSetAtom(notificationAtom);
     const [hash, setHash] = useState();
-    const {data} = useWaitForTransactionReceipt({hash: sendTxData})
-
-    const [selectedTokenData, setSelectedTokenData] = useState<IToken>();
+    const { data } = useWaitForTransactionReceipt({ hash: sendTxData })
 
     const { values, getInputProps, setFieldValue } = useForm({
         validate: {
@@ -98,7 +119,6 @@ export default function Swap() {
     });
 
     const { sellAmount, buyAmount } = values;
-
     const [opened, setOpened] = useState(false);
 
     // Data Fetching
@@ -156,7 +176,7 @@ export default function Swap() {
         allowance === BigInt(0) ||
         (allowance &&
             allowance <
-                BigInt(sellAmount * 10 ** selectedTokenData?.decimals!));
+            BigInt(sellAmount * 10 ** selectedTokenData?.decimals!));
 
     // Action Handlers
     const handleSwitchNetwork = () => {
@@ -175,20 +195,27 @@ export default function Swap() {
     }, [sellAmount]);
 
     const handleAllowance = async () => {
-        const txHash  = await writeContractAsync({
+        // console.log("Handling allowance with exchangeProxy:", exchangeProxy);
+
+        const txHash = await writeContractAsync({
             chainId: selectedChainId,
             address: quote?.sellTokenAddress,
             abi: erc20Abi,
             functionName: "approve",
             args: [exchangeProxy, sellAmountBigNumber]
         });
-        if(txHash){
-          setHash(txHash as any)
+        if (txHash) {
+            setHash(txHash as any)
         }
     };
 
     const handleSwap = () => {
-       sendTransaction({
+        // console.log("Preparing to send transaction with the following details:");
+        // console.log("To (exchangeProxy):", quote?.to);
+        // console.log("Value:", quote?.value);
+        // console.log("Data:", quote?.data);
+
+        sendTransaction({
             to: quote?.to!,
             value: quote?.value,
             data: quote?.data,
@@ -201,26 +228,26 @@ export default function Swap() {
     // Effects
 
     useEffect(() => {
-      if(isSubmitted || isSuccess){
-        setNotificationData({
-          title: 'Your tx was submitted on chain',
-          content: 'Please wait for it to be completed onchain!'
-        })
-      }
+        if (isSubmitted || isSuccess) {
+            setNotificationData({
+                title: 'Your tx was submitted on chain',
+                content: 'Please wait for it to be completed onchain!'
+            })
+        }
 
-      if(data?.status == 'success'){
-        setNotificationData({
-          title: 'Your tx was successful',
-          content: 'Please wait for UI to reflect changes.'
-        })
-      }
+        if (data?.status == 'success') {
+            setNotificationData({
+                title: 'Your tx was successful',
+                content: 'Please wait for UI to reflect changes.'
+            })
+        }
 
-      if(data?.status == 'reverted'){
-        setNotificationData({
-          title: 'Your tx was not successful',
-          content: 'Please check on block explorer or contact porters support!'
-        })
-      }
+        if (data?.status == 'reverted') {
+            setNotificationData({
+                title: 'Your tx was not successful',
+                content: 'Please check on block explorer or contact porters support!'
+            })
+        }
 
     }, [isSubmitted, data, isSubmitted, hash, sendTxData])
 
@@ -331,13 +358,13 @@ export default function Swap() {
                         {`$ `}
                         {(
                             Number(sellAmount ?? 0) *
-                                Number(
-                                    _.get(
-                                        selectedTokenPrice,
-                                        [selectedTokenData?.address!],
-                                        0,
-                                    ),
-                                ) || 0.0
+                            Number(
+                                _.get(
+                                    selectedTokenPrice,
+                                    [selectedTokenData?.address!],
+                                    0,
+                                ),
+                            ) || 0.0
                         ).toFixed(6)}
                     </Text>
 
@@ -403,13 +430,13 @@ export default function Swap() {
                     }}
                     bg={"blue"}
                 >
-                  <Image
-                      src={_.get(portrTokenData, "logoURI") as string}
-                      alt={_.get(portrTokenData, "symbol") as string}
-                      width={24}
-                      height={24}
-                      style={{ marginRight: 10, borderRadius: 50 }}
-                  />
+                    <Image
+                        src={_.get(portrTokenData, "logoURI") as string}
+                        alt={_.get(portrTokenData, "symbol") as string}
+                        width={24}
+                        height={24}
+                        style={{ marginRight: 10, borderRadius: 50 }}
+                    />
                     PORTR
                 </Button>
             </Flex>
@@ -421,9 +448,9 @@ export default function Swap() {
                     c='blue'
                 >
                     {`Number of Relays ≈ `}
-                    {Number(values["buyAmount"])*1000}
+                    {Number(values["buyAmount"]) * 1000}
                 </Text>
-                </Flex>
+            </Flex>
 
             <Button
                 size="lg"
@@ -431,11 +458,11 @@ export default function Swap() {
                     needToSwitchChain
                         ? handleSwitchNetwork
                         : needToApproveToken
-                          ? handleAllowance
-                          : handleSwap
+                            ? handleAllowance
+                            : handleSwap
                 }
                 style={{
-                  backgroundColor: 'carrot'
+                    backgroundColor: 'carrot'
                 }}
                 disabled={shouldDisable && !needToSwitchChain}
                 loading={isPending}
@@ -444,10 +471,10 @@ export default function Swap() {
                 {showError
                     ? "Not enough balance"
                     : needToSwitchChain
-                      ? `Switch to ${selectedChain?.name!}`
-                      : needToApproveToken
-                        ? `Approve ${selectedTokenData?.name!}`
-                        : "Swap"}
+                        ? `Switch to ${selectedChain?.name!}`
+                        : needToApproveToken
+                            ? `Approve ${selectedTokenData?.name!}`
+                            : "Swap"}
             </Button>
             {needToSwitchChain && (
                 <Text style={{ textAlign: "center", color: "red" }}>

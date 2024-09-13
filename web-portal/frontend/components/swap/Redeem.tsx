@@ -44,11 +44,11 @@ export default function Redeem() {
         (c) => Number(c.id) === Number(selectedChainId),
     );
 
-    const { writeContractAsync,  isSuccess: isSubmitted } = useWriteContract();
+    const { writeContractAsync, isSuccess: isSubmitted } = useWriteContract();
 
     const [hash, setHash] = useState();
 
-    const { data , isLoading} = useWaitForTransactionReceipt({hash})
+    const { data, isLoading } = useWaitForTransactionReceipt({ hash })
 
     const setNotificationData = useSetAtom(notificationAtom)
 
@@ -86,51 +86,51 @@ export default function Redeem() {
 
     const hexAccountId = accountId
         ? toHex(accountId, {
-              size: 32,
-          })
+            size: 32,
+        })
         : zeroAddress;
     const bigNumberRedeem = BigInt(
-        redeemValue * 10 ** portrTokenData?.decimals ?? 0,
+        redeemValue * 10 ** portrTokenData?.decimals,
     );
 
     const handleRedeem = async () => {
         console.log("Attempting to redeem...");
-         const txHash = await writeContractAsync({
+        const txHash = await writeContractAsync({
             abi,
             chainId: selectedChainId,
             address: portrTokenData?.address,
             functionName: "applyToAccount",
             args: [hexAccountId, bigNumberRedeem],
         });
-         if(txHash){
-           setHash(txHash as any)
-         }
-        console.log("Redeem Attempt was made: hash" , {txHash} );
+        if (txHash) {
+            setHash(txHash as any)
+        }
+        console.log("Redeem Attempt was made: hash", { txHash });
     };
 
 
     useEffect(() => {
-      if(isSubmitted){
-        setNotificationData({
-          title: 'Your tx to top-up was submitted',
-          content: 'Please wait for it to be completed onchain!'
-        })
-      }
+        if (isSubmitted) {
+            setNotificationData({
+                title: 'Your tx to top-up was submitted',
+                content: 'Please wait for it to be completed onchain!'
+            })
+        }
 
 
-      if(data?.status == 'success'){
-        setNotificationData({
-          title: 'Your tx was successful',
-          content: 'Please wait for UI to reflect changes. and update your balance!'
-        })
-      }
+        if (data?.status == 'success') {
+            setNotificationData({
+                title: 'Your tx was successful',
+                content: 'Please wait for UI to reflect changes. and update your balance!'
+            })
+        }
 
-      if(data?.status == 'reverted'){
-        setNotificationData({
-          title: 'Your tx was not successful',
-          content: 'Please check on block explorer or contact porters support!'
-        })
-      }
+        if (data?.status == 'reverted') {
+            setNotificationData({
+                title: 'Your tx was not successful',
+                content: 'Please check on block explorer or contact porters support!'
+            })
+        }
 
     }, [isSubmitted, data])
 
@@ -180,7 +180,7 @@ export default function Redeem() {
                         }}
                         error={
                             redeemValue >
-                            Number(_.get(selectedTokenBalance, "formatted", 0))
+                                Number(_.get(selectedTokenBalance, "formatted", 0))
                                 ? "Not enough balance"
                                 : undefined
                         }
@@ -205,11 +205,11 @@ export default function Redeem() {
                     </Stack>
                 </Flex>
                 <Flex justify="space-between" dir="row" mx={10}>
-                <Text
-                    size="sm"
-                    style={{ fontWeight: 600 }}
-                    c='blue'
-                >
+                    <Text
+                        size="sm"
+                        style={{ fontWeight: 600 }}
+                        c='blue'
+                    >
                         Number of Relays ≈ {redeemValue * 1000}
                     </Text>
                     <Flex align={"center"} gap={4}>
@@ -274,13 +274,13 @@ export default function Redeem() {
             >
                 <TextInput
                     label={
-                    redeemValue ? "New Balance" : "Current Balance"}
+                        redeemValue ? "New Balance" : "Current Balance"}
                     styles={{
                         ...commonStyles,
                         input: { ...commonStyles.input, fill: "#fff" },
                     }}
                     value={
-                      Number(balance/1000) + Number(redeemValue * 10 ** 3)}
+                        Number(balance / 1000) + Number(redeemValue * 10 ** 3)}
                     readOnly
                 />
             </Flex>
@@ -288,7 +288,7 @@ export default function Redeem() {
             <Button
                 size="lg"
                 style={{
-                  backgroundColor: 'carrot'
+                    backgroundColor: 'carrot'
                 }}
                 disabled={shouldDisable && !needToSwitchChain}
                 onClick={needToSwitchChain ? handleSwitchNetwork : handleRedeem}

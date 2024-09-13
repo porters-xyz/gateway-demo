@@ -120,6 +120,8 @@ export default function Swap() {
         chainId: selectedTokenData?.chainId!,
     });
 
+    console.log('selectedTokenData', selectedTokenData);
+    
     const {
         data: quote,
         isLoading: isQuoteLoading,

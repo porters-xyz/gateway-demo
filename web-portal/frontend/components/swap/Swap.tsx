@@ -63,8 +63,11 @@ export default function Swap() {
     const { data: tokenList } = useTokenList({ chainId: selectedChainId });
     const defaultToken = _.first(tokenList) as IToken;
 
+    console.log('selectedChainId', selectedChainId);
+    console.log('supportedChains', supportedChains);
+    
     const exchangeProxy = _.get(
-        _.find(supportedChains, { id: selectedChainId }),
+        _.find(supportedChains, { id: selectedChainId.toString() }),
         "exchangeProxy",
     ) as unknown as Address;
 

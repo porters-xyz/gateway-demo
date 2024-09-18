@@ -12,4 +12,4 @@ RUN go build -o /go/bin/porters
 
 EXPOSE 9000
 
-CMD ["porters", "gateway"]
+CMD ["sh", "-c", "ulimit -n 65536 && exec /go/bin/porters gateway"]

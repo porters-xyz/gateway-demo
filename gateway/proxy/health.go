@@ -16,10 +16,9 @@ type HealthStatus struct {
 
 // New function to check file descriptor health and log the results using slog
 func checkFileDescriptorHealth() {
-	var rLimit unix.rLimit
+	var rLimit unix.Rlimit // Correct capitalization
 
 	// Get the max number of allowed file descriptors
-	//err := unix.Getrlimit(unix.RLIMIT_NOFILE, &rLimit) // Corrected package usage
 	err := unix.Getrlimit(unix.RLIMIT_NOFILE, &rLimit)
 	if err != nil {
 		slog.Error("Error retrieving file descriptor limit", "error", err)

@@ -54,7 +54,7 @@ func (p *ProductFilter) HandleRequest(req *http.Request) error {
 	}
 
 	if !allow {
-		log.Error("Unauthorized access attempt", "product", product)
+		log.Error("Unauthorized access attempt", "product", product, "app", app)
 		return proxy.NewHTTPError(http.StatusUnauthorized)
 	}
 

@@ -31,6 +31,7 @@ const (
 	FLY_GATEWAY_URI                = "FLY_GATEWAY_URI"
 	GATEWAY_API_KEY                = "GATEWAY_API_KEY"
 	GATEWAY_REQUEST_API_KEY        = "GATEWAY_REQUEST_API_KEY"
+	FILE_DESCRIPTOR_LIMIT          = "FILE_DESCRIPTOR_LIMIT"
 )
 
 // This may evolve to include config outside env, or use .env file for
@@ -59,6 +60,7 @@ func setupConfig() *Config {
 		config.defaults[LOG_HTTP_RESPONSE] = "false"
 		config.defaults[LOG_BALANCE_UPDATE] = "false"
 		config.defaults[LOG_HTTP_REQUEST_FILTER] = ""
+		config.defaults[FILE_DESCRIPTOR_LIMIT] = "5000"
 
 		level := parseLogLevel(os.Getenv(LOG_LEVEL))
 		config.SetLogLevel(level)

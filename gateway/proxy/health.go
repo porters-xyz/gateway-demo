@@ -19,6 +19,7 @@ type HealthStatus struct {
 // New function to check file descriptor health and log the results using slog
 func checkFileDescriptorHealth() bool {
 	var rLimit unix.Rlimit
+	fdLimit := common.GetConfigInt("FILE_DESCRIPTOR_LIMIT")
 
 	// Get the max number of allowed file descriptors
 	err := unix.Getrlimit(unix.RLIMIT_NOFILE, &rLimit)
@@ -35,7 +36,7 @@ func checkFileDescriptorHealth() bool {
 	}
 	fdUsage := uint64(len(files))
 
-	healthy := fdUsage < rLimit.Cur*80/100
+	healthy := fdUsage < uint64(fdLimit)
 
 	// Log the file descriptor information using slog
 	slog.Info("File Descriptor Usage",

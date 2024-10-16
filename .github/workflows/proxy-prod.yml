@@ -1,5 +1,7 @@
 name: Fly Deploy Prod Proxy
 on:
+    schedule:
+        - cron: '0 */4 * * *'  # Runs every 4 hours
     push:
         branches:
             - master

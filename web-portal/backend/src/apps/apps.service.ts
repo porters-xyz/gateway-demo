@@ -122,7 +122,7 @@ export class AppsService {
     const deletedAt = new Date()
 
     const deletedApp = await this.prisma.client.app.update({
-      where: { id: appId, deletedAt: { not: null } },
+      where: { id: appId, deletedAt: null },
       data: { deletedAt },
     });
 
